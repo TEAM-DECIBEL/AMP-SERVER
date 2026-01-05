@@ -36,4 +36,10 @@ public class User {
 
     private Boolean is_active;
 
+    public void updateExistingUser(String username, String profile_image_url, String providerId) {
+        this.username = username;
+        this.profile_image_url = profile_image_url;
+        this.providerId = providerId;
+    }
+
 }
