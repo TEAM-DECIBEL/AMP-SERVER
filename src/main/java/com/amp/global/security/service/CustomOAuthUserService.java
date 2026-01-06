@@ -22,10 +22,10 @@ public class CustomOAuthUserService extends DefaultOAuth2UserService {
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         OAuth2User oAuth2User = super.loadUser(userRequest);
 
-        return processOAuth2User(userRequest, oAuth2User);
+        return processOAuth2User(oAuth2User);
     }
 
-    private OAuth2User processOAuth2User(OAuth2UserRequest userRequest, OAuth2User oAuth2User) {
+    private OAuth2User processOAuth2User(OAuth2User oAuth2User) {
         String email = oAuth2User.getAttribute("email");
         String username = oAuth2User.getAttribute("username");
         String profile_image_url = oAuth2User.getAttribute("profile_image_url");

@@ -3,7 +3,10 @@ package com.amp.global.config;
 import com.amp.global.security.JwtAuthenticationFilter;
 import com.amp.global.security.OAuth2AuthenticationSuccessHandler;
 import com.amp.global.security.service.CustomOAuthUserService;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -16,9 +19,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Arrays;
 
+@Slf4j
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -27,6 +32,12 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomOAuthUserService customOAuthUserService;
     private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
+
+    @Value("${app.cors.allowed-origins:http://localhost:3000,http://localhost:5173}")
+    private String allowedOrigins;
+
+    @Value("${app.oauth2.failure-redirect-uri:http://localhost:3000/login}")
+    private String failureRedirectUri;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -42,6 +53,12 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
+                // 보안 헤더 설정
+                .headers(headers -> headers
+                        .frameOptions(frame -> frame.deny())  // Clickjacking 방지
+                        .contentTypeOptions(contentType -> contentType.disable())
+                )
+
                 // 요청 권한 설정
                 .authorizeHttpRequests(auth -> auth
                         // 공개 엔드포인트
@@ -50,9 +67,14 @@ public class SecurityConfig {
                                 "/api/public/**",
                                 "/oauth2/**",
                                 "/login/**",
+                                "/h2-console/**",
+                                "/test-login.html",
+                                "/*.html",
+                                "/*.css",
+                                "/*.js",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
-                                "/swagger-resources/**"
+                                "/swagger-resources/**" // 스웨거랑 api 독스는 배포전 반드시 따로 관리 해야함 제발 나에게 상기시켜줘
                         ).permitAll()
 
                         // 관리자 권한
@@ -62,12 +84,61 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
 
+                // 예외 처리
+                .exceptionHandling(exception -> exception
+                        // 인증 실패 (401)
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            log.warn("Unauthorized request to: {}", request.getRequestURI());
+                            response.setContentType("application/json;charset=UTF-8");
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.getWriter().write("""
+                                {
+                                    "error": "Unauthorized",
+                                    "message": "인증이 필요합니다.",
+                                    "path": "%s"
+                                }
+                                """.formatted(request.getRequestURI()));
+                        })
+                        // 권한 부족 (403)
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            log.warn("Access denied to: {}", request.getRequestURI());
+                            response.setContentType("application/json;charset=UTF-8");
+                            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                            response.getWriter().write("""
+                                {
+                                    "error": "Forbidden",
+                                    "message": "권한이 없습니다.",
+                                    "path": "%s"
+                                }
+                                """.formatted(request.getRequestURI()));
+                        })
+                )
+
                 // OAuth2 로그인 설정
                 .oauth2Login(oauth2 -> oauth2
+                        // 엔드포인트 명시
+                        .authorizationEndpoint(authorization ->
+                                authorization.baseUri("/oauth2/authorization")
+                        )
+                        .redirectionEndpoint(redirection ->
+                                redirection.baseUri("/login/oauth2/code/*")
+                        )
+                        // 사용자 정보 처리
                         .userInfoEndpoint(userInfo ->
                                 userInfo.userService(customOAuthUserService)
                         )
+                        // 성공 핸들러
                         .successHandler(oAuth2AuthenticationSuccessHandler)
+                        // 실패 핸들러
+                        .failureHandler((request, response, exception) -> {
+                            log.error("OAuth2 login failed", exception);
+                            String targetUrl = UriComponentsBuilder
+                                    .fromUriString(failureRedirectUri)
+                                    .queryParam("error", "oauth2_failed")
+                                    .queryParam("message", exception.getMessage())
+                                    .build().toUriString();
+                            response.sendRedirect(targetUrl);
+                        })
                 )
 
                 // JWT 필터 추가
@@ -79,8 +150,10 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:5173"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+
+        // 환경변수에서 읽어온 origins 설정
+        configuration.setAllowedOrigins(Arrays.asList(allowedOrigins.split(",")));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
