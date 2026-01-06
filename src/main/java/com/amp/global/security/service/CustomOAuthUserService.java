@@ -27,21 +27,21 @@ public class CustomOAuthUserService extends DefaultOAuth2UserService {
 
     private OAuth2User processOAuth2User(OAuth2User oAuth2User) {
         String email = oAuth2User.getAttribute("email");
-        String username = oAuth2User.getAttribute("username");
+        String nickname = oAuth2User.getAttribute("nickname");
         String profile_image_url = oAuth2User.getAttribute("profile_image_url");
         String providerId = oAuth2User.getAttribute("sub");
 
         User user = userRepository.findByEmail(email)
-                .map(existingUser -> updateExistingUser(existingUser, username, profile_image_url,providerId))
-                .orElseGet(() -> createNewUser(email, username, profile_image_url, providerId));
+                .map(existingUser -> updateExistingUser(existingUser, nickname, profile_image_url,providerId))
+                .orElseGet(() -> createNewUser(email, nickname, profile_image_url, providerId));
 
         return oAuth2User;
     }
 
-    private User createNewUser(String email, String username, String profile_image_url, String providerId) {
+    private User createNewUser(String email, String nickname, String profile_image_url, String providerId) {
         User user = User.builder()
                 .email(email)
-                .username(username)
+                .nickname(nickname)
                 .profile_image_url(profile_image_url)
                 .provider(AuthProvider.GOOGLE)
                 .providerId(providerId)
