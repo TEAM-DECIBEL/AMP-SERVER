@@ -1,11 +1,33 @@
 spring:
+  profiles:
+    include: secret
+
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  jpa:
+    hibernate:
+      ddl-auto: create  # 매번 테이블 새로 생성 (테스트용)
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.H2Dialect
+
   security:
     oauth2:
       client:
         registration:
           google:
-            client-id: ${GOOGLE_CLIENT_ID}
-            client-secret: ${GOOGLE_CLIENT_SECRET}
+            # client-id와 client-secret은 application-secret.yml에서 가져와야함
             scope:
               - email
               - profile
@@ -17,15 +39,20 @@ spring:
             user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
             user-name-attribute: sub
 
+# jwt.secret은 application-secret.yml에서 가져옴
 jwt:
-  secret: ${JWT_SECRET:your-secret-key-change-this-in-production-minimum-256-bits}
   expiration: 86400000  # 24시간 (밀리초)
   refresh-expiration: 604800000  # 7일
 
-# CORS 설정
+# 앱 설정
 app:
+  oauth2:
+    redirect-uri: http://localhost:3000/oauth2/redirect
   cors:
     allowed-origins: http://localhost:3000,http://localhost:5173
     allowed-methods: GET,POST,PUT,DELETE,OPTIONS
     allowed-headers: "*"
     allow-credentials: true
+
+server:
+  port: 8080
