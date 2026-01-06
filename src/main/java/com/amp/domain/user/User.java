@@ -20,7 +20,7 @@ public class User {
 
     private String email;
 
-    private String username;
+    private String nickname;
 
     private String profile_image_url;
 
@@ -37,7 +37,7 @@ public class User {
     private Boolean is_active;
 
     public void updateExistingUser(String username, String profile_image_url, String providerId) {
-        this.username = username;
+        this.nickname = username;
         this.profile_image_url = profile_image_url;
         this.providerId = providerId;
     }
