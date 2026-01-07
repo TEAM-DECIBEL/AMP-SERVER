@@ -56,8 +56,9 @@ jobs:
             docker stop amp || true
             docker rm amp || true
             docker run -d --name amp -p 8080:8080 \
-            -e DB_URL=${{ secrets.DB_URL }} \
-            -e DB_USERNAME=${{ secrets.DB_USERNAME }} \
-            -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
-            ${{ secrets.DOCKER_USERNAME }}/amp-server:latest
+              -e SPRING_PROFILES_ACTIVE=prod \
+              -e DB_URL=${{ secrets.DB_URL }} \
+              -e DB_USERNAME=${{ secrets.DB_USERNAME }} \
+              -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
+                ${{ secrets.DOCKER_USERNAME }}/amp-server:latest
 
