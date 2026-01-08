@@ -1,6 +1,6 @@
 package com.amp.domain.notification;
 
-import com.amp.domain.notice.entity.Notice;
+import com.amp.domain.announcement.entity.Announcement;
 import com.amp.domain.user.entity.User;
 import com.amp.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
@@ -25,8 +25,8 @@ public class Notification extends BaseTimeEntity {
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "notice_id", nullable = false)
-    private Notice notice;
+    @JoinColumn(name = "announcement_id", nullable = false)
+    private Announcement announcement;
 
     @Column(nullable = false, length = 255)
     private String title;
@@ -38,9 +38,9 @@ public class Notification extends BaseTimeEntity {
     private Boolean isRead = false;
 
     @Builder
-    public Notification(User user, Notice notice, String title, String message) {
+    public Notification(User user, Announcement announcement, String title, String message) {
         this.user = user;
-        this.notice = notice;
+        this.announcement = announcement;
         this.title = title;
         this.message = message;
         this.isRead = false;
