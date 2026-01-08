@@ -18,6 +18,7 @@ public class Stage extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "stage_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
