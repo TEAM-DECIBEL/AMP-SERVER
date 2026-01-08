@@ -39,7 +39,7 @@ public class Category extends BaseTimeEntity {
     private Boolean isActive = true;
 
     @Builder
-    public void Category(Festival festival, String categoryName, String categoryCode,
+    public Category(Festival festival, String categoryName, String categoryCode,
                          String description, Integer displayOrder) {
         this.festival = festival;
         this.categoryName = categoryName;
