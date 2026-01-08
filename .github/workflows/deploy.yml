@@ -7,9 +7,8 @@ on:
       - develop
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
-
     steps:
       # 1. 레포 체크아웃
       - name: Checkout
@@ -34,16 +33,32 @@ jobs:
           echo "${{ secrets.DOCKER_PASSWORD }}" | docker login \
           -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
+      # 브랜치별 태그 설정
+      - name: Set Docker tag
+        id: tag
+        run: |
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            echo "tag=latest" >> $GITHUB_OUTPUT
+          else
+            echo "tag=develop" >> $GITHUB_OUTPUT
+          fi
+
       # 도커 이미지 빌드
       - name: Build Docker image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/amp-server:latest .
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/amp-server:${{ steps.tag.outputs.tag }} .
 
       # 도커 이미지 푸시
       - name: Push Docker image
         run: |
-          docker push ${{ secrets.DOCKER_USERNAME }}/amp-server:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/amp-server:${{ steps.tag.outputs.tag }}
 
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
       # Ec2에 배포
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.0.3
@@ -52,13 +67,30 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
           script: |
-            docker pull ${{ secrets.DOCKER_USERNAME }}/amp-server:latest
+            IMAGE=${{ secrets.DOCKER_USERNAME }}/amp-server:latest
+          
+            echo "📦 Docker image pull 시도"
+          
+            for i in 1 2 3; do
+              docker pull $IMAGE && break
+              echo "⚠️ docker pull 실패 ($i/3), 3초 후 재시도..."
+              sleep 3
+            done
+          
+            if ! docker image inspect $IMAGE > /dev/null 2>&1; then
+              echo "❌ Docker image pull 최종 실패 → 기존 컨테이너 유지"
+              exit 1
+            fi
+          
+            echo "🛑 기존 컨테이너 종료"
             docker stop amp || true
             docker rm amp || true
+          
+            echo "🚀 새 컨테이너 실행"
             docker run -d --name amp -p 8080:8080 \
               -e SPRING_PROFILES_ACTIVE=prod \
               -e DB_URL=${{ secrets.DB_URL }} \
               -e DB_USERNAME=${{ secrets.DB_USERNAME }} \
               -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
-                ${{ secrets.DOCKER_USERNAME }}/amp-server:latest
+              $IMAGE
 
