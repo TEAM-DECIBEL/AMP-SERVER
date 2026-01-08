@@ -67,13 +67,31 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
           script: |
-            docker pull ${{ secrets.DOCKER_USERNAME }}/amp-server:latest
-            docker stop amp || true
-            docker rm amp || true
-            docker run -d --name amp -p 8080:8080 \
+            script: |
+              IMAGE=${{ secrets.DOCKER_USERNAME }}/amp-server:latest
+            
+              echo "📦 Docker image pull 시도"
+            
+              for i in 1 2 3; do
+              docker pull $IMAGE && break
+              echo "⚠️ docker pull 실패 ($i/3), 3초 후 재시도..."
+              sleep 3
+              done
+            
+              if ! docker image inspect $IMAGE > /dev/null 2>&1; then
+              echo "❌ Docker image pull 최종 실패 → 기존 컨테이너 유지"
+              exit 1
+              fi
+            
+              echo "🛑 기존 컨테이너 종료"
+              docker stop amp || true
+              docker rm amp || true
+            
+              echo "🚀 새 컨테이너 실행"
+              docker run -d --name amp -p 8080:8080 \
               -e SPRING_PROFILES_ACTIVE=prod \
               -e DB_URL=${{ secrets.DB_URL }} \
               -e DB_USERNAME=${{ secrets.DB_USERNAME }} \
               -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
-                ${{ secrets.DOCKER_USERNAME }}/amp-server:latest
+              $IMAGE
 
