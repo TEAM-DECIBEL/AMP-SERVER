@@ -1,4 +1,4 @@
-package com.amp.domain.notice.entity;
+package com.amp.domain.announcement.entity;
 
 import com.amp.domain.festival.entity.Festival;
 import com.amp.domain.user.entity.User;
@@ -12,13 +12,13 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "notice")
+@Table(name = "announcement")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Notice extends BaseTimeEntity {
+public class Announcement extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "notice_id")
+    @Column(name = "announcement_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -49,8 +49,8 @@ public class Notice extends BaseTimeEntity {
     private LocalDateTime deletedAt;
 
     @Builder
-    public Notice(Festival festival, Category category, User user,
-                  String title, String content, String imageUrl) {
+    public Announcement(Festival festival, Category category, User user,
+                        String title, String content, String imageUrl) {
         this.festival = festival;
         this.category = category;
         this.user = user;
