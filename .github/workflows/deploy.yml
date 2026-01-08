@@ -9,8 +9,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/amp-server
     steps:
       # 1. 레포 체크아웃
       - name: Checkout
@@ -48,19 +46,17 @@ jobs:
       # 도커 이미지 빌드
       - name: Build Docker image
         run: |
-          docker build -t $IMAGE_NAME:${{ steps.tag.outputs.tag }} .
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/amp-server:${{ steps.tag.outputs.tag }} .
 
       # 도커 이미지 푸시
       - name: Push Docker image
         run: |
-          docker push $IMAGE_NAME:${{ steps.tag.outputs.tag }}
+          docker push ${{ secrets.DOCKER_USERNAME }}/amp-server:${{ steps.tag.outputs.tag }}
 
   deploy:
     needs: build
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
-    env:
-      IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/amp-server
 
     steps:
       # Ec2에 배포
@@ -71,7 +67,7 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
           script: |
-            IMAGE=$IMAGE_NAME:latest
+            IMAGE=${{ secrets.DOCKER_USERNAME }}/amp-server:latest
           
             echo "📦 Docker image pull 시도"
           
