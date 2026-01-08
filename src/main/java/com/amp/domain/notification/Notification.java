@@ -1,4 +1,4 @@
-package com.amp.domain.Notification;
+package com.amp.domain.notification;
 
 import com.amp.domain.notice.entity.Notice;
 import com.amp.domain.user.entity.User;
