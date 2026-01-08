@@ -56,6 +56,7 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
 
     steps:
       # Ec2에 배포
@@ -68,8 +69,7 @@ jobs:
           script: |
             set -euo pipefail
             
-            # 무중단 배포 확인 후 수정예정
-            IMAGE=${{ secrets.DOCKER_USERNAME }}/amp-server:develop 
+            IMAGE=${{ secrets.DOCKER_USERNAME }}/amp-server:latest
 
             # 현재 운영 컨테이너 확인
             if docker ps --format '{{.Names}} {{.Ports}}' | grep -q 'amp-server-blue.*0.0.0.0:8080->8080'; then
