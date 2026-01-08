@@ -21,7 +21,7 @@ public class Stage extends BaseTimeEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @Column(name = "festival_id", nullable = false)
+    @JoinColumn(name = "festival_id", nullable = false)
     private Festival festival;
 
     @Column(name = "title", nullable = false)
