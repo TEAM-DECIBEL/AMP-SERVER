@@ -50,14 +50,14 @@ public class Announcement extends BaseTimeEntity {
 
     @Builder
     public Announcement(Festival festival, Category category, User user,
-                        String title, String content, String imageUrl) {
+                        String title, String content, String imageUrl, Boolean isPinned) {
         this.festival = festival;
         this.category = category;
         this.user = user;
         this.title = title;
         this.content = content;
         this.imageUrl = imageUrl;
-        this.isPinned = false;
+        this.isPinned = isPinned != null ? isPinned : false;
     }
 
 }
