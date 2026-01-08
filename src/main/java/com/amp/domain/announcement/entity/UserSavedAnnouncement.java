@@ -9,7 +9,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "user_saved_announcement")
+@Table(name = "user_saved_announcement",
+        uniqueConstraints = @UniqueConstraint(
+                name = "uk_user_announcement",
+                columnNames = {"user_id", "announcement_id"}
+        ))
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserSavedAnnouncement extends BaseTimeEntity {
