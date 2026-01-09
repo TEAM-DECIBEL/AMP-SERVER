@@ -29,7 +29,7 @@ public class ExecutionTimeAspect {
             Object result = joinPoint.proceed();
 
             long executionTime = System.currentTimeMillis() - startTime;
-            log.info("[{}] 완료 - 실행 시간: {}ms", taskName, executionTime);
+            log.info("[{}] 성공 - 실행 시간: {}ms", taskName, executionTime);
 
             return result;
 
