@@ -2,7 +2,7 @@ package com.amp.global.response.success;
 
 import org.springframework.http.HttpStatus;
 
-public record BaseResponse<T>(int code, String msg, T data) {
+public record BaseResponse<T>(int status, String msg, T data) {
 
     public static <T> BaseResponse<T> ok(String msg, T data) {
         return new BaseResponse<>(HttpStatus.OK.value(), msg, data);
