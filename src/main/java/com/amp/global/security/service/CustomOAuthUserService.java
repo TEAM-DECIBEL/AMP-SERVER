@@ -6,6 +6,7 @@ import com.amp.domain.user.Role;
 import com.amp.domain.user.User;
 import com.amp.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CustomOAuthUserService extends DefaultOAuth2UserService {
 
     private final UserRepository userRepository;
@@ -21,38 +23,51 @@ public class CustomOAuthUserService extends DefaultOAuth2UserService {
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         OAuth2User oAuth2User = super.loadUser(userRequest);
-
         return processOAuth2User(oAuth2User);
     }
 
     private OAuth2User processOAuth2User(OAuth2User oAuth2User) {
+        // Google 전용 속성 이름 사용
         String email = oAuth2User.getAttribute("email");
-        String nickname = oAuth2User.getAttribute("nickname");
-        String profile_image_url = oAuth2User.getAttribute("profile_image_url");
+        String name = oAuth2User.getAttribute("name");
+        String picture = oAuth2User.getAttribute("picture");
         String providerId = oAuth2User.getAttribute("sub");
 
+        // 필수 값 검증
+        if (email == null || email.trim().isEmpty()) {
+            log.error("OAuth2 authentication failed: email is missing");
+            throw new OAuth2AuthenticationException("Email not found from OAuth2 provider");
+        }
+
+        if (providerId == null || providerId.trim().isEmpty()) {
+            log.error("OAuth2 authentication failed: provider ID is missing");
+            throw new OAuth2AuthenticationException("Provider ID not found from OAuth2 provider");
+        }
+
         User user = userRepository.findByEmail(email)
-                .map(existingUser -> updateExistingUser(existingUser, nickname, profile_image_url,providerId))
-                .orElseGet(() -> createNewUser(email, nickname, profile_image_url, providerId));
+                .map(existingUser -> updateExistingUser(existingUser, name, picture))
+                .orElseGet(() -> createNewUser(email, name, picture, providerId));
 
         return oAuth2User;
     }
 
-    private User createNewUser(String email, String nickname, String profile_image_url, String providerId) {
+    private User createNewUser(String email, String name, String picture, String providerId) {
         User user = User.builder()
                 .email(email)
-                .nickname(nickname)
-                .profile_image_url(profile_image_url)
+                .nickname(name)                    // name을 nickname 필드에 저장
+                .profileImageUrl(picture)          // picture를 profileImageUrl 필드에 저장
                 .provider(AuthProvider.GOOGLE)
                 .providerId(providerId)
                 .role(Role.USER)
+                .isActive(true)
                 .build();
 
         return userRepository.save(user);
     }
 
-    private User updateExistingUser(User user, String username, String profile_image_url,String providerId) {
-        user.updateExistingUser(username, profile_image_url, providerId);
+    private User updateExistingUser(User user, String name, String picture) {
+        user.updateExistingUser(name, picture);
         return userRepository.save(user);
-    } //여기 테스트 한번 해봐야할거 같아요
+    }
 }
+

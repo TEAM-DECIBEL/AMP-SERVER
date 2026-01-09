@@ -131,11 +131,11 @@ public class SecurityConfig {
                         .successHandler(oAuth2AuthenticationSuccessHandler)
                         // 실패 핸들러
                         .failureHandler((request, response, exception) -> {
-                            log.error("OAuth2 login failed", exception);
+                            log.error("OAuth2 login failed", exception,exception.getMessage());
                             String targetUrl = UriComponentsBuilder
                                     .fromUriString(failureRedirectUri)
                                     .queryParam("error", "oauth2_failed")
-                                    .queryParam("message", exception.getMessage())
+                                    .queryParam("message", "로그인에 실패 했습니다.") //todo 에러 모두 커스텀해서 넘길 수 있는지 확인
                                     .build().toUriString();
                             response.sendRedirect(targetUrl);
                         })
