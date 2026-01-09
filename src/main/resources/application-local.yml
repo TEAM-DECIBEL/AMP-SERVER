@@ -6,7 +6,6 @@ spring:
     password: ${DB_PASSWORD:}
 
   jpa:
-    database-platform: org.hibernate.dialect.MySQLDialect
     show-sql: true
     properties:
       hibernate:
