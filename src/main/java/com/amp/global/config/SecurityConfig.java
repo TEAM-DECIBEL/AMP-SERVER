@@ -2,6 +2,7 @@ package com.amp.global.config;
 
 import com.amp.global.security.JwtAuthenticationFilter;
 import com.amp.global.security.OAuth2AuthenticationSuccessHandler;
+import com.amp.global.security.OnboardingCheckFilter;
 import com.amp.global.security.service.CustomOAuthUserService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +41,7 @@ public class SecurityConfig {
     private String failureRedirectUri;
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, OnboardingCheckFilter onboardingCheckFilter) throws Exception {
         http
                 // CSRF 비활성화 (JWT 사용)
                 .csrf(csrf -> csrf.disable())
@@ -76,6 +77,8 @@ public class SecurityConfig {
                                 "/v3/api-docs/**",
                                 "/swagger-resources/**" // 스웨거랑 api 독스는 배포전 반드시 따로 관리 해야함 제발 나에게 상기시켜줘
                         ).permitAll()
+
+                        .requestMatchers("/api/auth/onboarding/**").authenticated() // 온보딩 api는 일단 소셜로그인 거친 이후로 접근 가능
 
                         // 관리자 권한
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
@@ -142,7 +145,9 @@ public class SecurityConfig {
                 )
 
                 // JWT 필터 추가
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(onboardingCheckFilter,JwtAuthenticationFilter.class);
+
 
         return http.build();
     }
