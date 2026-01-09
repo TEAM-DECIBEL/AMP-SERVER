@@ -18,16 +18,20 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String email;
 
+    @Column(nullable = false)
     private String nickname;
 
+    @Column(nullable = false, name = "profile_image_url")
     private String profileImageUrl;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private AuthProvider provider;
 
+    @Column(nullable = false, name = "provider_id")
     private String providerId;
 
     @Enumerated(EnumType.STRING)
@@ -43,4 +47,3 @@ public class User {
     }
 
 }
-
