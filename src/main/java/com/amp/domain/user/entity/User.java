@@ -34,7 +34,7 @@ public class User {
     @Column(nullable = false)
     private Role role;
 
-    private Boolean isActive;
+    private boolean isActive;
 
     public void updateExistingUser(String username, String profileImageUrl, String providerId) {
         this.nickname = username;
