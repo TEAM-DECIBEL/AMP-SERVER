@@ -38,11 +38,11 @@ public class CustomOAuthUserService extends DefaultOAuth2UserService {
         return oAuth2User;
     }
 
-    private User createNewUser(String email, String nickname, String profile_image_url, String providerId) {
+    private User createNewUser(String email, String nickname, String profileImageUrl, String providerId) {
         User user = User.builder()
                 .email(email)
                 .nickname(nickname)
-                .profile_image_url(profile_image_url)
+                .profileImageUrl(profileImageUrl)
                 .provider(AuthProvider.GOOGLE)
                 .providerId(providerId)
                 .role(Role.USER)
@@ -51,8 +51,8 @@ public class CustomOAuthUserService extends DefaultOAuth2UserService {
         return userRepository.save(user);
     }
 
-    private User updateExistingUser(User user, String username, String profile_image_url,String providerId) {
-        user.updateExistingUser(username, profile_image_url, providerId);
+    private User updateExistingUser(User user, String username, String profileImageUrl,String providerId) {
+        user.updateExistingUser(username, profileImageUrl, providerId);
         return userRepository.save(user);
     } //여기 테스트 한번 해봐야할거 같아요
 }
