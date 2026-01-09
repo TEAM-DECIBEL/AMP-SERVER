@@ -27,7 +27,6 @@ public class CustomOAuthUserService extends DefaultOAuth2UserService {
     }
 
     private OAuth2User processOAuth2User(OAuth2User oAuth2User) {
-        // Google 전용 속성 이름 사용
         String email = oAuth2User.getAttribute("email");
         String name = oAuth2User.getAttribute("name");
         String picture = oAuth2User.getAttribute("picture");
@@ -54,8 +53,8 @@ public class CustomOAuthUserService extends DefaultOAuth2UserService {
     private User createNewUser(String email, String name, String picture, String providerId) {
         User user = User.builder()
                 .email(email)
-                .nickname(name)                    // name을 nickname 필드에 저장
-                .profileImageUrl(picture)          // picture를 profileImageUrl 필드에 저장
+                .nickname(name)
+                .profileImageUrl(picture)
                 .provider(AuthProvider.GOOGLE)
                 .providerId(providerId)
                 .role(Role.USER)
