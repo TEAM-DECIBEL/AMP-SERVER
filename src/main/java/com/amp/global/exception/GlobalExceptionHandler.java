@@ -4,6 +4,7 @@ package com.amp.global.exception;
 import com.amp.global.common.CommonErrorCode;
 import com.amp.global.common.ErrorCode;
 import com.amp.global.response.error.BaseErrorResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +28,15 @@ public class GlobalExceptionHandler {
 
     // 모든 예외
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<BaseErrorResponse> handlerInternalServerError(Exception ex) {
+    public ResponseEntity<BaseErrorResponse> handlerInternalServerError(
+            Exception ex,
+            HttpServletRequest request
+    ) {
+        // 무중단 배포환경에서 health check를 위해 actuator 예외는 Spring 기본 처리로 넘김
+        if (request.getRequestURI().startsWith("/actuator")) {
+            throw new RuntimeException(ex);
+        }
+
         log.error("[ERROR - Unknown Exception]", ex);
         return ResponseEntity.status(CommonErrorCode.INTERNAL_SERVER_ERROR.getHttpStatus())
                 .body(BaseErrorResponse.of(CommonErrorCode.INTERNAL_SERVER_ERROR));
