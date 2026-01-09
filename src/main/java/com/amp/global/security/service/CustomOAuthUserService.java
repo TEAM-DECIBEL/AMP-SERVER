@@ -2,6 +2,7 @@ package com.amp.global.security.service;
 
 
 import com.amp.domain.user.AuthProvider;
+import com.amp.domain.user.RegistrationStatus;
 import com.amp.domain.user.Role;
 import com.amp.domain.user.User;
 import com.amp.domain.user.repository.UserRepository;
@@ -35,17 +36,23 @@ public class CustomOAuthUserService extends DefaultOAuth2UserService {
         // 필수 값 검증
         if (email == null || email.trim().isEmpty()) {
             log.error("OAuth2 authentication failed: email is missing");
-            throw new OAuth2AuthenticationException("Email not found from OAuth2 provider");
+            throw new OAuth2AuthenticationException("Email not found from OAuth2 provider"); //TODO 커스텀 예외로 처리 돌려 봐야 함
         }
 
         if (providerId == null || providerId.trim().isEmpty()) {
             log.error("OAuth2 authentication failed: provider ID is missing");
-            throw new OAuth2AuthenticationException("Provider ID not found from OAuth2 provider");
+            throw new OAuth2AuthenticationException("Provider ID not found from OAuth2 provider"); //TODO 커스텀 예외로 처리 돌려 봐야 함
         }
 
         User user = userRepository.findByEmail(email)
-                .map(existingUser -> updateExistingUser(existingUser, name, picture))
-                .orElseGet(() -> createNewUser(email, name, picture, providerId));
+                .map(existingUser -> {
+                    updateExistingUser(existingUser, name, picture);
+                    return existingUser;
+                })
+                .orElseGet(() -> {
+                    // 신규 사용자는 PENDING 상태로 생성
+                    return createNewUser(email, name, picture, providerId);
+                });
 
         return oAuth2User;
     }
@@ -53,14 +60,16 @@ public class CustomOAuthUserService extends DefaultOAuth2UserService {
     private User createNewUser(String email, String name, String picture, String providerId) {
         User user = User.builder()
                 .email(email)
-                .nickname(name)
+                .nickname(null)
                 .profileImageUrl(picture)
                 .provider(AuthProvider.GOOGLE)
                 .providerId(providerId)
                 .role(Role.USER)
                 .isActive(true)
+                .registrationStatus(RegistrationStatus.PENDING)
                 .build();
 
+        log.info("Creating new user with PENDING status: {}", email);
         return userRepository.save(user);
     }
 
