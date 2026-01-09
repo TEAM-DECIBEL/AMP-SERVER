@@ -17,4 +17,30 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    private String email;
+
+    private String nickname;
+
+    private String profile_image_url;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private AuthProvider provider;
+
+    private String providerId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role;
+
+    private Boolean is_active;
+
+    public void updateExistingUser(String username, String profile_image_url, String providerId) {
+        this.nickname = username;
+        this.profile_image_url = profile_image_url;
+        this.providerId = providerId;
+    }
+
 }
+
