@@ -22,7 +22,7 @@ public class User {
 
     private String nickname;
 
-    private String profile_image_url;
+    private String profileImageUrl;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -34,11 +34,11 @@ public class User {
     @Column(nullable = false)
     private Role role;
 
-    private Boolean is_active;
+    private Boolean isActive;
 
-    public void updateExistingUser(String username, String profile_image_url, String providerId) {
+    public void updateExistingUser(String username, String profileImageUrl, String providerId) {
         this.nickname = username;
-        this.profile_image_url = profile_image_url;
+        this.profileImageUrl = profileImageUrl;
         this.providerId = providerId;
     }
 
