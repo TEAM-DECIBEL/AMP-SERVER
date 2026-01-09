@@ -1,7 +1,7 @@
 package com.amp.global.security.service;
 
 
-import com.amp.domain.user.User;
+import com.amp.domain.user.entity.User;
 import com.amp.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
