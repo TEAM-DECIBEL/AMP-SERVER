@@ -15,7 +15,8 @@ public enum S3ErrorCode implements ErrorCode {
     INVALID_DIRECTORY_ROUTE(HttpStatus.BAD_REQUEST, "S3", "003", "잘못된 디렉토리 경로입니다."),
 
     // 500 Internal Server Error
-    S3_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "S3", "001", "S3 업로드를 실패하였습니다.");
+    S3_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "S3", "001", "S3 업로드를 실패하였습니다."),
+    S3_DELETE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "S3", "002", "S3 삭제를 실패하였습니다.");
 
     private final HttpStatus httpStatus;
     private final String domain;

@@ -10,6 +10,7 @@ import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Exception;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -69,11 +70,15 @@ public class S3Service {
     }
 
     public void delete(String key) {
-        DeleteObjectRequest req = DeleteObjectRequest.builder()
-                .bucket(bucket)
-                .key(key)
-                .build();
-        s3Client.deleteObject(req);
+        try {
+            DeleteObjectRequest req = DeleteObjectRequest.builder()
+                    .bucket(bucket)
+                    .key(key)
+                    .build();
+            s3Client.deleteObject(req);
+        } catch (S3Exception e) {
+            throw new CustomException(S3ErrorCode.S3_SERVICE_DELETE_ERROR);
+        }
     }
 
     public String getPublicUrl(String key) {
