@@ -6,7 +6,6 @@ import com.amp.global.security.OnboardingCheckFilter;
 import com.amp.global.security.handler.CustomAccessDeniedHandler;
 import com.amp.global.security.handler.CustomAuthenticationEntryPoint;
 import com.amp.global.security.service.CustomOAuthUserService;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,6 +36,7 @@ public class SecurityConfig {
     private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
     private final CustomAuthenticationEntryPoint authenticationEntryPoint;
     private final CustomAccessDeniedHandler accessDeniedHandler;
+    private final OnboardingCheckFilter onboardingCheckFilter;
 
     @Value("${app.cors.allowed-origins:http://localhost:3000,http://localhost:5173}")
     private String allowedOrigins;
@@ -45,7 +45,7 @@ public class SecurityConfig {
     private String failureRedirectUri;
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, OnboardingCheckFilter onboardingCheckFilter) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 // CSRF 비활성화 (JWT 사용)
                 .csrf(csrf -> csrf.disable())
@@ -90,7 +90,10 @@ public class SecurityConfig {
                         // 나머지는 인증 필요
                         .anyRequest().authenticated()
                 )
-
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(authenticationEntryPoint)
+                        .accessDeniedHandler(accessDeniedHandler)
+                )
                 /*// 예외 처리
                 .exceptionHandling(exception -> exception
                         // 인증 실패 (401)
@@ -138,7 +141,7 @@ public class SecurityConfig {
                         .successHandler(oAuth2AuthenticationSuccessHandler)
                         // 실패 핸들러
                         .failureHandler((request, response, exception) -> {
-                            log.error("OAuth2 login failed", exception,exception.getMessage());
+                            log.error("OAuth2 login failed", exception, exception.getMessage());
                             String targetUrl = UriComponentsBuilder
                                     .fromUriString(failureRedirectUri)
                                     .queryParam("error", "oauth2_failed")
@@ -150,7 +153,7 @@ public class SecurityConfig {
 
                 // JWT 필터 추가
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterAfter(onboardingCheckFilter,JwtAuthenticationFilter.class);
+                .addFilterAfter(onboardingCheckFilter, JwtAuthenticationFilter.class);
 
 
         return http.build();
