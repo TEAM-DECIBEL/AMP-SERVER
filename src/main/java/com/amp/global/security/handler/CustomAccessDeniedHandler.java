@@ -6,30 +6,29 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
 @Component
 @Slf4j
-public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint {
+public class CustomAccessDeniedHandler implements AccessDeniedHandler {
 
     @Override
-    public void commence(HttpServletRequest request,
-                         HttpServletResponse response,
-                         AuthenticationException authException) throws IOException{
+    public void handle(HttpServletRequest request,
+                       HttpServletResponse response,
+                       AccessDeniedException accessDeniedException) throws IOException, ServletException {
 
-        log.error("Authentication failed: {} - URI: {}",
-                authException.getMessage(),
+        log.error("Access denied: {} - URI: {}",
+                accessDeniedException.getMessage(),
                 request.getRequestURI());
 
         ErrorResponseUtil.writeErrorResponse(
                 response,
-                CommonErrorCode.UNAUTHORIZED,
+                CommonErrorCode.FORBIDDEN,
                 request.getRequestURI()
         );
     }
-
 }
