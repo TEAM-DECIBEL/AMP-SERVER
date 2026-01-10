@@ -77,7 +77,7 @@ public class S3Service {
                     .build();
             s3Client.deleteObject(req);
         } catch (S3Exception e) {
-            throw new CustomException(S3ErrorCode.S3_SERVICE_DELETE_ERROR);
+            throw new CustomException(S3ErrorCode.S3_DELETE_FAILED);
         }
     }
 
