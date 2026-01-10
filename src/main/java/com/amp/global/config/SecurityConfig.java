@@ -63,6 +63,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // 공개 엔드포인트
                         .requestMatchers(
+                                "/tests3/**",
                                 "/api/auth/**",
                                 "/api/public/**",
                                 "/oauth2/**",
