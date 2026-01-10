@@ -62,7 +62,7 @@ public class S3Service {
                     .build();
 
             s3Client.putObject(req, RequestBody.fromInputStream(is, file.getSize()));
-        } catch (IOException e) {
+        } catch (IOException | S3Exception e) {
             throw new CustomException(S3ErrorCode.S3_UPLOAD_FAILED);
         }
 
