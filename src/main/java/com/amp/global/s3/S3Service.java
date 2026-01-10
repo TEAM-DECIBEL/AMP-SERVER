@@ -22,6 +22,7 @@ import java.util.UUID;
 public class S3Service {
 
     private final S3Client s3Client;
+    private final S3Properties s3Properties;
 
     @Value("${spring.cloud.aws.s3.bucket}")
     private String bucket;
@@ -77,7 +78,11 @@ public class S3Service {
     }
 
     public String getPublicUrl(String key) {
-        return "https://" + bucket + ".s3." + region + ".amazonaws.com/" + key;
+        return String.format(
+                s3Properties.getBaseUrl(),
+                s3Properties.getBucket(),
+                s3Properties.getRegion()
+        ) + key;
     }
 }
 
