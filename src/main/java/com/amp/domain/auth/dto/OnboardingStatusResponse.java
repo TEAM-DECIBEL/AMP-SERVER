@@ -1,6 +1,6 @@
 package com.amp.domain.auth.dto;
 
-import com.amp.domain.user.RegistrationStatus;
+import com.amp.domain.user.entity.RegistrationStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

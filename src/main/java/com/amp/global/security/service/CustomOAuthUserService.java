@@ -1,10 +1,10 @@
 package com.amp.global.security.service;
 
 
-import com.amp.domain.user.AuthProvider;
-import com.amp.domain.user.RegistrationStatus;
-import com.amp.domain.user.Role;
-import com.amp.domain.user.User;
+import com.amp.domain.user.entity.AuthProvider;
+import com.amp.domain.user.entity.RegistrationStatus;
+import com.amp.domain.user.entity.Role;
+import com.amp.domain.user.entity.User;
 import com.amp.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

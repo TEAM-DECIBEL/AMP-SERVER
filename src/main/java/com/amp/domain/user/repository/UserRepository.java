@@ -1,6 +1,6 @@
 package com.amp.domain.user.repository;
 
-import com.amp.domain.user.User;
+import com.amp.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

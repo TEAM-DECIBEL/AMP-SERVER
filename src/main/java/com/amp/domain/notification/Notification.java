@@ -1,7 +1,6 @@
 package com.amp.domain.notification;
 
 import com.amp.domain.announcement.entity.Announcement;
-import com.amp.domain.user.entity.User;
 import com.amp.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
