@@ -3,6 +3,8 @@ package com.amp.global.config;
 import com.amp.global.security.JwtAuthenticationFilter;
 import com.amp.global.security.OAuth2AuthenticationSuccessHandler;
 import com.amp.global.security.OnboardingCheckFilter;
+import com.amp.global.security.handler.CustomAccessDeniedHandler;
+import com.amp.global.security.handler.CustomAuthenticationEntryPoint;
 import com.amp.global.security.service.CustomOAuthUserService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +35,8 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomOAuthUserService customOAuthUserService;
     private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
+    private final CustomAuthenticationEntryPoint authenticationEntryPoint;
+    private final CustomAccessDeniedHandler accessDeniedHandler;
 
     @Value("${app.cors.allowed-origins:http://localhost:3000,http://localhost:5173}")
     private String allowedOrigins;
@@ -87,7 +91,7 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
 
-                // 예외 처리
+                /*// 예외 처리
                 .exceptionHandling(exception -> exception
                         // 인증 실패 (401)
                         .authenticationEntryPoint((request, response, authException) -> {
@@ -114,8 +118,8 @@ public class SecurityConfig {
                                     "path": "%s"
                                 }
                                 """.formatted(request.getRequestURI()));
-                        })
-                )
+                        }) 이렇게 하면 근데 결국 dispatcher servlet 이후 코드라 필터범위를 넘어가는거 같은데 테스트 해볼게요
+                )*/
 
                 // OAuth2 로그인 설정
                 .oauth2Login(oauth2 -> oauth2
