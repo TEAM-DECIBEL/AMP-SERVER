@@ -58,7 +58,6 @@ app:
 
 server:
   port: 8080
-    active: local
 
 management:
   endpoints:
