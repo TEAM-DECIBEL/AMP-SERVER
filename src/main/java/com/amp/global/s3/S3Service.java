@@ -24,17 +24,11 @@ public class S3Service {
     private final S3Client s3Client;
     private final S3Properties s3Properties;
 
-    @Value("${spring.cloud.aws.s3.bucket}")
-    private String bucket;
-
-    @Value("${spring.cloud.aws.region.static}")
-    private String region;
-
     public String upload(MultipartFile file, String dir) {
         String contentType = file.getContentType();
         if (contentType == null ||
                 !List.of("image/jpeg", "image/png", "image/webp").contains(contentType)) {
-            throw new CustomException(S3ErrorCode.INVALID_PROFILE_IMAGE);
+            throw new CustomException(S3ErrorCode.INVALID_IMAGE_IMAGE);
         }
 
         String original = file.getOriginalFilename();
@@ -45,7 +39,7 @@ public class S3Service {
         String ext = StringUtils.getFilenameExtension(original);
         if (ext == null ||
                 !List.of("jpg", "jpeg", "png", "webp").contains(ext.toLowerCase())) {
-            throw new CustomException(S3ErrorCode.INVALID_PROFILE_IMAGE);
+            throw new CustomException(S3ErrorCode.INVALID_IMAGE_IMAGE);
         }
 
         if (dir.contains("..") || dir.contains("/") || dir.contains("\\")) {
@@ -56,7 +50,7 @@ public class S3Service {
 
         try (InputStream is = file.getInputStream()) {
             PutObjectRequest req = PutObjectRequest.builder()
-                    .bucket(bucket)
+                    .bucket(s3Properties.getBucket())
                     .key(key)
                     .contentType(file.getContentType())
                     .build();
@@ -72,7 +66,7 @@ public class S3Service {
     public void delete(String key) {
         try {
             DeleteObjectRequest req = DeleteObjectRequest.builder()
-                    .bucket(bucket)
+                    .bucket(s3Properties.getBucket())
                     .key(key)
                     .build();
             s3Client.deleteObject(req);

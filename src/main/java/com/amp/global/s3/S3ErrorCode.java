@@ -10,7 +10,7 @@ import org.springframework.http.HttpStatus;
 public enum S3ErrorCode implements ErrorCode {
 
     // 400 Bad Request
-    INVALID_PROFILE_IMAGE(HttpStatus.BAD_REQUEST, "S3", "001", "이미지 파일만 업로드 가능합니다."),
+    INVALID_IMAGE_IMAGE(HttpStatus.BAD_REQUEST, "S3", "001", "이미지 파일만 업로드 가능합니다."),
     FILE_NAME_NOT_FOUND(HttpStatus.BAD_REQUEST, "S3", "002", "파일명이 없습니다."),
     INVALID_DIRECTORY_ROUTE(HttpStatus.BAD_REQUEST, "S3", "003", "잘못된 디렉토리 경로입니다."),
 
