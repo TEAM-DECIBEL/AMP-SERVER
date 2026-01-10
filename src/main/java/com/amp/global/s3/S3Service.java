@@ -1,6 +1,5 @@
 package com.amp.global.s3;
 
-import com.amp.global.common.CommonErrorCode;
 import com.amp.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,22 +33,22 @@ public class S3Service {
         String contentType = file.getContentType();
         if (contentType == null ||
                 !List.of("image/jpeg", "image/png", "image/webp").contains(contentType)) {
-            throw new CustomException(CommonErrorCode.INVALID_PROFILE_IMAGE);
+            throw new CustomException(S3ErrorCode.INVALID_PROFILE_IMAGE);
         }
 
         String original = file.getOriginalFilename();
         if (original == null) {
-            throw new CustomException(CommonErrorCode.FILE_NAME_NOT_FOUND);
+            throw new CustomException(S3ErrorCode.FILE_NAME_NOT_FOUND);
         }
 
         String ext = StringUtils.getFilenameExtension(original);
         if (ext == null ||
                 !List.of("jpg", "jpeg", "png", "webp").contains(ext.toLowerCase())) {
-            throw new CustomException(CommonErrorCode.INVALID_PROFILE_IMAGE);
+            throw new CustomException(S3ErrorCode.INVALID_PROFILE_IMAGE);
         }
 
         if (dir.contains("..") || dir.contains("/") || dir.contains("\\")) {
-            throw new CustomException(CommonErrorCode.INVALID_DIRECTORY_ROUTE);
+            throw new CustomException(S3ErrorCode.INVALID_DIRECTORY_ROUTE);
         }
 
         String key = dir + "/" + UUID.randomUUID() + "." + ext;
