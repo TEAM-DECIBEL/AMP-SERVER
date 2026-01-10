@@ -5,6 +5,7 @@ import com.amp.domain.auth.dto.OnboardingResponse;
 import com.amp.domain.auth.dto.OnboardingStatusResponse;
 import com.amp.domain.user.entity.RegistrationStatus;
 import com.amp.domain.user.entity.User;
+import com.amp.domain.user.entity.UserType;
 import com.amp.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,7 +37,7 @@ public class OnboardingService {
         return OnboardingResponse.builder()
                 .email(user.getEmail())
                 .userType(user.getUserType())
-                .name(request.getUserType().name().equals("ORGANIZER")
+                .name(request.getUserType().equals(UserType.ORGANIZER)
                         ? user.getOrganizerName()
                         : user.getNickname())
                 .status(user.getRegistrationStatus())
@@ -54,4 +55,5 @@ public class OnboardingService {
                 .isCompleted(user.isOnboardingCompleted())
                 .build();
     }
+
 }

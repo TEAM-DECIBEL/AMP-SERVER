@@ -38,7 +38,7 @@ public class User {
     @Column(nullable = false)
     private Role role;
 
-    private Boolean isActive;
+    private boolean isActive;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -50,9 +50,9 @@ public class User {
 
     private String organizerName; // 조직명도 nickName 으로 퉁칠까 회의 후 결정
 
-    public void updateExistingUser(String username, String profile_image_url) {
+    public void updateExistingUser(String username, String profileImageUrl) {
         this.nickname = username;
-        this.profileImageUrl = profile_image_url;
+        this.profileImageUrl = profileImageUrl;
     }
 
 
@@ -62,7 +62,7 @@ public class User {
 
         if (userType == UserType.ORGANIZER) {
             this.organizerName = name;
-            this.role = Role.ORGANIZER;  // 주최사는 ORGANIZER 역할
+            this.role = Role.ORGANIZER;
         } else {
             this.nickname = name;
             this.role = Role.USER;
@@ -73,4 +73,5 @@ public class User {
     public boolean isOnboardingCompleted() {
         return this.registrationStatus == RegistrationStatus.COMPLETED;
     }
+
 }
