@@ -42,4 +42,5 @@ public class OnboardingController {
         OnboardingStatusResponse status = onboardingService.getOnboardingStatus(email);
         return ResponseEntity.ok(status);
     }
+
 }

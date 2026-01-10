@@ -80,4 +80,5 @@ public class OnboardingCheckFilter extends OncePerRequestFilter {
     private boolean shouldSkipOnboardingCheck(String path) {
         return SKIP_PATHS.stream().anyMatch(path::startsWith);
     }
+
 }
