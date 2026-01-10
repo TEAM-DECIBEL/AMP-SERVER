@@ -1,5 +1,6 @@
 package com.amp.domain.announcement.entity;
 
+import com.amp.domain.user.entity.User;
 import com.amp.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
