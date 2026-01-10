@@ -30,23 +30,18 @@ public class S3Config {
     }
 
     @Bean
-    public Region awsRegion() {
-        return Region.of(region);
-    }
-
-    @Bean
-    public S3Client s3Client() {
+    public S3Client s3Client(AwsCredentialsProvider credentialsProvider) {
         return S3Client.builder()
-                .region(awsRegion())
-                .credentialsProvider(awsCredentialsProvider())
+                .region(Region.of(region))
+                .credentialsProvider(credentialsProvider)
                 .build();
     }
 
     @Bean
-    public S3Presigner s3Presigner() {
+    public S3Presigner s3Presigner(AwsCredentialsProvider credentialsProvider) {
         return S3Presigner.builder()
-                .region(awsRegion())
-                .credentialsProvider(awsCredentialsProvider())
+                .region(Region.of(region))
+                .credentialsProvider(credentialsProvider)
                 .build();
     }
 }
