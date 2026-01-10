@@ -1,7 +1,7 @@
 package com.amp.global.security;
 
-import com.amp.domain.user.RegistrationStatus;
-import com.amp.domain.user.User;
+import com.amp.domain.user.entity.RegistrationStatus;
+import com.amp.domain.user.entity.User;
 import com.amp.domain.user.repository.UserRepository;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
