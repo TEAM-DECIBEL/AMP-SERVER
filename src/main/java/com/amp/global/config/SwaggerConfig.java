@@ -1,8 +1,10 @@
-package com.amp.global.swagger;
+package com.amp.global.config;
 
 import com.amp.global.annotation.ApiErrorCodes;
 import com.amp.global.common.ErrorCode;
 import com.amp.global.response.error.BaseErrorResponse;
+import com.amp.global.swagger.ExampleHolder;
+import com.amp.global.swagger.SwaggerResponseDescription;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.models.OpenAPI;
