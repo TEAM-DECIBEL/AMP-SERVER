@@ -19,6 +19,6 @@ public enum CategoryErrorCode implements ErrorCode {
 
     @Override
     public String getCode() {
-        return domain + "_" + httpStatus.value() + "_" + numbering; //
+        return domain + "_" + httpStatus.value() + "_" + numbering;
     }
 }
