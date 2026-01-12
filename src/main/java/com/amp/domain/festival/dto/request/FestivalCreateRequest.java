@@ -1,44 +1,15 @@
 package com.amp.domain.festival.dto.request;
 
-import com.amp.domain.stage.dto.request.StageRequest;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDate;
-import java.util.List;
-
-@Getter
-@NoArgsConstructor
-public class FestivalCreateRequest {
-
-    @NotBlank(message = "공연명은 필수입니다.")
-    private String title;
-
-    @NotBlank(message = "공연 장소는 필수입니다.")
-    private String location;
-
-    @NotNull(message = "시작 날짜는 필수입니다.")
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private LocalDate startDate;
-
-    @NotNull(message = "종료 날짜는 필수입니다.")
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private LocalDate endDate;
-
-    private MultipartFile mainImageUrl;
-
-    @Valid
-    @NotEmpty(message = "공연 일시는 최소 1개 이상 입력되어야 합니다.")
-    private List<ScheduleRequest> schedules;
-
-    @Valid
-    private List<StageRequest> stages;
-
-    private List<Long> activeCategoryIds;
+public record FestivalCreateRequest(
+        @NotBlank(message = "공연명은 필수입니다.") String title,
+        @NotBlank(message = "공연 장소는 필수입니다.") String location,
+        @NotNull(message = "공연 이미지는 필수입니다.") MultipartFile mainImageUrl,
+        @NotBlank(message = "공연 일시는 필수입니다.") String schedules,
+        String stages,
+        String activeCategoryIds
+) {
 }
