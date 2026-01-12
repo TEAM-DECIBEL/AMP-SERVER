@@ -12,14 +12,14 @@ public class FestivalCreateResponse {
     private Long festivalId;
     private String mainImageUrl;
     private String title;
-    private LocalDateTime createAt;
+    private LocalDateTime createdAt;
 
     public static FestivalCreateResponse from(Festival festival) {
         return FestivalCreateResponse.builder()
                 .festivalId(festival.getId())
                 .title(festival.getTitle())
                 .mainImageUrl(festival.getMainImageUrl())
-                .createAt(festival.getCreatedAt())
+                .createdAt(festival.getCreatedAt())
                 .build();
     }
 }
