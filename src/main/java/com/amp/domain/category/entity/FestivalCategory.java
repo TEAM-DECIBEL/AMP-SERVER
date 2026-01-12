@@ -28,10 +28,10 @@ public class FestivalCategory extends BaseTimeEntity {
     private Category category;
 
     @Column(name = "display_order", nullable = false)
-    private Integer displayOrder;
+    private int displayOrder;
 
     @Column(name = "is_active", nullable = false)
-    private Boolean isActive = true;
+    private boolean isActive = true;
 
     @Builder
     public FestivalCategory(Festival festival, Category category, Integer displayOrder) {
