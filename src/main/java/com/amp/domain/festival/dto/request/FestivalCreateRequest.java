@@ -1,7 +1,9 @@
 package com.amp.domain.festival.dto.request;
 
 import com.amp.domain.stage.dto.request.StageRequest;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -29,11 +31,14 @@ public class FestivalCreateRequest {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate endDate;
 
-    private MultipartFile image;
+    private MultipartFile mainImageUrl;
 
+    @Valid
+    @NotEmpty(message = "공연 일시는 최소 1개 이상 입력되어야 합니다.")
     private List<ScheduleRequest> schedules;
 
+    @Valid
     private List<StageRequest> stages;
 
-    private List<Long> selectedCategoryIds;
+    private List<Long> activeCategoryIds;
 }
