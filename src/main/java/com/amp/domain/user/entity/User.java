@@ -40,10 +40,38 @@ public class User {
 
     private boolean isActive;
 
-    public void updateExistingUser(String username, String profileImageUrl, String providerId) {
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private RegistrationStatus registrationStatus = RegistrationStatus.PENDING;
+
+    @Enumerated(EnumType.STRING)
+    private UserType userType;
+
+    private String organizerName; // 조직명도 nickName 으로 퉁칠까 회의 후 결정
+
+    public void updateExistingUser(String username, String profileImageUrl) {
         this.nickname = username;
         this.profileImageUrl = profileImageUrl;
-        this.providerId = providerId;
+    }
+
+
+    public void completeOnboarding(UserType userType, String name) {
+        this.userType = userType;
+        this.registrationStatus = RegistrationStatus.COMPLETED;
+
+        if (userType == UserType.ORGANIZER) {
+            this.organizerName = name;
+            this.role = Role.ORGANIZER;
+        } else {
+            this.nickname = name;
+            this.role = Role.USER;
+        }
+    }
+
+
+    public boolean isOnboardingCompleted() {
+        return this.registrationStatus == RegistrationStatus.COMPLETED;
     }
 
 }
