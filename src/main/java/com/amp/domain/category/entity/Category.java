@@ -1,4 +1,4 @@
-package com.amp.domain.announcement.entity;
+package com.amp.domain.category.entity;
 
 import com.amp.domain.festival.entity.Festival;
 import com.amp.global.entity.BaseTimeEntity;
