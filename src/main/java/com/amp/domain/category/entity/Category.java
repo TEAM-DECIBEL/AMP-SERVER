@@ -19,18 +19,11 @@ public class Category extends BaseTimeEntity {
     @Column(name = "category_id")
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "festival_id", nullable = false)
-    private Festival festival;
-
     @Column(name = "category_name", nullable = false, length = 50)
     private String categoryName;
 
     @Column(name = "category_code", nullable = false, length = 50)
     private String categoryCode;
-
-    @Column(columnDefinition = "TEXT")
-    private String description;
 
     @Column(name = "display_order", nullable = false)
     private Integer displayOrder;
@@ -39,12 +32,9 @@ public class Category extends BaseTimeEntity {
     private Boolean isActive = true;
 
     @Builder
-    public Category(Festival festival, String categoryName, String categoryCode,
-                         String description, Integer displayOrder) {
-        this.festival = festival;
+    public Category(String categoryName, String categoryCode, Integer displayOrder) {
         this.categoryName = categoryName;
         this.categoryCode = categoryCode;
-        this.description = description;
         this.displayOrder = displayOrder;
         this.isActive = true;
     }
