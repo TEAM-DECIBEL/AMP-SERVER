@@ -18,7 +18,7 @@ public class FestivalScheduler {
 
     private final FestivalRepository festivalRepository;
 
-    @Scheduled(cron = "1 0 0 * * *")
+    @Scheduled(cron = "1 0 0 * * *", zone = "Asia/Seoul")
     @Transactional
     public void updateFestivalStatus() {
         log.info("공연 상태 자동 업데이트 시작");
