@@ -23,7 +23,7 @@ public class Alarm extends BaseTimeEntity {
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", nullable = false)
+    @JoinColumn(name = "festival_category_id", nullable = false)
     private FestivalCategory festivalCategory;
 
     @Column(name = "is_active", nullable = false)
