@@ -2,8 +2,10 @@ package com.amp.global.config;
 
 import com.amp.global.security.JwtAuthenticationFilter;
 import com.amp.global.security.OAuth2AuthenticationSuccessHandler;
+import com.amp.global.security.OnboardingCheckFilter;
+import com.amp.global.security.handler.CustomAccessDeniedHandler;
+import com.amp.global.security.handler.CustomAuthenticationEntryPoint;
 import com.amp.global.security.service.CustomOAuthUserService;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,6 +34,9 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomOAuthUserService customOAuthUserService;
     private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
+    private final CustomAuthenticationEntryPoint authenticationEntryPoint;
+    private final CustomAccessDeniedHandler accessDeniedHandler;
+    private final OnboardingCheckFilter onboardingCheckFilter;
 
     @Value("${app.cors.allowed-origins:http://localhost:3000,http://localhost:5173}")
     private String allowedOrigins;
@@ -77,14 +82,19 @@ public class SecurityConfig {
                                 "/swagger-resources/**" // 스웨거랑 api 독스는 배포전 반드시 따로 관리 해야함 제발 나에게 상기시켜줘
                         ).permitAll()
 
+                        .requestMatchers("/api/auth/onboarding/**").authenticated() // 온보딩 api는 일단 소셜로그인 거친 이후로 접근 가능
+
                         // 관리자 권한
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
                         // 나머지는 인증 필요
                         .anyRequest().authenticated()
                 )
-
-                // 예외 처리
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(authenticationEntryPoint)
+                        .accessDeniedHandler(accessDeniedHandler)
+                )
+                /*// 예외 처리
                 .exceptionHandling(exception -> exception
                         // 인증 실패 (401)
                         .authenticationEntryPoint((request, response, authException) -> {
@@ -111,8 +121,8 @@ public class SecurityConfig {
                                     "path": "%s"
                                 }
                                 """.formatted(request.getRequestURI()));
-                        })
-                )
+                        }) 이렇게 하면 근데 결국 dispatcher servlet 이후 코드라 필터범위를 넘어가는거 같은데 테스트 해볼게요
+                )*/
 
                 // OAuth2 로그인 설정
                 .oauth2Login(oauth2 -> oauth2
@@ -131,18 +141,20 @@ public class SecurityConfig {
                         .successHandler(oAuth2AuthenticationSuccessHandler)
                         // 실패 핸들러
                         .failureHandler((request, response, exception) -> {
-                            log.error("OAuth2 login failed", exception);
+                            log.error("OAuth2 login failed", exception, exception.getMessage());
                             String targetUrl = UriComponentsBuilder
                                     .fromUriString(failureRedirectUri)
                                     .queryParam("error", "oauth2_failed")
-                                    .queryParam("message", exception.getMessage())
+                                    .queryParam("message", "로그인에 실패 했습니다.") //todo 에러 모두 커스텀해서 넘길 수 있는지 확인
                                     .build().toUriString();
                             response.sendRedirect(targetUrl);
                         })
                 )
 
                 // JWT 필터 추가
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(onboardingCheckFilter, JwtAuthenticationFilter.class);
+
 
         return http.build();
     }

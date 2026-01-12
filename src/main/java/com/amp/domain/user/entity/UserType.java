@@ -1,8 +1,6 @@
 package com.amp.domain.user.entity;
 
-public enum Role {
+public enum UserType {
     USER,
-    ORGANIZER,
-    ADMIN
-
+    ORGANIZER
 }
