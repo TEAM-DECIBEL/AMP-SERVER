@@ -35,7 +35,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
 public class FestivalService {
 
@@ -74,7 +73,6 @@ public class FestivalService {
         try {
             imageKey = uploadImage(request.mainImage());
             String publicUrl = s3Service.getPublicUrl(imageKey);
-            log.info("이미지 업로드 완료: url={}", publicUrl);
 
             Festival festival = Festival.builder()
                     .title(request.title())
@@ -87,18 +85,14 @@ public class FestivalService {
             festival.updateStatus();
 
             Festival savedFestival = festivalRepository.save(festival);
-            log.info("Festival 생성 완료: festivalId={}", savedFestival.getId());
-
             createSchedules(savedFestival, schedules, startDate);
 
             if (stages != null && !stages.isEmpty()) {
                 createStages(savedFestival, stages);
-                log.info("Stage 생성 완료: count={}", stages.size());
             }
 
             if (activeCategoryIds != null && !activeCategoryIds.isEmpty()) {
                 linkCategories(savedFestival, activeCategoryIds);
-                log.info("Category 연결 완료: count={}", activeCategoryIds.size());
             }
 
             return FestivalCreateResponse.from(savedFestival);
@@ -107,13 +101,10 @@ public class FestivalService {
             if (imageKey != null) {
                 try {
                     s3Service.delete(imageKey);
-                    log.info("롤백: 이미지 삭제 완료: url={}", imageKey);
                 } catch (Exception deleteException) {
-                    log.error("이미지 삭제 실패: {}", imageKey, deleteException);
                 }
             }
 
-            log.error("Festival 생성 실패", e);
             throw new CustomException(FestivalErrorCode.FESTIVAL_CREATE_FAILED);
         }
     }
@@ -123,7 +114,6 @@ public class FestivalService {
             return objectMapper.readValue(json, new TypeReference<List<ScheduleRequest>>() {
             });
         } catch (Exception e) {
-            log.error("Schedule 파싱 실패: {}", json, e);
             throw new CustomException(FestivalErrorCode.INVALID_SCHEDULE_FORMAT);
         }
     }
@@ -136,7 +126,6 @@ public class FestivalService {
             return objectMapper.readValue(json, new TypeReference<List<StageRequest>>() {
             });
         } catch (Exception e) {
-            log.error("Stage 파싱 실패: {}", json, e);
             throw new CustomException(FestivalErrorCode.INVALID_STAGE_FORMAT);
         }
     }
@@ -149,7 +138,6 @@ public class FestivalService {
             return objectMapper.readValue(json, new TypeReference<List<Long>>() {
             });
         } catch (Exception e) {
-            log.error("CategoryIds 파싱 실패: {}", json, e);
             throw new CustomException(FestivalErrorCode.INVALID_CATEGORY_FORMAT);
         }
     }
@@ -170,7 +158,6 @@ public class FestivalService {
         try {
             return s3Service.upload(image, "festivals");
         } catch (Exception e) {
-            log.error("이미지 업로드 실패", e);
             throw new CustomException(S3ErrorCode.S3_UPLOAD_FAILED);
         }
     }
