@@ -1,6 +1,5 @@
 package com.amp.domain.category.entity;
 
-import com.amp.domain.festival.entity.Festival;
 import com.amp.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -25,17 +24,17 @@ public class Category extends BaseTimeEntity {
     @Column(name = "category_code", nullable = false, length = 50)
     private String categoryCode;
 
-    @Column(name = "display_order", nullable = false)
-    private Integer displayOrder;
+    @Column(columnDefinition = "TEXT")
+    private String description;
 
     @Column(name = "is_active", nullable = false)
-    private Boolean isActive = true;
+    private boolean isActive = true;
 
     @Builder
-    public Category(String categoryName, String categoryCode, Integer displayOrder) {
+    public Category(String categoryName, String categoryCode, String description) {
         this.categoryName = categoryName;
         this.categoryCode = categoryCode;
-        this.displayOrder = displayOrder;
+        this.description = description;
         this.isActive = true;
     }
 }
