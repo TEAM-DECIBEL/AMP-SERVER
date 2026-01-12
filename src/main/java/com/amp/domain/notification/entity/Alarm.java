@@ -1,6 +1,6 @@
 package com.amp.domain.notification.entity;
 
-import com.amp.domain.announcement.entity.Category;
+import com.amp.domain.category.entity.Category;
 import com.amp.domain.user.entity.User;
 import com.amp.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
