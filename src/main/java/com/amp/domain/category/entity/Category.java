@@ -28,16 +28,12 @@ public class Category extends BaseTimeEntity {
     @Column(name = "category_code", nullable = false, length = 50)
     private String categoryCode;
 
-    @Column(columnDefinition = "TEXT")
-    private String description;
-
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
     @Builder
-    public Category(String categoryName, String categoryCode, String description) {
+    public Category(String categoryName, String categoryCode) {
         this.categoryName = categoryName;
         this.categoryCode = categoryCode;
-        this.description = description;
     }
 }
