@@ -27,9 +27,17 @@ public class FestivalCategory extends BaseTimeEntity {
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
+    @Column(name = "display_order", nullable = false)
+    private int displayOrder;
+
+    @Column(name = "is_active", nullable = false)
+    private boolean isActive = true;
+
     @Builder
-    public FestivalCategory(Festival festival, Category category) {
+    public FestivalCategory(Festival festival, Category category, Integer displayOrder) {
         this.festival = festival;
         this.category = category;
+        this.displayOrder = displayOrder;
+        this.isActive = true;
     }
 }
