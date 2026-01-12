@@ -33,7 +33,8 @@ public enum CommonErrorCode implements ErrorCode {
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "500_001", "서버 내부 오류가 발생했습니다.");
 
     private final HttpStatus httpStatus;
-    private final String code;
+    private final String domain;
+    private final String numbering;
     private final String msg;
 
     @Override
@@ -49,5 +50,6 @@ public enum CommonErrorCode implements ErrorCode {
     @Override
     public HttpStatus getHttpStatus() {
         return httpStatus;
+        return domain + "_" + httpStatus.value() + "_" + numbering;
     }
 }
