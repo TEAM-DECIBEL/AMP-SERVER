@@ -1,4 +1,4 @@
-package com.amp.domain.announcement.dto.response;
+package com.amp.domain.notice.dto.response;
 
 public record CategoryData(
         Long categoryId,

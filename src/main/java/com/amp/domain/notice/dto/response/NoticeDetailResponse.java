@@ -1,9 +1,9 @@
-package com.amp.domain.announcement.dto.response;
+package com.amp.domain.notice.dto.response;
 
 import java.time.LocalDateTime;
 
-public record AnnouncementDetailResponse(
-        Long announcementId,
+public record NoticeDetailResponse(
+        Long noticeId,
         Long festivalId,
         String festivalTitle,
         CategoryData category,
