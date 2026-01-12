@@ -1,7 +1,6 @@
 package com.amp.domain.announcement.entity;
 
-import com.amp.domain.category.entity.Category;
-import com.amp.domain.festival.entity.Festival;
+import com.amp.domain.category.entity.FestivalCategory;
 import com.amp.domain.user.entity.User;
 import com.amp.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
@@ -25,12 +24,8 @@ public class Announcement extends BaseTimeEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "festival_id", nullable = false)
-    private Festival festival;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", nullable = false)
-    private Category category;
+    @JoinColumn(name = "festival_category_id", nullable = false)
+    private FestivalCategory festivalCategory;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -52,10 +47,9 @@ public class Announcement extends BaseTimeEntity {
     private LocalDateTime deletedAt;
 
     @Builder
-    public Announcement(Festival festival, Category category, User user,
+    public Announcement(FestivalCategory festivalCategory, User user,
                         String title, String content, String imageUrl, Boolean isPinned) {
-        this.festival = festival;
-        this.category = category;
+        this.festivalCategory = festivalCategory;
         this.user = user;
         this.title = title;
         this.content = content;
