@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 @RequiredArgsConstructor
-public enum SuccessStatus implements SuccessCode{
+public enum SuccessStatus implements SuccessCode {
     // 공통 성공 코드
     OK(HttpStatus.OK, "COMMON_200", "요청이 성공적으로 처리되었습니다."),
     CREATED(HttpStatus.CREATED, "COMMON_201", "리소스가 성공적으로 생성되었습니다."),
