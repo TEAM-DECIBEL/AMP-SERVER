@@ -10,7 +10,6 @@ import com.amp.domain.festival.dto.request.ScheduleRequest;
 import com.amp.domain.festival.dto.response.FestivalCreateResponse;
 import com.amp.domain.festival.entity.Festival;
 import com.amp.domain.festival.entity.FestivalSchedule;
-import com.amp.domain.festival.entity.FestivalStatus;
 import com.amp.domain.festival.exception.FestivalErrorCode;
 import com.amp.domain.festival.repository.FestivalRepository;
 import com.amp.domain.festival.repository.FestivalScheduleRepository;
@@ -73,7 +72,7 @@ public class FestivalService {
 
         String imageKey = null;
         try {
-            imageKey = uploadImage(request.mainImageUrl());
+            imageKey = uploadImage(request.mainImage());
             String publicUrl = s3Service.getPublicUrl(imageKey);
             log.info("이미지 업로드 완료: url={}", publicUrl);
 
