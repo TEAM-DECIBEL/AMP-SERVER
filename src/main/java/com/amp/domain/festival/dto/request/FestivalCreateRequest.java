@@ -2,6 +2,7 @@ package com.amp.domain.festival.dto.request;
 
 import com.amp.domain.stage.dto.request.StageRequest;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -20,11 +21,11 @@ public class FestivalCreateRequest {
     @NotBlank(message = "공연 장소는 필수입니다.")
     private String location;
 
-    @NotBlank(message = "시작 날짜는 필수입니다.")
+    @NotNull(message = "시작 날짜는 필수입니다.")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate startDate;
 
-    @NotBlank(message = "종료 날짜는 필수입니다.")
+    @NotNull(message = "종료 날짜는 필수입니다.")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate endDate;
 
