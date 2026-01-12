@@ -28,7 +28,7 @@ public class Category extends BaseTimeEntity {
     private String description;
 
     @Column(name = "is_active", nullable = false)
-    private Boolean isActive = true;
+    private boolean isActive = true;
 
     @Builder
     public Category(String categoryName, String categoryCode, String description) {
