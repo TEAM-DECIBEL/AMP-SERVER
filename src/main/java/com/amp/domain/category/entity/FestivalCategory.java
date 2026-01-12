@@ -31,16 +31,12 @@ public class FestivalCategory extends BaseTimeEntity {
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
-    @Column(name = "display_order", nullable = false)
-    private int displayOrder;
-
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
     @Builder
-    public FestivalCategory(Festival festival, Category category, int displayOrder) {
+    public FestivalCategory(Festival festival, Category category) {
         this.festival = festival;
         this.category = category;
-        this.displayOrder = displayOrder;
     }
 }
