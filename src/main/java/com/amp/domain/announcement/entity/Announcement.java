@@ -29,10 +29,6 @@ public class Announcement extends BaseTimeEntity {
     private FestivalCategory festivalCategory;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "festival_category_id", nullable = false)
-    private FestivalCategory festivalCategory;
-
-    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
