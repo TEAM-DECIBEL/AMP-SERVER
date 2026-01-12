@@ -21,7 +21,9 @@ import com.amp.global.annotation.LogExecutionTime;
 import com.amp.global.exception.CustomException;
 import com.amp.global.s3.S3ErrorCode;
 import com.amp.global.s3.S3Service;
-import lombok.AllArgsConstructor;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,7 +37,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class FestivalService {
 
     private final FestivalRepository festivalRepository;
@@ -44,90 +46,115 @@ public class FestivalService {
     private final FestivalScheduleRepository festivalScheduleRepository;
     private final FestivalCategoryRepository festivalCategoryRepository;
     private final S3Service s3Service;
-
-    // 1. 유효성 검증
-    // 2. 이미지 업로드
-    // 3. 이미지와 함께 festival 저장
-    // schedule, stage, category 도 같이 저장
-    // 실패시 롤백
+    private final ObjectMapper objectMapper;
 
     @Transactional
     public FestivalCreateResponse createFestival(FestivalCreateRequest request) {
 
-        // 카테고리 유효성 검증
-        validateCategories(request.getActiveCategoryIds());
+        List<ScheduleRequest> schedules = parseSchedules(request.schedules());
+        List<StageRequest> stages = parseStages(request.stages());
+        List<Long> activeCategoryIds = parseCategoryIds(request.activeCategoryIds());
 
-        // startDate와 endDate에 날짜 저장
-        LocalDate startDate = request.getSchedules().stream()
+        if (schedules == null || schedules.isEmpty()) {
+            throw new CustomException(FestivalErrorCode.SCHEDULES_REQUIRED);
+        }
+
+        validateCategories(activeCategoryIds);
+
+        LocalDate startDate = schedules.stream()
                 .map(ScheduleRequest::getFestivalDate)
                 .min(Comparator.naturalOrder())
                 .orElseThrow(() -> new CustomException(FestivalErrorCode.INVALID_FESTIVAL_PERIOD));
 
-        LocalDate endDate = request.getSchedules().stream()
+        LocalDate endDate = schedules.stream()
                 .map(ScheduleRequest::getFestivalDate)
                 .max(Comparator.naturalOrder())
                 .orElseThrow(() -> new CustomException(FestivalErrorCode.INVALID_FESTIVAL_PERIOD));
 
-        // 이미지 업로드
-        String imageUrl = null;
+        String imageKey = null;
         try {
-            if (request.getMainImageUrl() != null && !request.getMainImageUrl().isEmpty()) {
-                imageUrl = uploadImage(request.getMainImageUrl());
-                log.info("이미지 업로드 완료: url={}", imageUrl);
-            }
+            imageKey = uploadImage(request.mainImageUrl());
+            String publicUrl = s3Service.getPublicUrl(imageKey);
+            log.info("이미지 업로드 완료: url={}", publicUrl);
 
-            // 페스티벌 객체 생성
             Festival festival = Festival.builder()
-                    .title(request.getTitle())
-                    .location(request.getLocation())
+                    .title(request.title())
+                    .location(request.location())
                     .startDate(startDate)
                     .endDate(endDate)
-                    .mainImageUrl(imageUrl)
-                    .status(FestivalStatus.UPCOMING)
+                    .mainImageUrl(publicUrl)
                     .build();
+
+            festival.updateStatus();
 
             Festival savedFestival = festivalRepository.save(festival);
             log.info("Festival 생성 완료: festivalId={}", savedFestival.getId());
 
-            // 4. FestivalSchedule 생성 (dayNumber 자동 계산)
-            // 사실 최소 1개 이상 값이라서 검사 안 해도 되긴함
-            if (request.getSchedules() != null && !request.getSchedules().isEmpty()) {
-                createSchedules(savedFestival, request);
-                log.info("Schedule 생성 완료: count={}", request.getSchedules().size());
+            createSchedules(savedFestival, schedules, startDate);
+
+            if (stages != null && !stages.isEmpty()) {
+                createStages(savedFestival, stages);
+                log.info("Stage 생성 완료: count={}", stages.size());
             }
 
-            // 5. Stage 생성
-            if (request.getStages() != null && !request.getStages().isEmpty()) {
-                createStages(savedFestival, request.getStages());
-                log.info("Stage 생성 완료: count={}", request.getStages().size());
-            }
-
-            // 6. 활성화 카테고리 Category 연결
-            if (request.getActiveCategoryIds() != null && !request.getActiveCategoryIds().isEmpty()) {
-                linkCategories(savedFestival, request.getActiveCategoryIds());
-                log.info("Category 연결 완료: count={}", request.getActiveCategoryIds().size());
+            if (activeCategoryIds != null && !activeCategoryIds.isEmpty()) {
+                linkCategories(savedFestival, activeCategoryIds);
+                log.info("Category 연결 완료: count={}", activeCategoryIds.size());
             }
 
             return FestivalCreateResponse.from(savedFestival);
 
         } catch (Exception e) {
-            // 이미지 롤백
-            if (imageUrl != null) {
+            if (imageKey != null) {
                 try {
-                    s3Service.delete(imageUrl);
-                    log.info("롤백: 이미지 삭제 완료: url={}", imageUrl);
+                    s3Service.delete(imageKey);
+                    log.info("롤백: 이미지 삭제 완료: url={}", imageKey);
                 } catch (Exception deleteException) {
-                    log.error("이미지 삭제 실패: {}", imageUrl, deleteException);
+                    log.error("이미지 삭제 실패: {}", imageKey, deleteException);
                 }
             }
 
             log.error("Festival 생성 실패", e);
             throw new CustomException(FestivalErrorCode.FESTIVAL_CREATE_FAILED);
         }
-
     }
 
-    // 존재하지 않는 카테고리
+    private List<ScheduleRequest> parseSchedules(String json) {
+        try {
+            return objectMapper.readValue(json, new TypeReference<List<ScheduleRequest>>() {
+            });
+        } catch (Exception e) {
+            log.error("Schedule 파싱 실패: {}", json, e);
+            throw new CustomException(FestivalErrorCode.INVALID_SCHEDULE_FORMAT);
+        }
+    }
+
+    private List<StageRequest> parseStages(String json) {
+        if (json == null || json.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            return objectMapper.readValue(json, new TypeReference<List<StageRequest>>() {
+            });
+        } catch (Exception e) {
+            log.error("Stage 파싱 실패: {}", json, e);
+            throw new CustomException(FestivalErrorCode.INVALID_STAGE_FORMAT);
+        }
+    }
+
+    private List<Long> parseCategoryIds(String json) {
+        if (json == null || json.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            return objectMapper.readValue(json, new TypeReference<List<Long>>() {
+            });
+        } catch (Exception e) {
+            log.error("CategoryIds 파싱 실패: {}", json, e);
+            throw new CustomException(FestivalErrorCode.INVALID_CATEGORY_FORMAT);
+        }
+    }
+
     private void validateCategories(List<Long> categoryIds) {
         if (categoryIds == null || categoryIds.isEmpty()) {
             return;
@@ -139,22 +166,18 @@ public class FestivalService {
         }
     }
 
-
     @LogExecutionTime("이미지 업로드")
     private String uploadImage(MultipartFile image) {
         try {
-            return s3Service.upload(image, "festivals/");
+            return s3Service.upload(image, "festivals");
         } catch (Exception e) {
             log.error("이미지 업로드 실패", e);
             throw new CustomException(S3ErrorCode.S3_UPLOAD_FAILED);
         }
-
     }
 
-    private void createSchedules(Festival festival, FestivalCreateRequest request) {
-        LocalDate startDate = festival.getStartDate();
-
-        List<FestivalSchedule> schedules = request.getSchedules().stream()
+    private void createSchedules(Festival festival, List<ScheduleRequest> schedules, LocalDate startDate) {
+        List<FestivalSchedule> festivalSchedules = schedules.stream()
                 .map(req -> {
                     int dayNumber = (int) ChronoUnit.DAYS.between(startDate, req.getFestivalDate()) + 1;
 
@@ -167,7 +190,7 @@ public class FestivalService {
                 })
                 .collect(Collectors.toList());
 
-        festivalScheduleRepository.saveAll(schedules);
+        festivalScheduleRepository.saveAll(festivalSchedules);
     }
 
     private void createStages(Festival festival, List<StageRequest> stageRequests) {
