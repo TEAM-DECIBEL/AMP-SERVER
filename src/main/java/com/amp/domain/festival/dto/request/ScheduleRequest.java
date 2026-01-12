@@ -16,6 +16,4 @@ public class ScheduleRequest {
     @NotNull(message = "공연 시간은 필수입니다.")
     @DateTimeFormat(pattern = "HH:mm")
     private LocalTime festivalTime;
-
-    private String description;
 }
