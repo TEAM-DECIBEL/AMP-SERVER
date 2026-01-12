@@ -16,9 +16,11 @@ import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
 import io.swagger.v3.oas.models.servers.Server;
 import org.springdoc.core.customizers.OperationCustomizer;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -27,19 +29,36 @@ import java.util.stream.Collectors;
 @OpenAPIDefinition(
         info = @Info(
                 title = "AMP API 명세서",
+                description = "AMP API 명세서",
                 version = "v1"
         )
 )
 @Configuration
 public class SwaggerConfig {
 
+    @Value("${swagger.server.local.url:http://localhost:8080}")
+    private String localServerUrl;
+
+    @Value("${swagger.server.prod.url:https://ampnotice.kr}")
+    private String prodServerUrl;
+
     @Bean
     public OpenAPI openAPI() {
-        Server localServer = new Server().url("http://localhost:8080")
-                .description("Local Server");
+        List<Server> servers = new ArrayList<>();
 
-        return new OpenAPI()
-                .servers(List.of(localServer));
+        if (!localServerUrl.isEmpty()) {
+            servers.add(new Server()
+                    .url(localServerUrl)
+                    .description("Local Server"));
+        }
+
+        if (!prodServerUrl.isEmpty()) {
+            servers.add(new Server()
+                    .url(prodServerUrl)
+                    .description("Prod Server"));
+        }
+
+        return new OpenAPI().servers(servers);
     }
 
     @Bean
