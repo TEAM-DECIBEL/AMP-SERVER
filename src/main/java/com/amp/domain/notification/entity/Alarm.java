@@ -1,4 +1,4 @@
-package com.amp.domain.notification;
+package com.amp.domain.notification.entity;
 
 import com.amp.domain.category.entity.FestivalCategory;
 import com.amp.domain.user.entity.User;

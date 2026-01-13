@@ -7,9 +7,13 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLRestriction;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "festival_category")
+@SQLRestriction("deleted_at IS NULL")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class FestivalCategory extends BaseTimeEntity {
@@ -27,17 +31,12 @@ public class FestivalCategory extends BaseTimeEntity {
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
-    @Column(name = "display_order", nullable = false)
-    private int displayOrder;
-
-    @Column(name = "is_active", nullable = false)
-    private boolean isActive = true;
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 
     @Builder
-    public FestivalCategory(Festival festival, Category category, Integer displayOrder) {
+    public FestivalCategory(Festival festival, Category category) {
         this.festival = festival;
         this.category = category;
-        this.displayOrder = displayOrder;
-        this.isActive = true;
     }
 }

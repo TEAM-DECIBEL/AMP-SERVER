@@ -82,6 +82,8 @@ public class SecurityConfig {
                                 "/swagger-resources/**" // 스웨거랑 api 독스는 배포전 반드시 따로 관리 해야함 제발 나에게 상기시켜줘
                         ).permitAll()
 
+                         // 주최사 권한
+                        .requestMatchers("/api/organizer/**").hasRole("ORGANIZER")
                         .requestMatchers("/api/auth/onboarding/**").authenticated() // 온보딩 api는 일단 소셜로그인 거친 이후로 접근 가능
 
                         // 관리자 권한
