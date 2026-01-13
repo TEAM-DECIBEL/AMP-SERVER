@@ -71,6 +71,10 @@ public class FestivalService {
             throw new CustomException(FestivalErrorCode.SCHEDULES_REQUIRED);
         }
 
+        if (request.mainImage() == null || request.mainImage().isEmpty()) {
+            throw new CustomException(FestivalErrorCode.MISSING_MAIN_IMAGE);
+        }
+
         validateCategories(activeCategoryIds);
 
         LocalDate startDate = schedules.stream()
@@ -121,7 +125,14 @@ public class FestivalService {
 
             return FestivalCreateResponse.from(savedFestival);
 
-        } catch (Exception e) {
+        } catch (CustomException e) {
+            if (imageKey != null) {
+                s3Service.delete(imageKey);
+            }
+
+            throw e;
+        } catch (
+                Exception e) {
             if (imageKey != null) {
                 try {
                     s3Service.delete(imageKey);
