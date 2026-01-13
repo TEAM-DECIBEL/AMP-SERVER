@@ -1,4 +1,4 @@
-package com.amp.domain.announcement.entity;
+package com.amp.domain.notice.entity;
 
 import com.amp.domain.user.entity.User;
 import com.amp.global.entity.BaseTimeEntity;
@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
         ))
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class UserSavedAnnouncement extends BaseTimeEntity {
+public class UserSavedNotice extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,10 +29,10 @@ public class UserSavedAnnouncement extends BaseTimeEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "announcement_id", nullable = false)
-    private Announcement announcement;
+    private Notice announcement;
 
     @Builder
-    public UserSavedAnnouncement(User user, Announcement announcement) {
+    public UserSavedNotice(User user, Notice announcement) {
         this.user = user;
         this.announcement = announcement;
     }
