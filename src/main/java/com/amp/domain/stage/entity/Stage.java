@@ -40,4 +40,9 @@ public class Stage extends BaseTimeEntity {
         this.title = title;
         this.location = location;
     }
+
+    public void update(String title, String location) {
+        this.title = title;
+        this.location = location;
+    }
 }
