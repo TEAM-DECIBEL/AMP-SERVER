@@ -49,7 +49,7 @@ public class FestivalController {
     @PatchMapping("/{festivalId}")
     public ResponseEntity<BaseResponse<FestivalUpdateResponse>> updateFestival(
             @PathVariable Long festivalId,
-            @RequestBody FestivalUpdateRequest request) {
+            @RequestBody @Valid FestivalUpdateRequest request) {
         FestivalUpdateResponse response = festivalService.updateFestival(festivalId, request);
         return ResponseEntity
                 .status(SuccessStatus.FESTIVAL_UPDATE_SUCCESS.getHttpStatus())
