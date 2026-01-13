@@ -1,4 +1,4 @@
-package com.amp.domain.announcement.entity;
+package com.amp.domain.notice.entity;
 
 import com.amp.domain.category.entity.FestivalCategory;
 import com.amp.domain.festival.entity.Festival;
@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 @SQLRestriction("deleted_at IS NULL")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Announcement extends BaseTimeEntity {
+public class Notice extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "announcement_id")
@@ -52,8 +52,8 @@ public class Announcement extends BaseTimeEntity {
     private LocalDateTime deletedAt;
 
     @Builder
-    public Announcement(Festival festival, FestivalCategory festivalCategory, User user,
-                        String title, String content, String imageUrl, Boolean isPinned) {
+    public Notice(Festival festival, FestivalCategory festivalCategory, User user,
+                  String title, String content, String imageUrl, Boolean isPinned) {
         this.festival = festival;
         this.festivalCategory = festivalCategory;
         this.user = user;
