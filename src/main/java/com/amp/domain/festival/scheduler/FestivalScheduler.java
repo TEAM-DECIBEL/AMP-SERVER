@@ -25,12 +25,16 @@ public class FestivalScheduler {
         List<Festival> activeFestivals = festivalRepository.findAllByStatusNot(FestivalStatus.COMPLETED);
 
         activeFestivals.forEach(festival -> {
-            FestivalStatus oldStatus = festival.getStatus();
-            festival.updateStatus();
+            try {
+                FestivalStatus oldStatus = festival.getStatus();
+                festival.updateStatus();
+                FestivalStatus newStatus = festival.getStatus();
 
-            if (oldStatus != festival.getStatus()) {
-                log.info("공연 [ID: {}] 상태 변경: {} -> {}",
-                        festival.getId(), oldStatus, festival.getStatus());
+                if (oldStatus != newStatus) {
+                    log.info("공연 [ID: {}] 상태 변경: {} -> {}", festival.getId(), oldStatus, newStatus);
+                }
+            } catch (Exception e) {
+                log.error("공연 [ID: {}] 상태 업데이트 실패", festival.getId(), e);
             }
         });
     }
