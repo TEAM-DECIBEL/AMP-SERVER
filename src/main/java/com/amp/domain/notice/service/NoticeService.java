@@ -1,18 +1,22 @@
 package com.amp.domain.notice.service;
 
-import com.amp.domain.notice.dto.response.NoticeDetailResponse;
 import com.amp.domain.notice.dto.response.Author;
 import com.amp.domain.notice.dto.response.CategoryData;
+import com.amp.domain.notice.dto.response.NoticeDetailResponse;
 import com.amp.domain.notice.entity.Notice;
 import com.amp.domain.notice.exception.NoticeErrorCode;
 import com.amp.domain.notice.exception.NoticeException;
 import com.amp.domain.notice.repository.NoticeRepository;
 import com.amp.domain.notice.repository.UserSavedNoticeRepository;
 import com.amp.domain.user.entity.User;
+import com.amp.domain.user.exception.UserErrorCode;
 import com.amp.domain.user.repository.UserRepository;
+import com.amp.global.exception.CustomException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,7 +30,7 @@ public class NoticeService {
     private final UserSavedNoticeRepository userSavedNoticeRepository;
     private final UserRepository userRepository;
 
-    public NoticeDetailResponse getNoticeDetail(Long noticeId, UserDetails userDetails) {
+    public NoticeDetailResponse getNoticeDetail(Long noticeId) {
 
         // 공지 조회 (존재 검증 포함)
         Notice notice = noticeRepository.findById(noticeId)
@@ -37,24 +41,27 @@ public class NoticeService {
         // 로그인 여부에 따른 저장 여부 판단
         boolean isSaved = false;
 
-        if (userDetails != null) {
-            //Todo 동찬한테 물어보고 반영
-            Long userId = userDetails.getAuthorities().
-                    ㅁ아ㅣㅁㄴ
-                    너아ㅣㅁ어ㅣㅏㅁ;
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
 
-            User user = userRepository.findById(userId)
-                    .orElse(null);
+        // 로그인한 사용자만 북마크 여부 확인
+        if (authentication != null &&
+                authentication.isAuthenticated() &&
+                !(authentication instanceof AnonymousAuthenticationToken)) {
+            String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+            User user = userRepository.findByEmail(userEmail).orElseThrow(() ->
+                    new CustomException(UserErrorCode.USER_NOT_FOUND));
+
 
             isSaved = userSavedNoticeRepository
                     .existsByNoticeAndUser(notice, user);
         }
 
         CategoryData category = new CategoryData(
-                        notice.getFestivalCategory().getId(),
-                        notice.getFestivalCategory().getCategory().getCategoryName(),
-                        notice.getFestivalCategory().getCategory().getCategoryCode()
-                );
+                notice.getFestivalCategory().getId(),
+                notice.getFestivalCategory().getCategory().getCategoryName(),
+                notice.getFestivalCategory().getCategory().getCategoryCode()
+        );
 
         Author author = new Author(
                 notice.getUser().getId(),

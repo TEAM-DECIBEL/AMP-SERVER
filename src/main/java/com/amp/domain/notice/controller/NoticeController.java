@@ -24,7 +24,7 @@ public class NoticeController {
             @Valid @RequestParam Long noticeId,
             @AuthenticationPrincipal UserDetails userDetails
     ) {
-        NoticeDetailResponse response = noticeService.getNoticeDetail(noticeId, userDetails);
+        NoticeDetailResponse response = noticeService.getNoticeDetail(noticeId);
         return ResponseEntity.ok(response);
     }
 
