@@ -13,9 +13,14 @@ import com.amp.domain.festival.entity.FestivalSchedule;
 import com.amp.domain.festival.exception.FestivalErrorCode;
 import com.amp.domain.festival.repository.FestivalRepository;
 import com.amp.domain.festival.repository.FestivalScheduleRepository;
+import com.amp.domain.organizer.entity.Organizer;
+import com.amp.domain.organizer.repository.OrganizerRepository;
 import com.amp.domain.stage.dto.request.StageRequest;
 import com.amp.domain.stage.entity.Stage;
 import com.amp.domain.stage.repository.StageRepository;
+import com.amp.domain.user.entity.User;
+import com.amp.domain.user.exception.UserErrorCode;
+import com.amp.domain.user.repository.UserRepository;
 import com.amp.global.annotation.LogExecutionTime;
 import com.amp.global.exception.CustomException;
 import com.amp.global.s3.S3ErrorCode;
@@ -24,6 +29,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -43,11 +49,19 @@ public class FestivalService {
     private final CategoryRepository categoryRepository;
     private final FestivalScheduleRepository festivalScheduleRepository;
     private final FestivalCategoryRepository festivalCategoryRepository;
+    private final OrganizerRepository organizerRepository;
+    private final UserRepository userRepository;
+
     private final S3Service s3Service;
+
     private final ObjectMapper objectMapper;
 
     @Transactional
     public FestivalCreateResponse createFestival(FestivalCreateRequest request) {
+
+        String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(userEmail).orElseThrow(() ->
+                new CustomException(UserErrorCode.USER_NOT_FOUND));
 
         List<ScheduleRequest> schedules = parseSchedules(request.schedules());
         List<StageRequest> stages = parseStages(request.stages());
@@ -85,6 +99,16 @@ public class FestivalService {
             festival.updateStatus();
 
             Festival savedFestival = festivalRepository.save(festival);
+
+            Organizer organizer = Organizer.builder()
+                    .user(user)
+                    .festival(savedFestival)
+                    .organizerName(user.getNickname())
+                    .contactEmail(user.getEmail())
+                    .build();
+
+            organizerRepository.save(organizer);
+
             createSchedules(savedFestival, schedules, startDate);
 
             if (stages != null && !stages.isEmpty()) {

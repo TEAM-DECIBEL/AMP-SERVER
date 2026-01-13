@@ -12,7 +12,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/festivals")
+@RequestMapping("/api/organizer/v1/festivals")
 @RequiredArgsConstructor
 public class FestivalController {
 
