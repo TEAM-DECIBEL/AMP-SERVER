@@ -11,15 +11,14 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/auth/Announcement")
+@RequestMapping("/api/common/v1/notices")
 @RequiredArgsConstructor
 @Slf4j
 public class NoticeController {
 
     private final NoticeService noticeService;
 
-    // 공지 상세 조회 api
-    @PostMapping("/complete")
+    @GetMapping("/{noticeId}")
     public ResponseEntity<NoticeDetailResponse> getNoticeDetail(
             @Valid @RequestParam Long noticeId,
             @AuthenticationPrincipal UserDetails userDetails
