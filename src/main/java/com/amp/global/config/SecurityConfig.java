@@ -72,6 +72,7 @@ public class SecurityConfig {
                                 "/api/public/**",
                                 "/oauth2/**",
                                 "/login/**",
+                                "/api/common/v1/notices/**",
                                 "/h2-console/**",
                                 "/test-login.html",
                                 "/*.html",
