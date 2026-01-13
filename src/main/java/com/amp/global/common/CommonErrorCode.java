@@ -32,7 +32,7 @@ public enum CommonErrorCode implements ErrorCode {
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "COM", "001", "서버 내부 오류가 발생했습니다."),
 
     //비즈니스 Error
-    NO_RECENT_FESTIVAL(HttpStatus.OK, "UFE", "001", "최근에 보는 공연이 없습니다.");
+    NO_RECENT_FESTIVAL(HttpStatus.NOT_FOUND, "UFE", "001", "최근에 보는 공연이 없습니다.");
 
     private final HttpStatus httpStatus;
     private final String domain;
