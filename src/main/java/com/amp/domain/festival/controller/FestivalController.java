@@ -2,6 +2,7 @@ package com.amp.domain.festival.controller;
 
 import com.amp.domain.festival.dto.request.FestivalCreateRequest;
 import com.amp.domain.festival.dto.response.FestivalCreateResponse;
+import com.amp.domain.festival.dto.response.FestivalDetailResponse;
 import com.amp.domain.festival.service.FestivalService;
 import com.amp.global.annotation.ApiErrorCodes;
 import com.amp.global.common.SuccessStatus;
@@ -31,4 +32,15 @@ public class FestivalController {
                 .status(SuccessStatus.FESTIVAL_CREATE_SUCCESS.getHttpStatus())
                 .body(BaseResponse.create(SuccessStatus.FESTIVAL_CREATE_SUCCESS.getMsg(), response));
     }
+
+    @Operation(summary = "공연 상세 조회 - 수정용")
+    @GetMapping("/{festivalId}")
+    public ResponseEntity<BaseResponse<FestivalDetailResponse>> getFestivalDetail(
+            @PathVariable Long festivalId) {
+        FestivalDetailResponse response = festivalService.getFestivalDetail(festivalId);
+        return ResponseEntity
+                .status(SuccessStatus.GET_FESTIVAL_DETAIL_INFO.getHttpStatus())
+                .body(BaseResponse.ok(SuccessStatus.GET_FESTIVAL_DETAIL_INFO.getMsg(), response));
+    }
+
 }
