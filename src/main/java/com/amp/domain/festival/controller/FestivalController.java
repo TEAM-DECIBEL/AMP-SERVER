@@ -1,0 +1,34 @@
+package com.amp.domain.festival.controller;
+
+import com.amp.domain.festival.dto.request.FestivalCreateRequest;
+import com.amp.domain.festival.dto.response.FestivalCreateResponse;
+import com.amp.domain.festival.service.FestivalService;
+import com.amp.global.annotation.ApiErrorCodes;
+import com.amp.global.common.SuccessStatus;
+import com.amp.global.response.success.BaseResponse;
+import com.amp.global.swagger.SwaggerResponseDescription;
+import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/organizer/v1/festivals")
+@RequiredArgsConstructor
+public class FestivalController {
+
+    private final FestivalService festivalService;
+
+    @Operation(summary = "공연 생성")
+    @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_CREATE_FESTIVAL)
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<BaseResponse<FestivalCreateResponse>> createFestival
+            (@ModelAttribute @Valid FestivalCreateRequest request) {
+        FestivalCreateResponse response = festivalService.createFestival(request);
+        return ResponseEntity
+                .status(SuccessStatus.FESTIVAL_CREATE_SUCCESS.getHttpStatus())
+                .body(BaseResponse.create(SuccessStatus.FESTIVAL_CREATE_SUCCESS.getMsg(), response));
+    }
+}

@@ -34,17 +34,12 @@ public class FestivalSchedule extends BaseTimeEntity {
     @Column(name = "festival_time", nullable = false)
     private LocalTime festivalTime;
 
-    @Column(columnDefinition = "TEXT")
-    private String description;
-
     @Builder
     public FestivalSchedule(Festival festival, Integer dayNumber,
-                            LocalDate festivalDate, LocalTime festivalTime,
-                            String description) {
+                            LocalDate festivalDate, LocalTime festivalTime) {
         this.festival = festival;
         this.dayNumber = dayNumber;
         this.festivalDate = festivalDate;
         this.festivalTime = festivalTime;
-        this.description = description;
     }
 }
