@@ -5,6 +5,7 @@ import com.amp.domain.notice.service.NoticeService;
 import com.amp.global.annotation.ApiErrorCodes;
 import com.amp.global.swagger.SwaggerResponseDescription;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +26,7 @@ public class NoticeController {
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_GET_NOTICE_DETAIL)
     @GetMapping("/{noticeId}")
     public ResponseEntity<NoticeDetailResponse> getNoticeDetail(
-            @PathVariable("noticeId") Long noticeId
+            @PathVariable("noticeId") @Positive Long noticeId
     ) {
         NoticeDetailResponse response = noticeService.getNoticeDetail(noticeId);
         return ResponseEntity.ok(response);
