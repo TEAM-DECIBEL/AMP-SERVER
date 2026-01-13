@@ -12,7 +12,11 @@ public enum SuccessStatus implements SuccessCode {
     CREATED(HttpStatus.CREATED, "COM" ,"002", "리소스가 성공적으로 생성되었습니다."),
 
     // FESTIVAL
-    FESTIVAL_CREATE_SUCCESS(HttpStatus.CREATED, "FES","001", "공연 등록이 완료되었습니다.");
+    FESTIVAL_CREATE_SUCCESS(HttpStatus.CREATED, "FES","001", "공연 등록이 완료되었습니다."),
+
+    // UserFestival
+    USER_FESTIVAL_RECENT_FOUND(HttpStatus.OK, "UFE", "001", "관람 예정 최근에 보는 공연 정보가 조회되었습니다."),
+    USER_FESTIVAL_RECENT_NOT_FOUND(HttpStatus.OK, "UFE", "002", "최근에 보는 공연이 없습니다.");
 
     private final HttpStatus httpStatus;
     private final String domain;
