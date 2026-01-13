@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -23,9 +24,11 @@ public class FestivalController {
     @Operation(summary = "공연 생성")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_CREATE_FESTIVAL)
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public BaseResponse<FestivalCreateResponse> createFestival
+    public ResponseEntity<BaseResponse<FestivalCreateResponse>> createFestival
             (@ModelAttribute @Valid FestivalCreateRequest request) {
         FestivalCreateResponse response = festivalService.createFestival(request);
-        return BaseResponse.create(SuccessStatus.FESTIVAL_CREATE_SUCCESS.getMsg(), response);
+        return ResponseEntity
+                .status(SuccessStatus.FESTIVAL_CREATE_SUCCESS.getHttpStatus())
+                .body(BaseResponse.create(SuccessStatus.FESTIVAL_CREATE_SUCCESS.getMsg(), response));
     }
 }
