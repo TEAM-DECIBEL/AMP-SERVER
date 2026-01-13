@@ -9,10 +9,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "user_saved_announcement",
+@Table(name = "user_saved_notice",
         uniqueConstraints = @UniqueConstraint(
-                name = "uk_user_announcement",
-                columnNames = {"user_id", "announcement_id"}
+                name = "uk_user_notice",
+                columnNames = {"user_id", "notice_id"}
         ))
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -20,7 +20,7 @@ public class UserSavedNotice extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "saved_announcement_id")
+    @Column(name = "saved_notice_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -28,13 +28,13 @@ public class UserSavedNotice extends BaseTimeEntity {
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "announcement_id", nullable = false)
-    private Notice announcement;
+    @JoinColumn(name = "notice_id", nullable = false)
+    private Notice notice;
 
     @Builder
-    public UserSavedNotice(User user, Notice announcement) {
+    public UserSavedNotice(User user, Notice notice) {
         this.user = user;
-        this.announcement = announcement;
+        this.notice = notice;
     }
 
 }
