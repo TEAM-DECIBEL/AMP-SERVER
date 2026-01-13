@@ -8,15 +8,9 @@ import org.springframework.http.HttpStatus;
 @Getter
 @RequiredArgsConstructor
 public enum NoticeErrorCode implements ErrorCode {
-    // 400 Bad Request
-    INVALID_NOTICE(HttpStatus.BAD_REQUEST, "NTC", "001", "잘못된 공지 값입니다.");
+    // 404 Not Found
+    INVALID_NOTICE(HttpStatus.NOT_FOUND, "NTC", "001", "잘못된 공지 값입니다.");
 
-    // 401 Unauthorized
-
-    // 403 Forbidden
-
-    // 405 Method Not Allowed
-    // 500 Internal Server Error
 
     private final HttpStatus httpStatus;
     private final String domain;
