@@ -76,7 +76,7 @@ public class NoticeService {
 
         // 로그인한 사용자만 북마크 여부 확인
         if (isLoggedInUser(authentication)) {
-            String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+            String userEmail = authentication.getName();
             User user = userRepository.findByEmail(userEmail).orElseThrow(() ->
                     new CustomException(UserErrorCode.USER_NOT_FOUND));
 
