@@ -8,6 +8,7 @@ import com.amp.domain.category.repository.FestivalCategoryRepository;
 import com.amp.domain.festival.dto.request.FestivalCreateRequest;
 import com.amp.domain.festival.dto.request.ScheduleRequest;
 import com.amp.domain.festival.dto.response.FestivalCreateResponse;
+import com.amp.domain.festival.dto.response.FestivalDetailResponse;
 import com.amp.domain.festival.entity.Festival;
 import com.amp.domain.festival.entity.FestivalSchedule;
 import com.amp.domain.festival.exception.FestivalErrorCode;
@@ -22,13 +23,13 @@ import com.amp.domain.user.entity.User;
 import com.amp.domain.user.exception.UserErrorCode;
 import com.amp.domain.user.repository.UserRepository;
 import com.amp.global.annotation.LogExecutionTime;
+import com.amp.global.common.CommonErrorCode;
 import com.amp.global.exception.CustomException;
 import com.amp.global.s3.S3ErrorCode;
 import com.amp.global.s3.S3Service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -234,5 +235,20 @@ public class FestivalService {
                 .collect(Collectors.toList());
 
         festivalCategoryRepository.saveAll(festivalCategories);
+    }
+
+    public FestivalDetailResponse getFestivalDetail(Long festivalId) {
+        String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(userEmail).orElseThrow(() ->
+                new CustomException(UserErrorCode.USER_NOT_FOUND));
+
+        Festival festival = festivalRepository.findById(festivalId)
+                .orElseThrow(() -> new CustomException(FestivalErrorCode.FESTIVAL_NOT_FOUND));
+
+        if (!organizerRepository.existsByFestivalAndUser(festival, user)) {
+            throw new CustomException(CommonErrorCode.FORBIDDEN);
+        }
+
+        return FestivalDetailResponse.from(festival);
     }
 }
