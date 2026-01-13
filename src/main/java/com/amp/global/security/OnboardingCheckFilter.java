@@ -44,7 +44,6 @@ public class OnboardingCheckFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
-
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // 인증되지 않았거나 익명 사용자면 패스
