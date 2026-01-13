@@ -6,10 +6,14 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLRestriction;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "category")
 @Getter
+@SQLRestriction("deleted_at IS NULL")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Category extends BaseTimeEntity {
 
@@ -24,17 +28,12 @@ public class Category extends BaseTimeEntity {
     @Column(name = "category_code", nullable = false, length = 50)
     private String categoryCode;
 
-    @Column(columnDefinition = "TEXT")
-    private String description;
-
-    @Column(name = "is_active", nullable = false)
-    private boolean isActive = true;
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 
     @Builder
-    public Category(String categoryName, String categoryCode, String description) {
+    public Category(String categoryName, String categoryCode) {
         this.categoryName = categoryName;
         this.categoryCode = categoryCode;
-        this.description = description;
-        this.isActive = true;
     }
 }
