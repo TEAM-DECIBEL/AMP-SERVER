@@ -25,6 +25,7 @@ import com.amp.global.s3.S3Service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +35,7 @@ import java.time.LocalDate;
 import java.util.*;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class FestivalService {
 
@@ -144,6 +146,35 @@ public class FestivalService {
         categoryService.syncCategories(festival, request.activeCategoryIds());
 
         return FestivalUpdateResponse.from(festival);
+    }
+
+    @Transactional
+    public void deleteFestival(Long festivalId) {
+        User user = getCurrentUser();
+        Festival festival = findFestival(festivalId);
+        validateOrganizer(festival, user);
+
+        String imageUrl = festival.getMainImageUrl();
+
+        festivalRepository.delete(festival);
+
+        if (imageUrl != null && !imageUrl.isEmpty()) {
+            try {
+                String key = extractKeyFromUrl(imageUrl);
+                s3Service.delete(key);
+            } catch (Exception e) {
+                log.error("S3 파일 삭제 실패 (이미지 URL: {}): {}", imageUrl, e.getMessage());
+            }
+        }
+    }
+
+    private String extractKeyFromUrl(String imageUrl) {
+        String delimiter = "festivals/";
+        int index = imageUrl.lastIndexOf(delimiter);
+        if (index != -1) {
+            return imageUrl.substring(index);
+        }
+        throw new CustomException(S3ErrorCode.INVALID_DIRECTORY_ROUTE);
     }
 
     private LocalDate calculateDate(List<ScheduleRequest> schedules, boolean isStart) {
