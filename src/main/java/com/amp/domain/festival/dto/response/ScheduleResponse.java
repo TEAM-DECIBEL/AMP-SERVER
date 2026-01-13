@@ -8,7 +8,7 @@ import java.time.LocalTime;
 public record ScheduleResponse(
         Long id,
         LocalDate festivalDate,
-        LocalTime festivalTIme
+        LocalTime festivalTime
 ) {
     public static ScheduleResponse from(FestivalSchedule festivalSchedule) {
         return new ScheduleResponse(festivalSchedule.getId(), festivalSchedule.getFestivalDate(), festivalSchedule.getFestivalTime());
