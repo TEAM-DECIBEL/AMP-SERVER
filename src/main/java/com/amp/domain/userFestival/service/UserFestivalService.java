@@ -10,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 import static com.amp.global.common.CommonErrorCode.NO_RECENT_FESTIVAL;
 
@@ -19,7 +18,7 @@ import static com.amp.global.common.CommonErrorCode.NO_RECENT_FESTIVAL;
 @Transactional(readOnly = true)
 public class UserFestivalService {
 
-    private UserFestivalRepository userFestivalRepository;
+    private final UserFestivalRepository userFestivalRepository;
 
     public RecentFestivalResponse getRecentFestival(Long userId) {
         LocalDate today = LocalDate.now();
