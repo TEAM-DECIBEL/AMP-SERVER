@@ -20,7 +20,7 @@ public class NoticeController {
 
     @GetMapping("/{noticeId}")
     public ResponseEntity<NoticeDetailResponse> getNoticeDetail(
-            @PathVariable Long noticeId
+            @PathVariable("noticeId") Long noticeId
     ) {
         NoticeDetailResponse response = noticeService.getNoticeDetail(noticeId);
         return ResponseEntity.ok(response);
