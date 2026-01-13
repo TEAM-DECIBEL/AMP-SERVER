@@ -156,16 +156,16 @@ public class FestivalService {
 
         String imageUrl = festival.getMainImageUrl();
 
-        festivalRepository.delete(festival);
+        festival.delete();
 
-        if (imageUrl != null && !imageUrl.isEmpty()) {
+/*        if (imageUrl != null && !imageUrl.isEmpty()) {
             try {
                 String key = extractKeyFromUrl(imageUrl);
                 s3Service.delete(key);
             } catch (Exception e) {
                 log.error("S3 파일 삭제 실패 (이미지 URL: {}): {}", imageUrl, e.getMessage());
             }
-        }
+        }*/
     }
 
     private String extractKeyFromUrl(String imageUrl) {

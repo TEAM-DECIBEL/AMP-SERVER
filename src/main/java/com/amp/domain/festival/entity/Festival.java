@@ -89,4 +89,8 @@ public class Festival extends BaseTimeEntity {
         this.title = title;
         this.location = location;
     }
+
+    public void delete() {
+        this.deletedAt = LocalDateTime.now();
+    }
 }
