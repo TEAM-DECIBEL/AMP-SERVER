@@ -56,4 +56,14 @@ public class FestivalController {
                 .body(BaseResponse.ok(SuccessStatus.FESTIVAL_UPDATE_SUCCESS.getMsg(), response));
     }
 
+    @Operation(summary = "공연 삭제")
+    @DeleteMapping("/{festivalId}")
+    public ResponseEntity<BaseResponse<Void>> deleteFestival(
+            @PathVariable Long festivalId) {
+        festivalService.deleteFestival(festivalId);
+        return ResponseEntity
+                .status(SuccessStatus.FESTIVAL_DELETE_SUCCESS.getHttpStatus())
+                .body(BaseResponse.ok(SuccessStatus.FESTIVAL_DELETE_SUCCESS.getMsg(), null));
+    }
+
 }
