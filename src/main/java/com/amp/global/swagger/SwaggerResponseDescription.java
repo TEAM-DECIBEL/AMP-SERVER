@@ -29,7 +29,8 @@ public enum SwaggerResponseDescription {
             FestivalErrorCode.SCHEDULES_REQUIRED,
             FestivalErrorCode.INVALID_STAGE_FORMAT,
             FestivalErrorCode.INVALID_CATEGORY_FORMAT,
-            FestivalErrorCode.MISSING_MAIN_IMAGE
+            FestivalErrorCode.MISSING_MAIN_IMAGE,
+            FestivalErrorCode.INVALID_SCHEDULE_FORMAT
     )));
 
     private final Set<ErrorCode> errorCodeList;
