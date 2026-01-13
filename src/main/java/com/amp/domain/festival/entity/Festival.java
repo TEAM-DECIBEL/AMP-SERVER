@@ -1,6 +1,7 @@
 package com.amp.domain.festival.entity;
 
 import com.amp.domain.category.entity.FestivalCategory;
+import com.amp.domain.organizer.entity.Organizer;
 import com.amp.domain.stage.entity.Stage;
 import com.amp.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
@@ -54,6 +55,9 @@ public class Festival extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "festival", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FestivalCategory> festivalCategories = new ArrayList<>();
+
+    @OneToMany(mappedBy = "festival", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Organizer> organizers = new ArrayList<>();
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
