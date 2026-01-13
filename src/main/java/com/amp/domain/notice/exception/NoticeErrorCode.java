@@ -9,7 +9,7 @@ import org.springframework.http.HttpStatus;
 @RequiredArgsConstructor
 public enum NoticeErrorCode implements ErrorCode {
     // 400 Bad Request
-    INVALID_NOTICE(HttpStatus.BAD_REQUEST, "ANN", "001", "잘못된 공지 값입니다.");
+    INVALID_NOTICE(HttpStatus.BAD_REQUEST, "NTC", "001", "잘못된 공지 값입니다.");
 
     // 401 Unauthorized
 
