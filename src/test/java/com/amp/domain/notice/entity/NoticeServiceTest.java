@@ -12,6 +12,7 @@ import com.amp.domain.notice.service.NoticeService;
 import com.amp.domain.user.entity.User;
 import com.amp.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -98,7 +99,8 @@ class NoticeServiceTest {
     }
 
     @Test
-    void 비로그인_사용자는_isSaved_false() {
+    @DisplayName("비로그인 사용자는 isSaved가 false여야 한다")
+    void notLoggedInUser_shouldHaveIsSavedFalse() {
         // given
         when(noticeRepository.findById(1L))
                 .thenReturn(Optional.of(notice));
@@ -112,7 +114,8 @@ class NoticeServiceTest {
     }
 
 /*    @Test
-    void 로그인_사용자가_북마크한_공지는_isSaved_true() {
+    @DisplayName("로그인 사용자가 북마크한 공지는 isSaved가 true여야 한다")
+    void loggedInUser_bookmarkedNotice_shouldHaveIsSavedTrue() {
         // given
         String email = "loginUserMail@mail.com";
 
@@ -138,7 +141,8 @@ class NoticeServiceTest {
     }*/
 
     @Test
-    void 공지가_없으면_예외_발생() {
+    @DisplayName("공지 조회 시 존재하지 않으면 예외 발생")
+    void noticeNotFound_shouldThrowException() {
         // given
         when(noticeRepository.findById(1L))
                 .thenReturn(Optional.empty());
