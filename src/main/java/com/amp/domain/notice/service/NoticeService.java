@@ -39,23 +39,7 @@ public class NoticeService {
                 );
 
         // 로그인 여부에 따른 저장 여부 판단
-        boolean isSaved = false;
-
-        Authentication authentication =
-                SecurityContextHolder.getContext().getAuthentication();
-
-        // 로그인한 사용자만 북마크 여부 확인
-        if (authentication != null &&
-                authentication.isAuthenticated() &&
-                !(authentication instanceof AnonymousAuthenticationToken)) {
-            String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
-            User user = userRepository.findByEmail(userEmail).orElseThrow(() ->
-                    new CustomException(UserErrorCode.USER_NOT_FOUND));
-
-
-            isSaved = userSavedNoticeRepository
-                    .existsByNoticeAndUser(notice, user);
-        }
+        boolean isSaved = getIsSaved(notice);
 
         CategoryData category = new CategoryData(
                 notice.getFestivalCategory().getId(),
@@ -82,5 +66,30 @@ public class NoticeService {
                 notice.getCreatedAt(),
                 notice.getUpdatedAt()
         );
+    }
+
+    private boolean getIsSaved(Notice notice) {
+        boolean isSaved = false;
+
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        // 로그인한 사용자만 북마크 여부 확인
+        if (isLoggedInUser(authentication)) {
+            String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+            User user = userRepository.findByEmail(userEmail).orElseThrow(() ->
+                    new CustomException(UserErrorCode.USER_NOT_FOUND));
+
+
+            isSaved = userSavedNoticeRepository
+                    .existsByNoticeAndUser(notice, user);
+        }
+        return isSaved;
+    }
+
+    private boolean isLoggedInUser(Authentication authentication) {
+        return authentication != null &&
+                authentication.isAuthenticated() &&
+                !(authentication instanceof AnonymousAuthenticationToken);
     }
 }
