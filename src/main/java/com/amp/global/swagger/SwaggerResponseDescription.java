@@ -1,6 +1,7 @@
 package com.amp.global.swagger;
 
 import com.amp.domain.festival.exception.FestivalErrorCode;
+import com.amp.domain.notice.exception.NoticeErrorCode;
 import com.amp.global.common.CommonErrorCode;
 import com.amp.global.common.ErrorCode;
 import lombok.Getter;
@@ -31,6 +32,11 @@ public enum SwaggerResponseDescription {
             FestivalErrorCode.INVALID_CATEGORY_FORMAT,
             FestivalErrorCode.MISSING_MAIN_IMAGE,
             FestivalErrorCode.INVALID_SCHEDULE_FORMAT
+    ))),
+
+    // 공지 상세 조회 API
+    FAIL_TO_GET_NOTICE_DETAIL(new LinkedHashSet<>(Set.of(
+            NoticeErrorCode.INVALID_NOTICE
     )));
 
     private final Set<ErrorCode> errorCodeList;

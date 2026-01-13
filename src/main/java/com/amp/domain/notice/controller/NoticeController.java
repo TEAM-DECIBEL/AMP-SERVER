@@ -2,6 +2,9 @@ package com.amp.domain.notice.controller;
 
 import com.amp.domain.notice.dto.response.NoticeDetailResponse;
 import com.amp.domain.notice.service.NoticeService;
+import com.amp.global.annotation.ApiErrorCodes;
+import com.amp.global.swagger.SwaggerResponseDescription;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +21,8 @@ public class NoticeController {
 
     private final NoticeService noticeService;
 
+    @Operation(summary = "공지 상세 조회")
+    @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_GET_NOTICE_DETAIL)
     @GetMapping("/{noticeId}")
     public ResponseEntity<NoticeDetailResponse> getNoticeDetail(
             @PathVariable("noticeId") Long noticeId
