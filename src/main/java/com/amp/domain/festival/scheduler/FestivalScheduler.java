@@ -21,7 +21,6 @@ public class FestivalScheduler {
     @Scheduled(cron = "1 0 0 * * *", zone = "Asia/Seoul")
     @Transactional
     public void updateFestivalStatus() {
-        log.info("공연 상태 자동 업데이트 시작");
 
         List<Festival> activeFestivals = festivalRepository.findAllByStatusNot(FestivalStatus.COMPLETED);
 
@@ -34,7 +33,5 @@ public class FestivalScheduler {
                         festival.getId(), oldStatus, festival.getStatus());
             }
         });
-
-        log.info("공연 상태 자동 업데이트 완료");
     }
 }
