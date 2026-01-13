@@ -1,5 +1,8 @@
 package com.amp.global.security;
 
+import com.amp.domain.user.entity.RegistrationStatus;
+import com.amp.domain.user.entity.User;
+import com.amp.domain.user.repository.UserRepository;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -20,9 +23,13 @@ import java.io.IOException;
 public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final JwtUtil jwtUtil;
+    private final UserRepository userRepository;
 
     @Value("${app.oauth2.redirect-uri:http://localhost:3000/oauth2/redirect}")
     private String redirectUri;
+
+    @Value("${app.oauth2.onboarding-uri:http://localhost:3000/onboarding}")
+    private String onboardingUri;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
@@ -39,9 +46,24 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
         String token = jwtUtil.generateToken(email);
 
-        String targetUrl = UriComponentsBuilder.fromUriString(redirectUri)
-                .queryParam("token", token)
-                .build().toUriString();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalStateException("OAuth 로그인 과정에서 유저 데이터가 저장되지 않았습니다."));
+
+        String targetUrl;
+
+        if (user.getRegistrationStatus() == RegistrationStatus.PENDING) {
+            targetUrl = UriComponentsBuilder.fromUriString(onboardingUri)
+                    .queryParam("token", token)
+                    .queryParam("status", "pending")
+                    .build().toUriString();
+            log.info("Redirecting to onboarding page for user: {}", email);
+        } else {
+            targetUrl = UriComponentsBuilder.fromUriString(redirectUri)
+                    .queryParam("token", token)
+                    .queryParam("status", "completed")
+                    .build().toUriString();
+            log.info("Redirecting to main page for user: {}", email);
+        }
 
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
     }
