@@ -19,7 +19,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Transactional
 public class StageService {
-    private final StageRepository stageRepository;
 
     public void syncStages(Festival festival, List<StageRequest> requests) {
         List<Stage> existStages = festival.getStages();
