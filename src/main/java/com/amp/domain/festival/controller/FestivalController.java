@@ -1,8 +1,10 @@
 package com.amp.domain.festival.controller;
 
 import com.amp.domain.festival.dto.request.FestivalCreateRequest;
+import com.amp.domain.festival.dto.request.FestivalUpdateRequest;
 import com.amp.domain.festival.dto.response.FestivalCreateResponse;
 import com.amp.domain.festival.dto.response.FestivalDetailResponse;
+import com.amp.domain.festival.dto.response.FestivalUpdateResponse;
 import com.amp.domain.festival.service.FestivalService;
 import com.amp.global.annotation.ApiErrorCodes;
 import com.amp.global.common.SuccessStatus;
@@ -41,6 +43,17 @@ public class FestivalController {
         return ResponseEntity
                 .status(SuccessStatus.GET_FESTIVAL_DETAIL_INFO.getHttpStatus())
                 .body(BaseResponse.ok(SuccessStatus.GET_FESTIVAL_DETAIL_INFO.getMsg(), response));
+    }
+
+    @Operation(summary = "공연 수정")
+    @PatchMapping("/{festivalId}")
+    public ResponseEntity<BaseResponse<FestivalUpdateResponse>> updateFestival(
+            @PathVariable Long festivalId,
+            FestivalUpdateRequest request) {
+        FestivalUpdateResponse response = festivalService.updateFestival(festivalId, request);
+        return ResponseEntity
+                .status(SuccessStatus.FESTIVAL_UPDATE_SUCCESS.getHttpStatus())
+                .body(BaseResponse.ok(SuccessStatus.FESTIVAL_UPDATE_SUCCESS.getMsg(), response));
     }
 
 }
