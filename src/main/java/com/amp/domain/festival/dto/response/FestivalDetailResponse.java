@@ -1,5 +1,6 @@
 package com.amp.domain.festival.dto.response;
 
+import com.amp.domain.category.entity.FestivalCategory;
 import com.amp.domain.festival.entity.Festival;
 import com.amp.domain.stage.dto.response.StageResponse;
 
@@ -23,6 +24,7 @@ public record FestivalDetailResponse(
                 festival.getSchedules().stream().map(ScheduleResponse::from).toList(),
                 festival.getStages().stream().map(StageResponse::from).toList(),
                 festival.getFestivalCategories().stream()
+                        .filter(FestivalCategory::isActive)
                         .map(fc -> fc.getCategory().getId()).toList()
         );
     }
