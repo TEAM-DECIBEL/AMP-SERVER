@@ -55,4 +55,16 @@ public class Festival extends BaseTimeEntity {
         this.endDate = endDate;
         this.status = status;
     }
+
+    public void updateStatus() {
+        LocalDate now = LocalDate.now();
+
+        if (now.isBefore(this.startDate)) {
+            this.status = FestivalStatus.UPCOMING;
+        } else if (now.isAfter(this.endDate)) {
+            this.status = FestivalStatus.COMPLETED;
+        } else {
+            this.status = FestivalStatus.ONGOING;
+        }
+    }
 }
