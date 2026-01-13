@@ -15,7 +15,7 @@ public enum SuccessStatus implements SuccessCode {
     FESTIVAL_CREATE_SUCCESS(HttpStatus.CREATED, "FES","001", "공연 등록이 완료되었습니다."),
 
     // NOTICE
-    NOTICE_DETAIL_GET_SUCCESS(HttpStatus.)
+    NOTICE_DETAIL_GET_SUCCESS(HttpStatus.OK, "NOT", "001", "공지 상세 조회가 완료되었습니다.");
 
     private final HttpStatus httpStatus;
     private final String domain;
