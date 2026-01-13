@@ -25,9 +25,6 @@ public class FestivalSchedule extends BaseTimeEntity {
     @JoinColumn(name = "festival_id", nullable = false)
     private Festival festival;
 
-    @Column(name = "day_number", nullable = false)
-    private Integer dayNumber;
-
     @Column(name = "festival_date", nullable = false)
     private LocalDate festivalDate;
 
@@ -35,11 +32,15 @@ public class FestivalSchedule extends BaseTimeEntity {
     private LocalTime festivalTime;
 
     @Builder
-    public FestivalSchedule(Festival festival, Integer dayNumber,
+    public FestivalSchedule(Festival festival,
                             LocalDate festivalDate, LocalTime festivalTime) {
         this.festival = festival;
-        this.dayNumber = dayNumber;
         this.festivalDate = festivalDate;
         this.festivalTime = festivalTime;
+    }
+
+    public void update(LocalDate date, LocalTime time) {
+        this.festivalDate = date;
+        this.festivalTime = time;
     }
 }
