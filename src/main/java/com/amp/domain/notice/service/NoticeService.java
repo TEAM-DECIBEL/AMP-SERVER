@@ -35,7 +35,7 @@ public class NoticeService {
         // 공지 조회 (존재 검증 포함)
         Notice notice = noticeRepository.findById(noticeId)
                 .orElseThrow(() ->
-                        new NoticeException(NoticeErrorCode.INVALID_NOTICE)
+                        new NoticeException(NoticeErrorCode.NOTICE_NOT_FOUND)
                 );
 
         // 로그인 여부에 따른 저장 여부 판단

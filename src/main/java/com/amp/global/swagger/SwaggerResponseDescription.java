@@ -36,7 +36,7 @@ public enum SwaggerResponseDescription {
 
     // 공지 상세 조회 API
     FAIL_TO_GET_NOTICE_DETAIL(new LinkedHashSet<>(Set.of(
-            NoticeErrorCode.INVALID_NOTICE
+            NoticeErrorCode.NOTICE_NOT_FOUND
     )));
 
     private final Set<ErrorCode> errorCodeList;
