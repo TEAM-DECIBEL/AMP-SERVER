@@ -14,14 +14,14 @@ import org.hibernate.annotations.SQLRestriction;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "announcement")
+@Table(name = "notice")
 @SQLRestriction("deleted_at IS NULL")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Notice extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "announcement_id")
+    @Column(name = "notice_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)

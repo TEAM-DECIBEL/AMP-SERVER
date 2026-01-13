@@ -25,8 +25,8 @@ public class Notification extends BaseTimeEntity {
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "announcement_id", nullable = false)
-    private Notice announcement;
+    @JoinColumn(name = "notice_id", nullable = false)
+    private Notice notice;
 
     @Column(nullable = false, length = 255)
     private String title;
@@ -38,9 +38,9 @@ public class Notification extends BaseTimeEntity {
     private Boolean isRead = false;
 
     @Builder
-    public Notification(User user, Notice announcement, String title, String message) {
+    public Notification(User user, Notice notice, String title, String message) {
         this.user = user;
-        this.announcement = announcement;
+        this.notice = notice;
         this.title = title;
         this.message = message;
         this.isRead = false;
