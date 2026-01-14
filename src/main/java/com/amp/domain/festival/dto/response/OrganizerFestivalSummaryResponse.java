@@ -8,7 +8,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public record FestivalSummaryResponse(
+public record OrganizerFestivalSummaryResponse(
         Long festivalId,
         String mainImageUrl,
         String title,
@@ -19,8 +19,8 @@ public record FestivalSummaryResponse(
 ) {
     private static final DateTimeFormatter PERIOD_FORMATTER = DateTimeFormatter.ofPattern("yyyy. MM. dd");
 
-    public static FestivalSummaryResponse withDDay(Festival festival) {
-        return new FestivalSummaryResponse(
+    public static OrganizerFestivalSummaryResponse withDDay(Festival festival) {
+        return new OrganizerFestivalSummaryResponse(
                 festival.getId(),
                 festival.getMainImageUrl(),
                 festival.getTitle(),
@@ -30,8 +30,8 @@ public record FestivalSummaryResponse(
         );
     }
 
-    public static FestivalSummaryResponse from(Festival festival) {
-        return new FestivalSummaryResponse(
+    public static OrganizerFestivalSummaryResponse from(Festival festival) {
+        return new OrganizerFestivalSummaryResponse(
                 festival.getId(),
                 festival.getMainImageUrl(),
                 festival.getTitle(),

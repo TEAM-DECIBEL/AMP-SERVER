@@ -6,10 +6,10 @@ import org.springframework.data.domain.Page;
 import java.util.List;
 
 public record FestivalPageResponse(
-        List<FestivalSummaryResponse> festivals,
+        List<OrganizerFestivalSummaryResponse> festivals,
         PaginationResponse pagination
 ) {
-    public static FestivalPageResponse of(Page<FestivalSummaryResponse> page) {
+    public static FestivalPageResponse of(Page<OrganizerFestivalSummaryResponse> page) {
         return new FestivalPageResponse(
                 page.getContent(),
                 PaginationResponse.from(page)
