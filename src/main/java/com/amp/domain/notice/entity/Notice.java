@@ -1,4 +1,4 @@
-package com.amp.domain.announcement.entity;
+package com.amp.domain.notice.entity;
 
 import com.amp.domain.category.entity.FestivalCategory;
 import com.amp.domain.festival.entity.Festival;
@@ -14,14 +14,14 @@ import org.hibernate.annotations.SQLRestriction;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "announcement")
+@Table(name = "notice")
 @SQLRestriction("deleted_at IS NULL")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Announcement extends BaseTimeEntity {
+public class Notice extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "announcement_id")
+    @Column(name = "notice_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -52,8 +52,8 @@ public class Announcement extends BaseTimeEntity {
     private LocalDateTime deletedAt;
 
     @Builder
-    public Announcement(Festival festival, FestivalCategory festivalCategory, User user,
-                        String title, String content, String imageUrl, Boolean isPinned) {
+    public Notice(Festival festival, FestivalCategory festivalCategory, User user,
+                  String title, String content, String imageUrl, Boolean isPinned) {
         this.festival = festival;
         this.festivalCategory = festivalCategory;
         this.user = user;
@@ -61,6 +61,10 @@ public class Announcement extends BaseTimeEntity {
         this.content = content;
         this.imageUrl = imageUrl;
         this.isPinned = isPinned != null ? isPinned : false;
+    }
+
+    public void delete() {
+        this.deletedAt = LocalDateTime.now();
     }
 
 }

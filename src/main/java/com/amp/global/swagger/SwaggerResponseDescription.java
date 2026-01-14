@@ -1,6 +1,9 @@
 package com.amp.global.swagger;
 
 import com.amp.domain.festival.exception.FestivalErrorCode;
+import com.amp.domain.notice.exception.BookmarkErrorCode;
+import com.amp.domain.notice.exception.NoticeErrorCode;
+import com.amp.domain.user.exception.UserErrorCode;
 import com.amp.global.common.CommonErrorCode;
 import com.amp.global.common.ErrorCode;
 import lombok.Getter;
@@ -31,7 +34,49 @@ public enum SwaggerResponseDescription {
             FestivalErrorCode.INVALID_CATEGORY_FORMAT,
             FestivalErrorCode.MISSING_MAIN_IMAGE,
             FestivalErrorCode.INVALID_SCHEDULE_FORMAT
-    )));
+    ))),
+
+    // 공지 상세 조회 API
+    FAIL_TO_GET_NOTICE_DETAIL(new LinkedHashSet<>(Set.of(
+            NoticeErrorCode.NOTICE_NOT_FOUND
+    ))),
+
+    // 공연 수정 API
+    FAIL_TO_UPDATE_FESTIVAL(new LinkedHashSet<>(Set.of(
+            FestivalErrorCode.INVALID_FESTIVAL_PERIOD,
+            FestivalErrorCode.SCHEDULES_REQUIRED,
+            FestivalErrorCode.INVALID_STAGE_FORMAT,
+            FestivalErrorCode.INVALID_CATEGORY_FORMAT,
+            FestivalErrorCode.INVALID_SCHEDULE_FORMAT,
+            FestivalErrorCode.FESTIVAL_NOT_FOUND
+    ))),
+
+    // 공연 상세 정보 조회 API
+    FAIL_TO_GET_FESTIVAL_DETAIL(new LinkedHashSet<>(Set.of(
+            FestivalErrorCode.FESTIVAL_NOT_FOUND
+    ))),
+
+    // 공연 삭제 API
+    FAIL_TO_DELETE_FESTIVAL(new LinkedHashSet<>(Set.of(
+            FestivalErrorCode.FESTIVAL_NOT_FOUND,
+            NoticeErrorCode.NOTICE_NOT_FOUND
+    ))),
+
+    // 공지 북마크 업데이트 API
+    FAIL_TO_UPDATE_BOOKMARK(new LinkedHashSet<>(Set.of(
+            NoticeErrorCode.NOTICE_NOT_FOUND,
+            BookmarkErrorCode.NOTICE_ALREADY_BOOKMARKED,
+            BookmarkErrorCode.SAVED_NOTICE_NOT_EXIST
+    ))),
+
+    // 공지 삭제 API
+    FAIL_TO_DELETE_NOTICE(new LinkedHashSet<>(Set.of(
+            NoticeErrorCode.NOTICE_NOT_FOUND,
+            NoticeErrorCode.NOTICE_ALREADY_DELETED,
+            NoticeErrorCode.DELETE_NOTICE_FAIL,
+            UserErrorCode.USER_NOT_FOUND,
+            NoticeErrorCode.NOTICE_DELETE_FORBIDDEN
+    ))),;
 
     private final Set<ErrorCode> errorCodeList;
 
