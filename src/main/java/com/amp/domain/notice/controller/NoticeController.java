@@ -37,7 +37,7 @@ public class NoticeController {
     @Operation(summary = "공지 삭제")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_DELETE_NOTICE)
     @DeleteMapping("/{noticeId}")
-    public ResponseEntity<BaseResponse<NoticeDetailResponse>> deleteNotice(
+    public ResponseEntity<BaseResponse<Void>> deleteNotice(
             @PathVariable("noticeId") @Positive Long noticeId
     ) {
         noticeService.deleteNotice(noticeId);
