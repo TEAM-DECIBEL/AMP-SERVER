@@ -10,6 +10,7 @@ import com.amp.domain.festival.dto.response.FestivalCreateResponse;
 import com.amp.domain.festival.dto.response.FestivalDetailResponse;
 import com.amp.domain.festival.dto.response.FestivalUpdateResponse;
 import com.amp.domain.festival.entity.Festival;
+import com.amp.domain.festival.entity.FestivalSchedule;
 import com.amp.domain.festival.exception.FestivalErrorCode;
 import com.amp.domain.festival.repository.FestivalRepository;
 import com.amp.domain.festival.repository.FestivalScheduleRepository;
@@ -153,6 +154,12 @@ public class FestivalService {
         stageService.syncStages(festival, request.stages());
         categoryService.syncCategories(festival, request.activeCategoryIds());
 
+        LocalDate startDate = calculateDateFromEntities(festival.getSchedules(), true);
+        LocalDate endDate = calculateDateFromEntities(festival.getSchedules(), false);
+
+        festival.updateDates(startDate, endDate);
+        festival.updateStatus();
+
         return FestivalUpdateResponse.from(festival);
     }
 
@@ -182,18 +189,31 @@ public class FestivalService {
         }*/
     }
 
-    private String extractKeyFromUrl(String imageUrl) {
+/*    private String extractKeyFromUrl(String imageUrl) {
         String delimiter = "festivals/";
         int index = imageUrl.lastIndexOf(delimiter);
         if (index != -1) {
             return imageUrl.substring(index);
         }
         throw new CustomException(S3ErrorCode.INVALID_DIRECTORY_ROUTE);
-    }
+    }*/
 
     private LocalDate calculateDate(List<ScheduleRequest> schedules, boolean isStart) {
-        return schedules.stream()
+        List<LocalDate> dates = schedules.stream()
                 .map(ScheduleRequest::getFestivalDate)
+                .toList();
+        return getMinMax(dates, isStart);
+    }
+
+    private LocalDate calculateDateFromEntities(List<FestivalSchedule> schedules, boolean isStart) {
+        List<LocalDate> dates = schedules.stream()
+                .map(FestivalSchedule::getFestivalDate)
+                .toList();
+        return getMinMax(dates, isStart);
+    }
+
+    private LocalDate getMinMax(List<LocalDate> dates, boolean isStart) {
+        return dates.stream()
                 .reduce(isStart ? BinaryOperator.minBy(Comparator.naturalOrder())
                         : BinaryOperator.maxBy(Comparator.naturalOrder()))
                 .orElseThrow(() -> new CustomException(FestivalErrorCode.INVALID_FESTIVAL_PERIOD));
