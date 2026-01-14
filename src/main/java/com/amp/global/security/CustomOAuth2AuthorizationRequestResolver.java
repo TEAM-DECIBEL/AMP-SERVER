@@ -7,7 +7,6 @@ import org.springframework.security.oauth2.client.web.DefaultOAuth2Authorization
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 
-
 @Slf4j
 public class CustomOAuth2AuthorizationRequestResolver implements OAuth2AuthorizationRequestResolver {
 
@@ -42,20 +41,30 @@ public class CustomOAuth2AuthorizationRequestResolver implements OAuth2Authoriza
             return null;
         }
 
-        // 요청 파라미터에서 user_type 가져오기
-        String userType = request.getParameter("user_type");
+        // 요청 파라미터에서 userType 가져오기
+        String userType = request.getParameter("userType");
 
         if (userType == null) {
-            // 기본값 설정 (또는 에러 처리)
-            log.warn("user_type parameter is missing. Defaulting to 'user'");
-            userType = "user";
+            // Referer에서 추출 시도
+            String referer = request.getHeader("Referer");
+            if (referer != null) {
+                if (referer.contains("/organizer")) {
+                    userType = "ORGANIZER";
+                } else {
+                    userType = "AUDIENCE";
+                }
+            } else {
+                // 기본값: 관객
+                log.warn("userType parameter is missing. Defaulting to 'AUDIENCE'");
+                userType = "AUDIENCE";
+            }
         }
 
-        log.info("OAuth2 authorization request with user_type: {}", userType);
+        log.info("OAuth2 authorization request with userType: {}", userType);
 
         // state에 userType 정보 추가
         String originalState = authorizationRequest.getState();
-        String customState = originalState + "|user_type=" + userType;
+        String customState = originalState + "|userType=" + userType;
 
         return OAuth2AuthorizationRequest
                 .from(authorizationRequest)

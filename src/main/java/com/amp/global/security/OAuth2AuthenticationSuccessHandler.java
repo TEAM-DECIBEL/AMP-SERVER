@@ -42,22 +42,18 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalStateException("User not found after OAuth2 login"));
 
-        // 요청 파라미터에서 userType 확인 (프론트엔드에서 전달)
-        String userTypeParam = request.getParameter("userType");
+        // state 파라미터에서 userType 추출
+        String state = request.getParameter("state");
+        UserType userType = extractUserTypeFromState(state);
 
-        // Referer 헤더에서 경로 확인 (백업 방법) Referer URL 보고 Type추론 가능해서 OAuth에서 userType을 잘 안넘겨 줄수도 있어서 일단 백업용
-        String referer = request.getHeader("Referer");
-
-        UserType determinedUserType = determineUserType(userTypeParam, referer);
-
-        log.info("Determined user type: {} for user: {}", determinedUserType, email);
+        log.info("Extracted user type: {} from state for user: {}", userType, email);
 
         String targetUrl;
 
         // 온보딩이 필요한 경우
         if (user.getRegistrationStatus() == RegistrationStatus.PENDING) {
             // UserType 임시 설정
-            user.updateUserType(determinedUserType);
+            user.updateUserType(userType);
             userRepository.save(user);
 
             // JWT 발급 (온보딩 진행을 위해)
@@ -65,7 +61,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
             targetUrl = UriComponentsBuilder.fromUriString(onboardingUri)
                     .queryParam("token", token)
-                    .queryParam("userType", determinedUserType.name())
+                    .queryParam("userType", userType.name())
                     .queryParam("status", "pending")
                     .build().toUriString();
 
@@ -86,29 +82,25 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
     }
 
-    private UserType determineUserType(String userTypeParam, String referer) {
-        // 1. 명시적 파라미터가 있으면 우선 사용
-        if (userTypeParam != null) {
-            try {
-                return UserType.valueOf(userTypeParam.toUpperCase());
-            } catch (IllegalArgumentException e) {
-                log.warn("Invalid userType parameter: {}", userTypeParam); //todo 커스텀 예외처리로 돌리는게 맞나?
-            }
+    private UserType extractUserTypeFromState(String state) {
+        if (state == null) {
+            log.warn("State parameter is null, defaulting to AUDIENCE");
+            return UserType.AUDIENCE;
         }
 
-        // 2. Referer 헤더 분석
-        if (referer != null) {
-            if (referer.contains("/organizer/") || referer.contains("/organizer-login")) {
-                return UserType.ORGANIZER;
+        try {
+            if (state.contains("|userType=")) {
+                String[] parts = state.split("\\|userType=");
+                if (parts.length == 2) {
+                    String userTypeStr = parts[1];
+                    return UserType.valueOf(userTypeStr);
+                }
             }
-            if (referer.contains("/audience/") || referer.contains("/audience-login") || referer.contains("/login")) {
-                return UserType.AUDIENCE;
-            }
+        } catch (IllegalArgumentException e) {
+            log.error("Failed to parse userType from state: {}", state, e);
         }
 
-        // 3. 기본값
-        log.info("Using default user type: AUDIENCE");
+        log.warn("Could not extract userType from state, defaulting to AUDIENCE");
         return UserType.AUDIENCE;
     }
-
 }
