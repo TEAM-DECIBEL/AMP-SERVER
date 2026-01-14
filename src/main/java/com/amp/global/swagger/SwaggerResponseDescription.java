@@ -1,6 +1,7 @@
 package com.amp.global.swagger;
 
 import com.amp.domain.festival.exception.FestivalErrorCode;
+import com.amp.domain.notice.exception.BookmarkErrorCode;
 import com.amp.domain.notice.exception.NoticeErrorCode;
 import com.amp.global.common.CommonErrorCode;
 import com.amp.global.common.ErrorCode;
@@ -36,7 +37,7 @@ public enum SwaggerResponseDescription {
 
     // 공지 상세 조회 API
     FAIL_TO_GET_NOTICE_DETAIL(new LinkedHashSet<>(Set.of(
-            NoticeErrorCode.INVALID_NOTICE
+            NoticeErrorCode.NOTICE_NOT_FOUND
     ))),
 
     // 공연 수정 API
@@ -56,8 +57,17 @@ public enum SwaggerResponseDescription {
 
     // 공연 삭제 API
     FAIL_TO_DELETE_FESTIVAL(new LinkedHashSet<>(Set.of(
-            FestivalErrorCode.FESTIVAL_NOT_FOUND
-    )));
+            FestivalErrorCode.FESTIVAL_NOT_FOUND,
+            NoticeErrorCode.NOTICE_NOT_FOUND
+    ))),
+
+    // 공지 북마크 업데이트 API
+    FAIL_TO_UPDATE_BOOKMARK(new LinkedHashSet<>(Set.of(
+            NoticeErrorCode.NOTICE_NOT_FOUND,
+            BookmarkErrorCode.NOTICE_ALREADY_BOOKMARKED,
+            BookmarkErrorCode.SAVED_NOTICE_NOT_EXIST
+    ))),
+    ;
 
     private final Set<ErrorCode> errorCodeList;
 

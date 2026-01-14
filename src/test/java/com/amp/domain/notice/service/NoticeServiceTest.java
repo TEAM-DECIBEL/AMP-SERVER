@@ -1,14 +1,15 @@
-package com.amp.domain.notice.entity;
+package com.amp.domain.notice.service;
 
 import com.amp.domain.category.entity.Category;
 import com.amp.domain.category.entity.FestivalCategory;
 import com.amp.domain.festival.entity.Festival;
 import com.amp.domain.festival.entity.FestivalStatus;
 import com.amp.domain.notice.dto.response.NoticeDetailResponse;
+import com.amp.domain.notice.entity.Bookmark;
+import com.amp.domain.notice.entity.Notice;
 import com.amp.domain.notice.exception.NoticeException;
 import com.amp.domain.notice.repository.NoticeRepository;
-import com.amp.domain.notice.repository.UserSavedNoticeRepository;
-import com.amp.domain.notice.service.NoticeService;
+import com.amp.domain.notice.repository.BookmarkRepository;
 import com.amp.domain.user.entity.User;
 import com.amp.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,9 +19,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -39,7 +37,7 @@ class NoticeServiceTest {
     private UserRepository userRepository;
 
     @Mock
-    private UserSavedNoticeRepository userSavedNoticeRepository;
+    private BookmarkRepository bookmarkRepository;
 
     @InjectMocks
     private NoticeService noticeService;
@@ -50,7 +48,7 @@ class NoticeServiceTest {
     private Notice notice;
     private User author;
     private User loginUser;
-    private UserSavedNotice savedNotice;
+    private Bookmark bookmark;
 
     @BeforeEach
     void setUp() {
@@ -91,7 +89,7 @@ class NoticeServiceTest {
                 .user(author)
                 .build();
 
-        savedNotice = UserSavedNotice.builder()
+        bookmark = Bookmark.builder()
                 .notice(notice)
                 .user(loginUser)
                 .build();
