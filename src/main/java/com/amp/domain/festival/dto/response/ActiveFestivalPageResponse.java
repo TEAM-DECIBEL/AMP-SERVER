@@ -1,6 +1,7 @@
 package com.amp.domain.festival.dto.response;
 
 import com.amp.domain.festival.entity.Festival;
+import com.amp.domain.festival.entity.FestivalStatus;
 import com.amp.global.common.dto.PaginationResponse;
 import org.springframework.data.domain.Page;
 
@@ -22,11 +23,11 @@ public record ActiveFestivalPageResponse(
                 .toList();
 
         List<FestivalSummaryResponse> ongoing = allItems.stream()
-                .filter(dto -> dto.status().equals("진행 중"))
+                .filter(dto -> dto.status().equals(FestivalStatus.ONGOING.getKoreanName()))
                 .toList();
 
         List<FestivalSummaryResponse> upcoming = allItems.stream()
-                .filter(dto -> dto.status().equals("진행 예정"))
+                .filter(dto -> dto.status().equals(FestivalStatus.UPCOMING.getKoreanName()))
                 .toList();
 
         return new ActiveFestivalPageResponse(
@@ -36,11 +37,4 @@ public record ActiveFestivalPageResponse(
                 PaginationResponse.from(festivalPage)
         );
     }
-}
-
-record ActiveFestivalSummary(
-        long ongoingCount,
-        long upcomingCount,
-        long totalCount
-) {
 }
