@@ -9,7 +9,7 @@ import org.springframework.http.HttpStatus;
 @RequiredArgsConstructor
 public enum NoticeErrorCode implements ErrorCode {
     // 404 Not Found
-    NOTICE_NOT_FOUND(HttpStatus.NOT_FOUND, "NTC", "001", "잘못된 공지 값입니다.");
+    NOTICE_NOT_FOUND(HttpStatus.NOT_FOUND, "NTC", "001", "존재하지 않는 공지 아이디입니다.");
 
 
     private final HttpStatus httpStatus;
