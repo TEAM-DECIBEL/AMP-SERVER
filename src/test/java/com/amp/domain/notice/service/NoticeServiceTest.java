@@ -2,17 +2,23 @@ package com.amp.domain.notice.service;
 
 import com.amp.domain.category.entity.Category;
 import com.amp.domain.category.entity.FestivalCategory;
+import com.amp.domain.category.repository.FestivalCategoryRepository;
 import com.amp.domain.festival.entity.Festival;
 import com.amp.domain.festival.entity.FestivalStatus;
+import com.amp.domain.festival.repository.FestivalRepository;
+import com.amp.domain.notice.dto.request.NoticeCreateRequest;
+import com.amp.domain.notice.dto.response.NoticeCreateResponse;
 import com.amp.domain.notice.dto.response.NoticeDetailResponse;
 import com.amp.domain.notice.entity.Bookmark;
 import com.amp.domain.notice.entity.Notice;
 import com.amp.domain.notice.exception.NoticeException;
 import com.amp.domain.notice.repository.BookmarkRepository;
 import com.amp.domain.notice.repository.NoticeRepository;
+import com.amp.domain.organizer.repository.OrganizerRepository;
 import com.amp.domain.user.entity.User;
 import com.amp.domain.user.repository.UserRepository;
 import com.amp.global.exception.CustomException;
+import com.amp.global.s3.S3Service;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -31,6 +37,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -44,6 +51,15 @@ class NoticeServiceTest {
 
     @Mock
     private BookmarkRepository bookmarkRepository;
+
+    @Mock
+    private FestivalRepository festivalRepository;
+
+    @Mock
+    private FestivalCategoryRepository festivalCategoryRepository;
+
+    @Mock
+    private OrganizerRepository organizerRepository;
 
     @InjectMocks
     private NoticeService noticeService;
@@ -106,6 +122,47 @@ class NoticeServiceTest {
                 .notice(notice)
                 .user(loginUser)
                 .build();
+
+    }
+
+    @Test
+    @DisplayName("공지 작성 - 정상적인 주최자는 공지를 작성할 수 있다")
+    void createNotice_success() {
+        // given
+        String email = "loginUserMail@mail.com";
+
+        Authentication auth =
+                new UsernamePasswordAuthenticationToken(email, null, List.of());
+        SecurityContextHolder.getContext().setAuthentication(auth);
+
+        NoticeCreateRequest request = new NoticeCreateRequest(
+                "공지 제목",
+                "1",
+                null,
+                "내용",
+                true
+        );
+
+        when(userRepository.findByEmail(email))
+                .thenReturn(Optional.of(loginUser));
+
+        when(festivalRepository.findById(1L))
+                .thenReturn(Optional.of(festival));
+
+        when(organizerRepository.existsByFestivalAndUser(festival, loginUser))
+                .thenReturn(true);
+
+        when(festivalCategoryRepository.findById(1L))
+                .thenReturn(Optional.of(festivalCategory));
+
+        when(noticeRepository.save(any(Notice.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+
+        NoticeCreateResponse response =
+                noticeService.createNotice(1L, request);
+
+        assertThat(response).isNotNull();
 
     }
 
@@ -187,6 +244,10 @@ class NoticeServiceTest {
 
         when(noticeRepository.findById(1L))
                 .thenReturn(Optional.of(notice));
+
+        String email = "author@test.com";
+        Authentication auth = new UsernamePasswordAuthenticationToken(email, null, List.of());
+        SecurityContextHolder.getContext().setAuthentication(auth);
 
         // then
         assertThatThrownBy(() -> noticeService.deleteNotice(1L))
