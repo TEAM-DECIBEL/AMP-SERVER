@@ -6,12 +6,15 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 @Entity
 @Getter
+@SQLRestriction("deleted_at IS NULL")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "festival_schedule")
 public class FestivalSchedule extends BaseTimeEntity {
@@ -25,21 +28,25 @@ public class FestivalSchedule extends BaseTimeEntity {
     @JoinColumn(name = "festival_id", nullable = false)
     private Festival festival;
 
-    @Column(name = "day_number", nullable = false)
-    private Integer dayNumber;
-
     @Column(name = "festival_date", nullable = false)
     private LocalDate festivalDate;
 
     @Column(name = "festival_time", nullable = false)
     private LocalTime festivalTime;
 
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
     @Builder
-    public FestivalSchedule(Festival festival, Integer dayNumber,
+    public FestivalSchedule(Festival festival,
                             LocalDate festivalDate, LocalTime festivalTime) {
         this.festival = festival;
-        this.dayNumber = dayNumber;
         this.festivalDate = festivalDate;
         this.festivalTime = festivalTime;
+    }
+
+    public void update(LocalDate date, LocalTime time) {
+        this.festivalDate = date;
+        this.festivalTime = time;
     }
 }
