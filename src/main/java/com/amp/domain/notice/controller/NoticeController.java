@@ -11,10 +11,7 @@ import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/common/v1/notices")
@@ -36,5 +33,19 @@ public class NoticeController {
                 .body(BaseResponse.ok(SuccessStatus.NOTICE_DETAIL_GET_SUCCESS.getMsg(), response));
     }
 
+    // 공지 삭제 API
+    @Operation(summary = "공지 삭제")
+    @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_GET_NOTICE_DETAIL)
+    @DeleteMapping("/{noticeId}")
+    public ResponseEntity<BaseResponse<NoticeDetailResponse>> deleteNotice(
+            @PathVariable("noticeId") @Positive Long noticeId
+    ) {
+        noticeService.deleteNotice(noticeId);
+
+        return ResponseEntity
+                .status(SuccessStatus.NOTICE_DELETE_SUCCESS.getHttpStatus())
+                .body(BaseResponse
+                        .ok(SuccessStatus.NOTICE_DELETE_SUCCESS.getMsg(), null));
+    }
 
 }
