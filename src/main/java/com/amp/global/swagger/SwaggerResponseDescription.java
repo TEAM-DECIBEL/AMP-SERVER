@@ -3,6 +3,7 @@ package com.amp.global.swagger;
 import com.amp.domain.festival.exception.FestivalErrorCode;
 import com.amp.domain.notice.exception.BookmarkErrorCode;
 import com.amp.domain.notice.exception.NoticeErrorCode;
+import com.amp.domain.user.exception.UserErrorCode;
 import com.amp.global.common.CommonErrorCode;
 import com.amp.global.common.ErrorCode;
 import lombok.Getter;
