@@ -24,11 +24,16 @@ public class UserFestivalController {
             @AuthenticationPrincipal CustomUserPrincipal principal) {
 
         Long userId = principal.getUserId();
-        RecentFestivalResponse response = userFestivalService.getRecentFestival(userId);
+        RecentFestivalResponse response = userFestivalService.getRecentFestival(userId).orElse(null);
+
+        if (response == null) {
+            return ResponseEntity
+                    .status(SuccessStatus.USER_FESTIVAL_RECENT_NOT_FOUND.getHttpStatus())
+                    .body(BaseResponse.of(SuccessStatus.USER_FESTIVAL_RECENT_NOT_FOUND, null));
+        }
 
         return ResponseEntity
                 .status(SuccessStatus.USER_FESTIVAL_RECENT_FOUND.getHttpStatus())
                 .body(BaseResponse.of(SuccessStatus.USER_FESTIVAL_RECENT_FOUND, response));
     }
-
 }
