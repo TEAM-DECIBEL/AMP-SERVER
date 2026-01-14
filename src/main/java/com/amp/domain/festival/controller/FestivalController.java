@@ -59,7 +59,7 @@ public class FestivalController {
     }
 
     @Operation(summary = "공연 삭제")
-    @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_DELETE_FESTIVAL_DETAIL)
+    @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_DELETE_FESTIVAL)
     @DeleteMapping("/{festivalId}")
     public ResponseEntity<BaseResponse<Void>> deleteFestival(
             @PathVariable Long festivalId) {
