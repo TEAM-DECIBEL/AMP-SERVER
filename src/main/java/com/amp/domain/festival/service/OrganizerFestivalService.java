@@ -2,7 +2,7 @@ package com.amp.domain.festival.service;
 
 import com.amp.domain.festival.dto.response.ActiveFestivalPageResponse;
 import com.amp.domain.festival.dto.response.FestivalPageResponse;
-import com.amp.domain.festival.dto.response.FestivalSummaryResponse;
+import com.amp.domain.festival.dto.response.OrganizerFestivalSummaryResponse;
 import com.amp.domain.festival.entity.Festival;
 import com.amp.domain.festival.entity.FestivalStatus;
 import com.amp.domain.festival.repository.FestivalRepository;
@@ -29,7 +29,7 @@ public class OrganizerFestivalService {
         User user = authService.getCurrentUser();
 
         Page<Festival> festivalPage = festivalRepository.findAllByMyUser(user, pageable);
-        Page<FestivalSummaryResponse> summaryPage = festivalPage.map(FestivalSummaryResponse::from);
+        Page<OrganizerFestivalSummaryResponse> summaryPage = festivalPage.map(OrganizerFestivalSummaryResponse::from);
         return FestivalPageResponse.of(summaryPage);
     }
 

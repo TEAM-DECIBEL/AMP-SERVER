@@ -1,6 +1,6 @@
 package com.amp.domain.festival.dto.response;
 
-public record ActiveFestivalSummary(
+public record OrganizerActiveFestivalSummary(
         long ongoingCount,
         long upcomingCount,
         long totalCount
