@@ -1,7 +1,7 @@
 package com.amp.domain.notice.dto.response;
 
 public record BookmarkResponse(
-        Long announcementId,
+        Long noticeId,
         boolean isBookmarked
 ) {
 }
