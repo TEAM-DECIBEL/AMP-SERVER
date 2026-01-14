@@ -57,7 +57,16 @@ public enum SwaggerResponseDescription {
     // 공연 삭제 API
     FAIL_TO_DELETE_FESTIVAL(new LinkedHashSet<>(Set.of(
             FestivalErrorCode.FESTIVAL_NOT_FOUND
-    )));
+    ))),
+
+    // 공지 삭제 API
+    FAIL_TO_DELETE_NOTICE(new LinkedHashSet<>(Set.of(
+            NoticeErrorCode.NOTICE_NOT_FOUND,
+            NoticeErrorCode.NOTICE_ALREADY_DELETED,
+            NoticeErrorCode.DELETE_NOTICE_FAIL,
+            UserErrorCode.USER_NOT_FOUND,
+            NoticeErrorCode.NOTICE_DELETE_FORBIDDEN
+    ))),;
 
     private final Set<ErrorCode> errorCodeList;
 
