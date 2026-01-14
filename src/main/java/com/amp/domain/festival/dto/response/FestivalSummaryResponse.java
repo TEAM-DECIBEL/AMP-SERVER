@@ -17,6 +17,8 @@ public record FestivalSummaryResponse(
         Long dDay
 
 ) {
+    private static final DateTimeFormatter PERIOD_FORMATTER = DateTimeFormatter.ofPattern("yyyy. MM. dd");
+
     public static FestivalSummaryResponse withDDay(Festival festival) {
         return new FestivalSummaryResponse(
                 festival.getId(),
@@ -54,9 +56,8 @@ public record FestivalSummaryResponse(
     }
 
     private static String formatPeriod(Festival festival) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy. MM. dd");
-        String startStr = festival.getStartDate().format(formatter);
-        String endStr = festival.getEndDate().format(formatter);
+        String startStr = festival.getStartDate().format(PERIOD_FORMATTER);
+        String endStr = festival.getEndDate().format(PERIOD_FORMATTER);
 
         if (festival.getStartDate().equals(festival.getEndDate())) {
             return startStr;
