@@ -3,6 +3,7 @@ package com.amp.global.swagger;
 import com.amp.domain.festival.exception.FestivalErrorCode;
 import com.amp.domain.notice.exception.BookmarkErrorCode;
 import com.amp.domain.notice.exception.NoticeErrorCode;
+import com.amp.domain.user.exception.UserErrorCode;
 import com.amp.global.common.CommonErrorCode;
 import com.amp.global.common.ErrorCode;
 import lombok.Getter;
@@ -67,7 +68,15 @@ public enum SwaggerResponseDescription {
             BookmarkErrorCode.NOTICE_ALREADY_BOOKMARKED,
             BookmarkErrorCode.SAVED_NOTICE_NOT_EXIST
     ))),
-    ;
+
+    // 공지 삭제 API
+    FAIL_TO_DELETE_NOTICE(new LinkedHashSet<>(Set.of(
+            NoticeErrorCode.NOTICE_NOT_FOUND,
+            NoticeErrorCode.NOTICE_ALREADY_DELETED,
+            NoticeErrorCode.DELETE_NOTICE_FAIL,
+            UserErrorCode.USER_NOT_FOUND,
+            NoticeErrorCode.NOTICE_DELETE_FORBIDDEN
+    ))),;
 
     private final Set<ErrorCode> errorCodeList;
 

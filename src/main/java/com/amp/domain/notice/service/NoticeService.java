@@ -92,4 +92,31 @@ public class NoticeService {
                 authentication.isAuthenticated() &&
                 !(authentication instanceof AnonymousAuthenticationToken);
     }
+
+    @Transactional
+    public void deleteNotice(Long noticeId) {
+
+        Notice notice = noticeRepository.findById(noticeId)
+                .orElseThrow(() ->
+                        new NoticeException(NoticeErrorCode.NOTICE_NOT_FOUND));
+
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        if (!isLoggedInUser(authentication)) {
+            throw new CustomException(UserErrorCode.USER_NOT_FOUND);
+        }
+
+        String email = authentication.getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new CustomException(UserErrorCode.USER_NOT_FOUND)
+                );
+
+        if (!notice.getUser().getId().equals(user.getId())) {
+            throw new NoticeException(NoticeErrorCode.NOTICE_DELETE_FORBIDDEN);
+        }
+
+        notice.delete();
+    }
 }
