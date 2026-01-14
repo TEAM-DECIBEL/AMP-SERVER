@@ -7,11 +7,13 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "stage")
+@SQLRestriction("deleted_at IS NULL")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 public class Stage extends BaseTimeEntity {
@@ -37,6 +39,11 @@ public class Stage extends BaseTimeEntity {
     @Builder
     public Stage(Festival festival, String title, String location) {
         this.festival = festival;
+        this.title = title;
+        this.location = location;
+    }
+
+    public void update(String title, String location) {
         this.title = title;
         this.location = location;
     }
