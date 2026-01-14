@@ -24,7 +24,7 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
     @Query("SELECT f FROM Festival f " +
             "JOIN Organizer o ON o.festival = f " +
             "WHERE o.user = :user " +
-            "AND f.deletedAt IS NULL "
+            "AND f.deletedAt IS NULL " + "ORDER BY f.endDate DESC , f.startTime DESC , f.title ASC"
     )
     Page<Festival> findAllByMyUser(@Param("user") User user, Pageable pageable);
 
