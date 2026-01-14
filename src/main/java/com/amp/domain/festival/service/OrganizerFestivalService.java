@@ -14,6 +14,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 
 @RequiredArgsConstructor
 @Service
@@ -38,7 +40,7 @@ public class OrganizerFestivalService {
         long ongoingCount = festivalRepository.countByOrganizerAndStatus(user, FestivalStatus.ONGOING);
         long upcomingCount = festivalRepository.countByOrganizerAndStatus(user, FestivalStatus.UPCOMING);
 
-        Page<Festival> activePage = festivalRepository.findActiveFestivalsByUser(user, pageable);
+        Page<Festival> activePage = festivalRepository.findActiveFestivalsByUser(user, List.of(FestivalStatus.ONGOING, FestivalStatus.UPCOMING), pageable);
         return ActiveFestivalPageResponse.of(ongoingCount, upcomingCount, activePage);
     }
 }
