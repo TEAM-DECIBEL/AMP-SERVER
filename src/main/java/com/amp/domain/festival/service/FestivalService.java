@@ -66,15 +66,16 @@ public class FestivalService {
         List<StageRequest> stages = parseStages(request.stages());
         List<Long> activeCategoryIds = parseCategoryIds(request.activeCategoryIds());
 
-        LocalDate startDate = calculateDate(schedules, true);
-        LocalDate endDate = calculateDate(schedules, false);
-
         if (schedules == null || schedules.isEmpty()) {
             throw new CustomException(FestivalErrorCode.SCHEDULES_REQUIRED);
         }
         if (activeCategoryIds == null || activeCategoryIds.isEmpty()) {
             throw new CustomException(CategoryErrorCode.CATEGORY_REQUIRED);
         }
+
+        LocalDate startDate = calculateDate(schedules, true);
+        LocalDate endDate = calculateDate(schedules, false);
+
 
         if (request.mainImage() == null || request.mainImage().isEmpty()) {
             throw new CustomException(FestivalErrorCode.MISSING_MAIN_IMAGE);
