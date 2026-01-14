@@ -30,9 +30,8 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
 
     @Query("SELECT f FROM Festival f JOIN Organizer o ON o.festival = f " +
             "WHERE o.user = :user " +
-            "AND f.status IN (com.amp.domain.festival.entity.FestivalStatus.ONGOING, com.amp.domain.festival.entity.FestivalStatus.UPCOMING) " +
-            "AND f.deletedAt IS NULL" + " ORDER BY f.startDate ASC, f.startTime ASC, f.title ASC")
-    Page<Festival> findActiveFestivalsByUser(@Param("user") User user, Pageable pageable);
+            "AND f.status IN :statuses " + "AND f.deletedAt IS NULL" + " ORDER BY f.startDate ASC, f.startTime ASC, f.title ASC")
+    Page<Festival> findActiveFestivalsByUser(@Param("user") User user, @Param("statuses") List<FestivalStatus> statuses, Pageable pageable);
 
     @Query("SELECT COUNT(f) FROM Festival f JOIN Organizer o ON o.festival = f " +
             "WHERE o.user = :user AND f.status = :status AND f.deletedAt IS NULL")
