@@ -55,7 +55,7 @@ public record OrganizerFestivalSummaryResponse(
         }
     }
 
-    private static String formatPeriod(Festival festival) {
+    public static String formatPeriod(Festival festival) {
         String startStr = festival.getStartDate().format(PERIOD_FORMATTER);
         String endStr = festival.getEndDate().format(PERIOD_FORMATTER);
 

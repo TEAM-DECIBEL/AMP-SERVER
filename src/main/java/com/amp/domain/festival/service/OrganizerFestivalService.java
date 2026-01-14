@@ -1,7 +1,7 @@
 package com.amp.domain.festival.service;
 
-import com.amp.domain.festival.dto.response.ActiveFestivalPageResponse;
-import com.amp.domain.festival.dto.response.FestivalPageResponse;
+import com.amp.domain.festival.dto.response.OrganizerActiveFestivalPageResponse;
+import com.amp.domain.festival.dto.response.OrganizerFestivalPageResponse;
 import com.amp.domain.festival.dto.response.OrganizerFestivalSummaryResponse;
 import com.amp.domain.festival.entity.Festival;
 import com.amp.domain.festival.entity.FestivalStatus;
@@ -25,22 +25,22 @@ public class OrganizerFestivalService {
     private final AuthService authService;
 
     @Transactional(readOnly = true)
-    public FestivalPageResponse getMyFestivals(Pageable pageable) {
+    public OrganizerFestivalPageResponse getMyFestivals(Pageable pageable) {
         User user = authService.getCurrentUser();
 
         Page<Festival> festivalPage = festivalRepository.findAllByMyUser(user, pageable);
         Page<OrganizerFestivalSummaryResponse> summaryPage = festivalPage.map(OrganizerFestivalSummaryResponse::from);
-        return FestivalPageResponse.of(summaryPage);
+        return OrganizerFestivalPageResponse.of(summaryPage);
     }
 
     @Transactional(readOnly = true)
-    public ActiveFestivalPageResponse getActiveFestivals(Pageable pageable) {
+    public OrganizerActiveFestivalPageResponse getActiveFestivals(Pageable pageable) {
         User user = authService.getCurrentUser();
 
         long ongoingCount = festivalRepository.countByOrganizerAndStatus(user, FestivalStatus.ONGOING);
         long upcomingCount = festivalRepository.countByOrganizerAndStatus(user, FestivalStatus.UPCOMING);
 
         Page<Festival> activePage = festivalRepository.findActiveFestivalsByUser(user, List.of(FestivalStatus.ONGOING, FestivalStatus.UPCOMING), pageable);
-        return ActiveFestivalPageResponse.of(ongoingCount, upcomingCount, activePage);
+        return OrganizerActiveFestivalPageResponse.of(ongoingCount, upcomingCount, activePage);
     }
 }
