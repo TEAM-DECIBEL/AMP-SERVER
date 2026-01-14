@@ -1,5 +1,8 @@
 package com.amp.domain.festival.entity;
 
+import com.amp.domain.category.entity.FestivalCategory;
+import com.amp.domain.organizer.entity.Organizer;
+import com.amp.domain.stage.entity.Stage;
 import com.amp.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -10,6 +13,8 @@ import org.hibernate.annotations.SQLRestriction;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "festival")
@@ -42,6 +47,18 @@ public class Festival extends BaseTimeEntity {
     @Column(nullable = false, length = 20)
     private FestivalStatus status;
 
+    @OneToMany(mappedBy = "festival", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<FestivalSchedule> schedules = new ArrayList<>();
+
+    @OneToMany(mappedBy = "festival", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Stage> stages = new ArrayList<>();
+
+    @OneToMany(mappedBy = "festival", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<FestivalCategory> festivalCategories = new ArrayList<>();
+
+    @OneToMany(mappedBy = "festival", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Organizer> organizers = new ArrayList<>();
+
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
@@ -66,5 +83,19 @@ public class Festival extends BaseTimeEntity {
         } else {
             this.status = FestivalStatus.ONGOING;
         }
+    }
+
+    public void updateInfo(String title, String location) {
+        this.title = title;
+        this.location = location;
+    }
+
+    public void delete() {
+        this.deletedAt = LocalDateTime.now();
+    }
+
+    public void updateDates(LocalDate startDate, LocalDate endDate) {
+        this.startDate = startDate;
+        this.endDate = endDate;
     }
 }
