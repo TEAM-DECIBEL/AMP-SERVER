@@ -7,7 +7,7 @@ import com.amp.domain.notice.entity.Notice;
 import com.amp.domain.notice.exception.NoticeErrorCode;
 import com.amp.domain.notice.exception.NoticeException;
 import com.amp.domain.notice.repository.NoticeRepository;
-import com.amp.domain.notice.repository.UserSavedNoticeRepository;
+import com.amp.domain.notice.repository.BookmarkRepository;
 import com.amp.domain.user.entity.User;
 import com.amp.domain.user.exception.UserErrorCode;
 import com.amp.domain.user.repository.UserRepository;
@@ -27,7 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class NoticeService {
 
     private final NoticeRepository noticeRepository;
-    private final UserSavedNoticeRepository userSavedNoticeRepository;
+    private final BookmarkRepository bookmarkRepository;
     private final UserRepository userRepository;
 
     public NoticeDetailResponse getNoticeDetail(Long noticeId) {
@@ -81,7 +81,7 @@ public class NoticeService {
                     new CustomException(UserErrorCode.USER_NOT_FOUND));
 
 
-            isSaved = userSavedNoticeRepository
+            isSaved = bookmarkRepository
                     .existsByNoticeAndUser(notice, user);
         }
         return isSaved;
