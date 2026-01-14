@@ -9,6 +9,9 @@ import org.springframework.http.HttpStatus;
 @RequiredArgsConstructor
 public enum CategoryErrorCode implements ErrorCode {
 
+    // 400 BAD REQUEST
+    CATEGORY_REQUIRED(HttpStatus.BAD_REQUEST, "CAT", "001", "한 개 이상의 카테고리 선택은 필수입니다."),
+
     // 404 NOT FOUND
     CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "CAT", "001", "존재하지 않는 카테고리입니다.");
 
