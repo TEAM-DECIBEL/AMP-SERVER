@@ -20,18 +20,16 @@ import com.amp.domain.stage.dto.request.StageRequest;
 import com.amp.domain.stage.repository.StageRepository;
 import com.amp.domain.stage.service.StageService;
 import com.amp.domain.user.entity.User;
-import com.amp.domain.user.exception.UserErrorCode;
-import com.amp.domain.user.repository.UserRepository;
 import com.amp.global.annotation.LogExecutionTime;
 import com.amp.global.common.CommonErrorCode;
 import com.amp.global.exception.CustomException;
 import com.amp.global.s3.S3ErrorCode;
 import com.amp.global.s3.S3Service;
+import com.amp.global.security.service.AuthService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -47,7 +45,6 @@ public class FestivalService {
 
     private final FestivalRepository festivalRepository;
     private final OrganizerRepository organizerRepository;
-    private final UserRepository userRepository;
     private final StageRepository stageRepository;
     private final FestivalScheduleRepository festivalScheduleRepository;
     private final FestivalCategoryRepository festivalCategoryRepository;
@@ -55,13 +52,14 @@ public class FestivalService {
     private final FestivalScheduleService scheduleService;
     private final StageService stageService;
     private final FestivalCategoryService categoryService;
+    private final AuthService authService;
 
     private final S3Service s3Service;
     private final ObjectMapper objectMapper;
 
     @Transactional
     public FestivalCreateResponse createFestival(FestivalCreateRequest request) {
-        User user = getCurrentUser();
+        User user = authService.getCurrentUser();
 
         List<ScheduleRequest> schedules = parseSchedules(request.schedules());
         List<StageRequest> stages = parseStages(request.stages());
@@ -133,7 +131,7 @@ public class FestivalService {
 
     @Transactional(readOnly = true)
     public FestivalDetailResponse getFestivalDetail(Long festivalId) {
-        User user = getCurrentUser();
+        User user = authService.getCurrentUser();
         Festival festival = findFestival(festivalId);
 
         validateOrganizer(festival, user);
@@ -143,7 +141,7 @@ public class FestivalService {
 
     @Transactional
     public FestivalUpdateResponse updateFestival(Long festivalId, FestivalUpdateRequest request) {
-        User user = getCurrentUser();
+        User user = authService.getCurrentUser();
         Festival festival = findFestival(festivalId);
 
         validateOrganizer(festival, user);
@@ -165,7 +163,7 @@ public class FestivalService {
 
     @Transactional
     public void deleteFestival(Long festivalId) {
-        User user = getCurrentUser();
+        User user = authService.getCurrentUser();
         Festival festival = findFestival(festivalId);
         validateOrganizer(festival, user);
 
@@ -259,12 +257,6 @@ public class FestivalService {
         } catch (Exception e) {
             throw new CustomException(FestivalErrorCode.INVALID_CATEGORY_FORMAT);
         }
-    }
-
-    private User getCurrentUser() {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
     }
 
     private Festival findFestival(Long id) {
