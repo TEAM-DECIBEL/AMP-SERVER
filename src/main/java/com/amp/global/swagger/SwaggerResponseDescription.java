@@ -42,7 +42,6 @@ public enum SwaggerResponseDescription {
     // 공연 수정 API
     FAIL_TO_UPDATE_FESTIVAL(new LinkedHashSet<>(Set.of(
             FestivalErrorCode.INVALID_FESTIVAL_PERIOD,
-            FestivalErrorCode.FESTIVAL_CREATE_FAILED,
             FestivalErrorCode.SCHEDULES_REQUIRED,
             FestivalErrorCode.INVALID_STAGE_FORMAT,
             FestivalErrorCode.INVALID_CATEGORY_FORMAT,
@@ -56,7 +55,7 @@ public enum SwaggerResponseDescription {
     ))),
 
     // 공연 삭제 API
-    FAIL_TO_DELETE_FESTIVAL_DETAIL(new LinkedHashSet<>(Set.of(
+    FAIL_TO_DELETE_FESTIVAL(new LinkedHashSet<>(Set.of(
             FestivalErrorCode.FESTIVAL_NOT_FOUND
     )));
 
