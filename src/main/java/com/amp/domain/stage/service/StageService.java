@@ -3,7 +3,6 @@ package com.amp.domain.stage.service;
 import com.amp.domain.festival.entity.Festival;
 import com.amp.domain.stage.dto.request.StageRequest;
 import com.amp.domain.stage.entity.Stage;
-import com.amp.domain.stage.repository.StageRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +20,10 @@ import java.util.stream.Collectors;
 public class StageService {
 
     public void syncStages(Festival festival, List<StageRequest> requests) {
+        if (requests == null || requests.isEmpty()) {
+            return;
+        }
+
         List<Stage> existStages = festival.getStages();
         Map<Long, Stage> stageMap = existStages.stream()
                 .collect(Collectors.toMap(Stage::getId, Function.identity()));
