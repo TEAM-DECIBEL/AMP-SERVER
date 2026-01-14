@@ -11,6 +11,8 @@ import java.time.LocalTime;
 @Getter
 @NoArgsConstructor
 public class ScheduleRequest {
+    private Long id;
+
     @NotNull(message = "공연 날짜는 필수입니다.")
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate festivalDate;

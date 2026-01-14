@@ -37,6 +37,26 @@ public enum SwaggerResponseDescription {
     // 공지 상세 조회 API
     FAIL_TO_GET_NOTICE_DETAIL(new LinkedHashSet<>(Set.of(
             NoticeErrorCode.INVALID_NOTICE
+    ))),
+
+    // 공연 수정 API
+    FAIL_TO_UPDATE_FESTIVAL(new LinkedHashSet<>(Set.of(
+            FestivalErrorCode.INVALID_FESTIVAL_PERIOD,
+            FestivalErrorCode.SCHEDULES_REQUIRED,
+            FestivalErrorCode.INVALID_STAGE_FORMAT,
+            FestivalErrorCode.INVALID_CATEGORY_FORMAT,
+            FestivalErrorCode.INVALID_SCHEDULE_FORMAT,
+            FestivalErrorCode.FESTIVAL_NOT_FOUND
+    ))),
+
+    // 공연 상세 정보 조회 API
+    FAIL_TO_GET_FESTIVAL_DETAIL(new LinkedHashSet<>(Set.of(
+            FestivalErrorCode.FESTIVAL_NOT_FOUND
+    ))),
+
+    // 공연 삭제 API
+    FAIL_TO_DELETE_FESTIVAL(new LinkedHashSet<>(Set.of(
+            FestivalErrorCode.FESTIVAL_NOT_FOUND
     )));
 
     private final Set<ErrorCode> errorCodeList;
