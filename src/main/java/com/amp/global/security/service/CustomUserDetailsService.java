@@ -1,8 +1,8 @@
 package com.amp.global.security.service;
 
-
 import com.amp.domain.user.entity.User;
 import com.amp.domain.user.repository.UserRepository;
+import com.amp.global.security.CustomUserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -23,10 +23,10 @@ public class CustomUserDetailsService implements UserDetailsService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
 
-        return new org.springframework.security.core.userdetails.User(
+        return new CustomUserPrincipal(
+                user.getId(),
                 user.getEmail(),
-                "",
-                Collections.singletonList(new SimpleGrantedAuthority("UserType" + user.getUserType().name()))
+                Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + user.getUserType().name()))
         );
     }
 
