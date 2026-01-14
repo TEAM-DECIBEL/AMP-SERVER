@@ -1,5 +1,6 @@
 package com.amp.domain.festival.service;
 
+import com.amp.domain.category.exception.CategoryErrorCode;
 import com.amp.domain.category.repository.FestivalCategoryRepository;
 import com.amp.domain.category.service.FestivalCategoryService;
 import com.amp.domain.festival.dto.request.FestivalCreateRequest;
@@ -36,6 +37,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.function.BinaryOperator;
 
 @Service
 @Slf4j
@@ -64,16 +66,19 @@ public class FestivalService {
         List<StageRequest> stages = parseStages(request.stages());
         List<Long> activeCategoryIds = parseCategoryIds(request.activeCategoryIds());
 
+        LocalDate startDate = calculateDate(schedules, true);
+        LocalDate endDate = calculateDate(schedules, false);
+
         if (schedules == null || schedules.isEmpty()) {
             throw new CustomException(FestivalErrorCode.SCHEDULES_REQUIRED);
+        }
+        if (activeCategoryIds == null || activeCategoryIds.isEmpty()) {
+            throw new CustomException(CategoryErrorCode.CATEGORY_REQUIRED);
         }
 
         if (request.mainImage() == null || request.mainImage().isEmpty()) {
             throw new CustomException(FestivalErrorCode.MISSING_MAIN_IMAGE);
         }
-
-        LocalDate startDate = calculateDate(schedules, true);
-        LocalDate endDate = calculateDate(schedules, false);
 
         String imageKey = null;
         try {
@@ -101,9 +106,7 @@ public class FestivalService {
             organizerRepository.save(organizer);
 
             scheduleService.syncSchedules(savedFestival, schedules);
-            if (stages != null) {
-                stageService.syncStages(savedFestival, stages);
-            }
+            stageService.syncStages(savedFestival, stages);
             categoryService.syncCategories(savedFestival, activeCategoryIds);
 
             return FestivalCreateResponse.from(savedFestival);
@@ -190,10 +193,10 @@ public class FestivalService {
     private LocalDate calculateDate(List<ScheduleRequest> schedules, boolean isStart) {
         return schedules.stream()
                 .map(ScheduleRequest::getFestivalDate)
-                .min(isStart ? Comparator.naturalOrder() : Comparator.reverseOrder())
+                .reduce(isStart ? BinaryOperator.minBy(Comparator.naturalOrder())
+                        : BinaryOperator.maxBy(Comparator.naturalOrder()))
                 .orElseThrow(() -> new CustomException(FestivalErrorCode.INVALID_FESTIVAL_PERIOD));
     }
-
 
     @LogExecutionTime("이미지 업로드")
     private String uploadImage(MultipartFile image) {
