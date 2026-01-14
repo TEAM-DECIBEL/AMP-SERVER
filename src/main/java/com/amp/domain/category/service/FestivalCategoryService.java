@@ -49,7 +49,9 @@ public class FestivalCategoryService {
     }
 
     private void validateCategories(List<Long> categoryIds) {
-        if (categoryIds == null || categoryIds.isEmpty()) return;
+        if (categoryIds == null || categoryIds.isEmpty()) {
+            throw new CustomException(CategoryErrorCode.CATEGORY_REQUIRED);
+        }
 
         List<Category> categories = categoryRepository.findAllById(categoryIds);
         if (categories.size() != categoryIds.size()) {
