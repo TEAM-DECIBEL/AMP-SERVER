@@ -22,7 +22,7 @@ public class AuthService {
             throw new CustomException(UserErrorCode.USER_NOT_AUTHENTICATED);
         }
 
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        String email = authentication.getName();
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
     }
