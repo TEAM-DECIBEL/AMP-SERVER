@@ -8,6 +8,7 @@ import com.amp.global.common.SuccessStatus;
 import com.amp.global.response.success.BaseResponse;
 import com.amp.global.swagger.SwaggerResponseDescription;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +29,7 @@ public class BookmarkController {
     @PostMapping("/{noticeId}/bookmark")
     public ResponseEntity<BaseResponse<BookmarkResponse>> saveNotice(
             @PathVariable("noticeId") @Positive Long noticeId,
-            @RequestBody BookmarkRequest bookmarkRequest
+            @RequestBody @Valid BookmarkRequest bookmarkRequest
     ) {
         BookmarkResponse response =
                 bookmarkService.updateBookmark(noticeId, bookmarkRequest);
