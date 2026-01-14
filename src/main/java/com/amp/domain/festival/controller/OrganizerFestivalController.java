@@ -1,7 +1,7 @@
 package com.amp.domain.festival.controller;
 
-import com.amp.domain.festival.dto.response.ActiveFestivalPageResponse;
-import com.amp.domain.festival.dto.response.FestivalPageResponse;
+import com.amp.domain.festival.dto.response.OrganizerActiveFestivalPageResponse;
+import com.amp.domain.festival.dto.response.OrganizerFestivalPageResponse;
 import com.amp.domain.festival.service.OrganizerFestivalService;
 import com.amp.global.common.SuccessStatus;
 import com.amp.global.response.success.BaseResponse;
@@ -24,10 +24,10 @@ public class OrganizerFestivalController {
 
     @Operation(summary = "진행한 모든 공연 조회", description = "주최사가 등록한 모든 공연 중 삭제된 것을 제외하고 전부 조회")
     @GetMapping("/all")
-    public ResponseEntity<BaseResponse<FestivalPageResponse>> getMyFestivals(
+    public ResponseEntity<BaseResponse<OrganizerFestivalPageResponse>> getMyFestivals(
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
-        FestivalPageResponse response = organizerFestivalService.getMyFestivals(pageable);
+        OrganizerFestivalPageResponse response = organizerFestivalService.getMyFestivals(pageable);
         return ResponseEntity
                 .status(SuccessStatus.GET_MY_ALL_FESTIVALS.getHttpStatus())
                 .body(BaseResponse.create(SuccessStatus.GET_MY_ALL_FESTIVALS.getMsg(), response));
@@ -35,10 +35,10 @@ public class OrganizerFestivalController {
 
     @Operation(summary = "진행중, 진행 예정 공연 조회", description = "주최사가 등록한 모든 공연 중 진행 중이거나 예정인 공연 조회")
     @GetMapping("/active")
-    public ResponseEntity<BaseResponse<ActiveFestivalPageResponse>> getActiveFestivals(
+    public ResponseEntity<BaseResponse<OrganizerActiveFestivalPageResponse>> getActiveFestivals(
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
-        ActiveFestivalPageResponse response = organizerFestivalService.getActiveFestivals(pageable);
+        OrganizerActiveFestivalPageResponse response = organizerFestivalService.getActiveFestivals(pageable);
         return ResponseEntity
                 .status(SuccessStatus.GET_MY_ALL_ACTIVE_FESTIVALS.getHttpStatus())
                 .body(BaseResponse.create(SuccessStatus.GET_MY_ALL_ACTIVE_FESTIVALS.getMsg(), response));

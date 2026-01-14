@@ -7,13 +7,13 @@ import org.springframework.data.domain.Page;
 
 import java.util.List;
 
-public record ActiveFestivalPageResponse(
+public record OrganizerActiveFestivalPageResponse(
         OrganizerActiveFestivalSummary summary,
         List<OrganizerFestivalSummaryResponse> ongoingFestivals,
         List<OrganizerFestivalSummaryResponse> upcomingFestivals,
         PaginationResponse paginationResponse
 ) {
-    public static ActiveFestivalPageResponse of(
+    public static OrganizerActiveFestivalPageResponse of(
             long ongoingCount,
             long upcomingCount,
             Page<Festival> festivalPage
@@ -30,7 +30,7 @@ public record ActiveFestivalPageResponse(
                 .filter(dto -> dto.status().equals(FestivalStatus.UPCOMING.getKoreanName()))
                 .toList();
 
-        return new ActiveFestivalPageResponse(
+        return new OrganizerActiveFestivalPageResponse(
                 new OrganizerActiveFestivalSummary(ongoingCount, upcomingCount, ongoingCount + upcomingCount),
                 ongoing,
                 upcoming,
