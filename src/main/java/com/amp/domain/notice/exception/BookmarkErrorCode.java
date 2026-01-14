@@ -7,7 +7,7 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 @RequiredArgsConstructor
-public enum UserSavedNoticeErrorCode implements ErrorCode {
+public enum BookmarkErrorCode implements ErrorCode {
     // 400 Bad Request
     NOTICE_ALREADY_BOOKMARKED(HttpStatus.BAD_REQUEST, "SAV", "001", "이미 저장한 공지입니다."),
     NOTICE_NOT_BOOKMARKED(HttpStatus.BAD_REQUEST, "SAV", "001", "이미 저장한 공지입니다."),

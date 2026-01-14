@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
         ))
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class UserSavedNotice extends BaseTimeEntity {
+public class Bookmark extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,7 +32,7 @@ public class UserSavedNotice extends BaseTimeEntity {
     private Notice notice;
 
     @Builder
-    public UserSavedNotice(User user, Notice notice) {
+    public Bookmark(User user, Notice notice) {
         this.user = user;
         this.notice = notice;
     }
