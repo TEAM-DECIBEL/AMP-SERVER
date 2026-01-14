@@ -36,6 +36,7 @@ public class FestivalController {
     }
 
     @Operation(summary = "공연 상세 조회 - 수정용")
+    @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_GET_FESTIVAL_DETAIL)
     @GetMapping("/{festivalId}")
     public ResponseEntity<BaseResponse<FestivalDetailResponse>> getFestivalDetail(
             @PathVariable Long festivalId) {
@@ -46,6 +47,7 @@ public class FestivalController {
     }
 
     @Operation(summary = "공연 수정")
+    @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_UPDATE_FESTIVAL)
     @PatchMapping("/{festivalId}")
     public ResponseEntity<BaseResponse<FestivalUpdateResponse>> updateFestival(
             @PathVariable Long festivalId,
@@ -57,6 +59,7 @@ public class FestivalController {
     }
 
     @Operation(summary = "공연 삭제")
+    @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_DELETE_FESTIVAL_DETAIL)
     @DeleteMapping("/{festivalId}")
     public ResponseEntity<BaseResponse<Void>> deleteFestival(
             @PathVariable Long festivalId) {
