@@ -18,8 +18,8 @@ public enum NoticeErrorCode implements ErrorCode {
     NOTICE_NOT_FOUND(HttpStatus.NOT_FOUND, "NTC", "001", "존재하지 않는 공지 아이디입니다."),
 
     // 500 Internal Server Error
-    DELETE_NOTICE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "NTC", "001", "공지를 삭제하지 못했습니다.");
-
+    DELETE_NOTICE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "NTC", "001", "공지를 삭제하지 못했습니다."),
+    NOTICE_CREATE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "NTC", "002", "공지를 생성하지 못했습니다.");
 
     private final HttpStatus httpStatus;
     private final String domain;
