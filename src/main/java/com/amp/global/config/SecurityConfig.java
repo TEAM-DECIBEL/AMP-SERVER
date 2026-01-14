@@ -66,13 +66,20 @@ public class SecurityConfig {
 
                 // 요청 권한 설정
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(
+                                "/api/v1/notices/*/bookmark"
+                        ).authenticated()   // 북마크 기능 비로그인 환경에서 비허용
+
+                        .requestMatchers(
+                                "/api/v1/notices/*"
+                        ).permitAll()   // 게시글 상세 조회 비회원 환경에서 허용
+
                         // 공개 엔드포인트
                         .requestMatchers(
                                 "/api/auth/**",
                                 "/api/public/**",
                                 "/oauth2/**",
                                 "/login/**",
-                                "/api/common/v1/notices/**",
                                 "/h2-console/**",
                                 "/test-login.html",
                                 "/*.html",
@@ -83,7 +90,7 @@ public class SecurityConfig {
                                 "/swagger-resources/**" // 스웨거랑 api 독스는 배포전 반드시 따로 관리 해야함 제발 나에게 상기시켜줘
                         ).permitAll()
 
-                         // 주최사 권한
+                        // 주최사 권한
                         .requestMatchers("/api/organizer/**").hasRole("ORGANIZER")
                         .requestMatchers("/api/auth/onboarding/**").authenticated() // 온보딩 api는 일단 소셜로그인 거친 이후로 접근 가능
 
