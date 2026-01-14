@@ -1,5 +1,6 @@
 package com.amp.domain.festival.service;
 
+import com.amp.domain.category.repository.FestivalCategoryRepository;
 import com.amp.domain.category.service.FestivalCategoryService;
 import com.amp.domain.festival.dto.request.FestivalCreateRequest;
 import com.amp.domain.festival.dto.request.FestivalUpdateRequest;
@@ -10,9 +11,11 @@ import com.amp.domain.festival.dto.response.FestivalUpdateResponse;
 import com.amp.domain.festival.entity.Festival;
 import com.amp.domain.festival.exception.FestivalErrorCode;
 import com.amp.domain.festival.repository.FestivalRepository;
+import com.amp.domain.festival.repository.FestivalScheduleRepository;
 import com.amp.domain.organizer.entity.Organizer;
 import com.amp.domain.organizer.repository.OrganizerRepository;
 import com.amp.domain.stage.dto.request.StageRequest;
+import com.amp.domain.stage.repository.StageRepository;
 import com.amp.domain.stage.service.StageService;
 import com.amp.domain.user.entity.User;
 import com.amp.domain.user.exception.UserErrorCode;
@@ -42,6 +45,9 @@ public class FestivalService {
     private final FestivalRepository festivalRepository;
     private final OrganizerRepository organizerRepository;
     private final UserRepository userRepository;
+    private final StageRepository stageRepository;
+    private final FestivalScheduleRepository festivalScheduleRepository;
+    private final FestivalCategoryRepository festivalCategoryRepository;
 
     private final FestivalScheduleService scheduleService;
     private final StageService stageService;
@@ -125,9 +131,7 @@ public class FestivalService {
         User user = getCurrentUser();
         Festival festival = findFestival(festivalId);
 
-        if (!organizerRepository.existsByFestivalAndUser(festival, user)) {
-            throw new CustomException(CommonErrorCode.FORBIDDEN);
-        }
+        validateOrganizer(festival, user);
 
         return FestivalDetailResponse.from(festival);
     }
@@ -154,11 +158,17 @@ public class FestivalService {
         Festival festival = findFestival(festivalId);
         validateOrganizer(festival, user);
 
+        festivalScheduleRepository.softDeleteByFestivalId(festivalId);
+        stageRepository.softDeleteByFestivalId(festivalId);
+        organizerRepository.softDeleteByFestivalId(festivalId);
+        festivalCategoryRepository.softDeleteByFestivalId(festivalId);
+
+        festivalRepository.softDeleteById(festivalId);
+
+/*
         String imageUrl = festival.getMainImageUrl();
 
-        festival.delete();
-
-/*        if (imageUrl != null && !imageUrl.isEmpty()) {
+        if (imageUrl != null && !imageUrl.isEmpty()) {
             try {
                 String key = extractKeyFromUrl(imageUrl);
                 s3Service.delete(key);
