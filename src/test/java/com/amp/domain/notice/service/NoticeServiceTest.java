@@ -8,8 +8,8 @@ import com.amp.domain.notice.dto.response.NoticeDetailResponse;
 import com.amp.domain.notice.entity.Bookmark;
 import com.amp.domain.notice.entity.Notice;
 import com.amp.domain.notice.exception.NoticeException;
-import com.amp.domain.notice.repository.NoticeRepository;
 import com.amp.domain.notice.repository.BookmarkRepository;
+import com.amp.domain.notice.repository.NoticeRepository;
 import com.amp.domain.user.entity.User;
 import com.amp.domain.user.repository.UserRepository;
 import com.amp.global.exception.CustomException;
@@ -21,6 +21,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -160,7 +165,7 @@ class NoticeServiceTest {
                 noticeService.getNoticeDetail(1L)
         )
                 .isInstanceOf(NoticeException.class)
-                .hasMessage("잘못된 공지 값입니다.");
+                .hasMessage("존재하지 않는 공지 아이디입니다.");
     }
 
     @Test
@@ -173,7 +178,7 @@ class NoticeServiceTest {
         // then
         assertThatThrownBy(() -> noticeService.deleteNotice(1L))
                 .isInstanceOf(NoticeException.class)
-                .hasMessage("잘못된 공지 값입니다.");
+                .hasMessage("존재하지 않는 공지 아이디입니다.");
     }
 
     @Test
