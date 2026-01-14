@@ -34,10 +34,6 @@ public class User {
     @Column(nullable = false, name = "provider_id")
     private String providerId;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Role role;
-
     private boolean isActive;
 
     @Enumerated(EnumType.STRING)
@@ -61,7 +57,6 @@ public class User {
     // 관객 온보딩 완료
     public void completeAudienceOnboarding(String nickname) {
         this.nickname = nickname;
-        this.role = Role.USER;
         this.registrationStatus = RegistrationStatus.COMPLETED;
         this.isActive = true;
     }
@@ -69,7 +64,6 @@ public class User {
     // 주최자 온보딩 완료 (닉네임만 업데이트, Organizer 엔티티는 별도 생성)
     public void completeOrganizerOnboarding(String nickname) {
         this.nickname = nickname;
-        this.role = Role.ORGANIZER;
         this.registrationStatus = RegistrationStatus.COMPLETED;
         this.isActive = true;
     }

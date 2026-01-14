@@ -3,7 +3,6 @@ package com.amp.global.security.service;
 
 import com.amp.domain.user.entity.AuthProvider;
 import com.amp.domain.user.entity.RegistrationStatus;
-import com.amp.domain.user.entity.Role;
 import com.amp.domain.user.entity.User;
 import com.amp.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -62,11 +61,9 @@ public class CustomOAuthUserService extends DefaultOAuth2UserService {
     private User createNewUser(String email, String name, String picture, String providerId) {
         User user = User.builder()
                 .email(email)
-                .nickname(null)
                 .profileImageUrl(picture)
                 .provider(AuthProvider.GOOGLE)
                 .providerId(providerId)
-                .role(Role.USER)
                 .isActive(true)
                 .registrationStatus(RegistrationStatus.PENDING)
                 .build();
