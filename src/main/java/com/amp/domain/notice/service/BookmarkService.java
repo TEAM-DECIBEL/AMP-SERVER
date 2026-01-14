@@ -1,15 +1,15 @@
 package com.amp.domain.notice.service;
 
 import com.amp.domain.notice.dto.request.NoticeSaveRequest;
-import com.amp.domain.notice.dto.response.NoticeSaveResponse;
+import com.amp.domain.notice.dto.response.BookmarkResponse;
 import com.amp.domain.notice.entity.Notice;
-import com.amp.domain.notice.entity.UserSavedNotice;
+import com.amp.domain.notice.entity.Bookmark;
 import com.amp.domain.notice.exception.NoticeErrorCode;
 import com.amp.domain.notice.exception.NoticeException;
-import com.amp.domain.notice.exception.UserSavedNoticeErrorCode;
-import com.amp.domain.notice.exception.UserSavedNoticeException;
+import com.amp.domain.notice.exception.BookmarkErrorCode;
+import com.amp.domain.notice.exception.BookmarkException;
 import com.amp.domain.notice.repository.NoticeRepository;
-import com.amp.domain.notice.repository.UserSavedNoticeRepository;
+import com.amp.domain.notice.repository.BookmarkRepository;
 import com.amp.domain.user.entity.User;
 import com.amp.domain.user.exception.UserErrorCode;
 import com.amp.domain.user.repository.UserRepository;
@@ -26,13 +26,13 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @AllArgsConstructor
 @Transactional(readOnly = true)
-public class UserSavedNoticeService {
+public class BookmarkService {
 
-    private final UserSavedNoticeRepository userSavedNoticeRepository;
+    private final BookmarkRepository bookmarkRepository;
     private final UserRepository userRepository;
     private final NoticeRepository noticeRepository;
 
-    public NoticeSaveResponse saveNotice(Long noticeId, NoticeSaveRequest request) {
+    public BookmarkResponse saveNotice(Long noticeId, NoticeSaveRequest request) {
 
         Authentication authentication =
                 SecurityContextHolder.getContext().getAuthentication();
@@ -42,28 +42,28 @@ public class UserSavedNoticeService {
                 .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
         Notice notice = noticeRepository.findById(noticeId)
                 .orElseThrow(() -> new NoticeException(NoticeErrorCode.NOTICE_NOT_FOUND));
-        UserSavedNotice userSavedNotice = userSavedNoticeRepository
+        Bookmark bookmark = bookmarkRepository
                 .findByNoticeAndUser(notice, user)
                 .orElse(null);
         boolean isSaved;
 
         if (request.isBookmarked()) {
-            if (userSavedNotice != null) {
-                throw new UserSavedNoticeException(UserSavedNoticeErrorCode.NOTICE_ALREADY_BOOKMARKED);
+            if (bookmark != null) {
+                throw new BookmarkException(BookmarkErrorCode.NOTICE_ALREADY_BOOKMARKED);
             }
-            userSavedNoticeRepository.save(new UserSavedNotice(user, notice));
+            bookmarkRepository.save(new Bookmark(user, notice));
             isSaved = true;
 
         } else {
-            if (userSavedNotice == null) {
-                throw new UserSavedNoticeException(UserSavedNoticeErrorCode.SAVED_NOTICE_NOT_EXIST);
+            if (bookmark == null) {
+                throw new BookmarkException(BookmarkErrorCode.SAVED_NOTICE_NOT_EXIST);
             }
-            userSavedNoticeRepository.delete(userSavedNotice);
+            bookmarkRepository.delete(bookmark);
             isSaved = false;
         }
 
 
-        return new NoticeSaveResponse(
+        return new BookmarkResponse(
                 notice.getId(),
                 isSaved
         );
