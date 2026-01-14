@@ -62,7 +62,7 @@ public class CustomOAuthUserService extends DefaultOAuth2UserService {
     private User createNewUser(String email, String name, String picture, String providerId) {
         User user = User.builder()
                 .email(email)
-                .nickname(null)
+                .nickname(name)
                 .profileImageUrl(picture)
                 .provider(AuthProvider.GOOGLE)
                 .providerId(providerId)
