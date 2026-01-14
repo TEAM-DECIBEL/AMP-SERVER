@@ -13,6 +13,7 @@ import org.hibernate.annotations.SQLRestriction;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,6 +44,9 @@ public class Festival extends BaseTimeEntity {
     @Column(name = "end_date", nullable = false)
     private LocalDate endDate;
 
+    @Column(name = "start_time", nullable = false)
+    private LocalTime startTime;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private FestivalStatus status;
@@ -64,12 +68,13 @@ public class Festival extends BaseTimeEntity {
 
     @Builder
     public Festival(String title, String mainImageUrl, String location,
-                    LocalDate startDate, LocalDate endDate, FestivalStatus status) {
+                    LocalDate startDate, LocalDate endDate, LocalTime startTime, FestivalStatus status) {
         this.title = title;
         this.mainImageUrl = mainImageUrl;
         this.location = location;
         this.startDate = startDate;
         this.endDate = endDate;
+        this.startTime = startTime;
         this.status = status;
     }
 
@@ -97,5 +102,9 @@ public class Festival extends BaseTimeEntity {
     public void updateDates(LocalDate startDate, LocalDate endDate) {
         this.startDate = startDate;
         this.endDate = endDate;
+    }
+
+    public void updateStartTime(LocalTime startTime) {
+        this.startTime = startTime;
     }
 }

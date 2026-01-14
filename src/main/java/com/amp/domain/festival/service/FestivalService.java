@@ -35,6 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.function.BinaryOperator;
 
@@ -74,7 +75,7 @@ public class FestivalService {
 
         LocalDate startDate = calculateDate(schedules, true);
         LocalDate endDate = calculateDate(schedules, false);
-
+        LocalTime startTime = calculateStartTime(schedules);
 
         if (request.mainImage() == null || request.mainImage().isEmpty()) {
             throw new CustomException(FestivalErrorCode.MISSING_MAIN_IMAGE);
@@ -90,6 +91,7 @@ public class FestivalService {
                     .location(request.location())
                     .startDate(startDate)
                     .endDate(endDate)
+                    .startTime(startTime)
                     .mainImageUrl(publicUrl)
                     .build();
 
@@ -154,8 +156,10 @@ public class FestivalService {
 
         LocalDate startDate = calculateDateFromEntities(festival.getSchedules(), true);
         LocalDate endDate = calculateDateFromEntities(festival.getSchedules(), false);
+        LocalTime startTime = calculateStartTimeFromEntities(festival.getSchedules());
 
         festival.updateDates(startDate, endDate);
+        festival.updateStartTime(startTime);
         festival.updateStatus();
 
         return FestivalUpdateResponse.from(festival);
@@ -174,27 +178,7 @@ public class FestivalService {
 
         festivalRepository.softDeleteById(festivalId);
 
-/*
-        String imageUrl = festival.getMainImageUrl();
-
-        if (imageUrl != null && !imageUrl.isEmpty()) {
-            try {
-                String key = extractKeyFromUrl(imageUrl);
-                s3Service.delete(key);
-            } catch (Exception e) {
-                log.error("S3 파일 삭제 실패 (이미지 URL: {}): {}", imageUrl, e.getMessage());
-            }
-        }*/
     }
-
-/*    private String extractKeyFromUrl(String imageUrl) {
-        String delimiter = "festivals/";
-        int index = imageUrl.lastIndexOf(delimiter);
-        if (index != -1) {
-            return imageUrl.substring(index);
-        }
-        throw new CustomException(S3ErrorCode.INVALID_DIRECTORY_ROUTE);
-    }*/
 
     private LocalDate calculateDate(List<ScheduleRequest> schedules, boolean isStart) {
         List<LocalDate> dates = schedules.stream()
@@ -208,6 +192,20 @@ public class FestivalService {
                 .map(FestivalSchedule::getFestivalDate)
                 .toList();
         return getMinMax(dates, isStart);
+    }
+
+    private LocalTime calculateStartTime(List<ScheduleRequest> schedules) {
+        return schedules.stream()
+                .map(ScheduleRequest::getFestivalTime)
+                .min(Comparator.naturalOrder())
+                .orElseThrow(() -> new CustomException(FestivalErrorCode.INVALID_SCHEDULE_FORMAT));
+    }
+
+    private LocalTime calculateStartTimeFromEntities(List<FestivalSchedule> schedules) {
+        return schedules.stream()
+                .map(FestivalSchedule::getFestivalTime)
+                .min(Comparator.naturalOrder())
+                .orElseThrow(() -> new CustomException(FestivalErrorCode.INVALID_SCHEDULE_FORMAT));
     }
 
     private LocalDate getMinMax(List<LocalDate> dates, boolean isStart) {
