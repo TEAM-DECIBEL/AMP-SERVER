@@ -1,22 +1,21 @@
 package com.amp.domain.notice.service;
 
-import com.amp.domain.notice.dto.request.NoticeSaveRequest;
+import com.amp.domain.notice.dto.request.BookmarkRequest;
 import com.amp.domain.notice.dto.response.BookmarkResponse;
-import com.amp.domain.notice.entity.Notice;
 import com.amp.domain.notice.entity.Bookmark;
-import com.amp.domain.notice.exception.NoticeErrorCode;
-import com.amp.domain.notice.exception.NoticeException;
+import com.amp.domain.notice.entity.Notice;
 import com.amp.domain.notice.exception.BookmarkErrorCode;
 import com.amp.domain.notice.exception.BookmarkException;
-import com.amp.domain.notice.repository.NoticeRepository;
+import com.amp.domain.notice.exception.NoticeErrorCode;
+import com.amp.domain.notice.exception.NoticeException;
 import com.amp.domain.notice.repository.BookmarkRepository;
+import com.amp.domain.notice.repository.NoticeRepository;
 import com.amp.domain.user.entity.User;
 import com.amp.domain.user.exception.UserErrorCode;
 import com.amp.domain.user.repository.UserRepository;
 import com.amp.global.exception.CustomException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -32,7 +31,7 @@ public class BookmarkService {
     private final UserRepository userRepository;
     private final NoticeRepository noticeRepository;
 
-    public BookmarkResponse saveNotice(Long noticeId, NoticeSaveRequest request) {
+    public BookmarkResponse updateBookmark(Long noticeId, BookmarkRequest request) {
 
         Authentication authentication =
                 SecurityContextHolder.getContext().getAuthentication();
