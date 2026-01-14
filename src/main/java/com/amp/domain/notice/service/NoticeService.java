@@ -35,7 +35,7 @@ public class NoticeService {
         // 공지 조회 (존재 검증 포함)
         Notice notice = noticeRepository.findById(noticeId)
                 .orElseThrow(() ->
-                        new NoticeException(NoticeErrorCode.INVALID_NOTICE)
+                        new NoticeException(NoticeErrorCode.NOTICE_NOT_FOUND)
                 );
 
         // 로그인 여부에 따른 저장 여부 판단
@@ -91,5 +91,36 @@ public class NoticeService {
         return authentication != null &&
                 authentication.isAuthenticated() &&
                 !(authentication instanceof AnonymousAuthenticationToken);
+    }
+
+    @Transactional
+    public void deleteNotice(Long noticeId) {
+
+        Notice notice = noticeRepository.findById(noticeId)
+                .orElseThrow(() ->
+                        new NoticeException(NoticeErrorCode.NOTICE_NOT_FOUND));
+
+        if (notice.getDeletedAt() != null) {
+            throw new NoticeException(NoticeErrorCode.NOTICE_ALREADY_DELETED);
+        }
+
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        if (!isLoggedInUser(authentication)) {
+            throw new CustomException(UserErrorCode.USER_NOT_FOUND);
+        }
+
+        String email = authentication.getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new CustomException(UserErrorCode.USER_NOT_FOUND)
+                );
+
+        if (!notice.getUser().getId().equals(user.getId())) {
+            throw new NoticeException(NoticeErrorCode.NOTICE_DELETE_FORBIDDEN);
+        }
+
+        notice.delete();
     }
 }
