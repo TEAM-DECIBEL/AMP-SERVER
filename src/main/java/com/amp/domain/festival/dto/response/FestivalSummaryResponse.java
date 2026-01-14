@@ -5,6 +5,7 @@ import com.amp.domain.festival.entity.FestivalStatus;
 
 public record FestivalSummaryResponse(
         Long festivalId,
+        String mainImageUrl,
         String title,
         String period,
         String status
@@ -12,6 +13,7 @@ public record FestivalSummaryResponse(
     public static FestivalSummaryResponse from(Festival festival) {
         return new FestivalSummaryResponse(
                 festival.getId(),
+                festival.getMainImageUrl(),
                 festival.getTitle(),
                 String.format("%s ~ %s", festival.getStartDate(), festival.getEndDate()),
                 convertToKorean(festival.getStatus())
