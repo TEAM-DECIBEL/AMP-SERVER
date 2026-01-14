@@ -3,7 +3,6 @@ package com.amp.domain.stage.service;
 import com.amp.domain.festival.entity.Festival;
 import com.amp.domain.stage.dto.request.StageRequest;
 import com.amp.domain.stage.entity.Stage;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,7 +14,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 @Transactional
 public class StageService {
 
