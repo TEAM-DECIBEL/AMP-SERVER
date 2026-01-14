@@ -51,7 +51,10 @@ public class FestivalCategoryService {
                 .filter(id -> !existIds.contains(id))
                 .forEach(id -> {
                     Category category = categoryMap.get(id);
-                    festivalCategoryRepository.save(new FestivalCategory(festival, category));
+
+                    FestivalCategory newFestivalCategory = new FestivalCategory(festival, category);
+                    festivalCategoryRepository.save(newFestivalCategory);
+                    festivalCategories.add(newFestivalCategory);
                 });
     }
 
