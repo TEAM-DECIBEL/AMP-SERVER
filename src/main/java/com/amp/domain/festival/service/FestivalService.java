@@ -38,6 +38,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.function.BinaryOperator;
+import java.util.function.Function;
 
 @Service
 @Slf4j
@@ -62,9 +63,14 @@ public class FestivalService {
     public FestivalCreateResponse createFestival(FestivalCreateRequest request) {
         User user = authService.getCurrentUser();
 
-        List<ScheduleRequest> schedules = parseSchedules(request.schedules());
-        List<StageRequest> stages = parseStages(request.stages());
-        List<Long> activeCategoryIds = parseCategoryIds(request.activeCategoryIds());
+        List<ScheduleRequest> schedules = parseJson(request.schedules(), new TypeReference<List<ScheduleRequest>>() {
+        }, FestivalErrorCode.INVALID_SCHEDULE_FORMAT);
+
+        List<StageRequest> stages = parseJson(request.stages(), new TypeReference<List<StageRequest>>() {
+        }, FestivalErrorCode.INVALID_STAGE_FORMAT);
+
+        List<Long> activeCategoryIds = parseJson(request.activeCategoryIds(), new TypeReference<List<Long>>() {
+        }, FestivalErrorCode.INVALID_CATEGORY_FORMAT);
 
         if (schedules == null || schedules.isEmpty()) {
             throw new CustomException(FestivalErrorCode.SCHEDULES_REQUIRED);
@@ -73,9 +79,9 @@ public class FestivalService {
             throw new CustomException(CategoryErrorCode.CATEGORY_REQUIRED);
         }
 
-        LocalDate startDate = calculateDate(schedules, true);
-        LocalDate endDate = calculateDate(schedules, false);
-        LocalTime startTime = calculateStartTime(schedules);
+        LocalDate startDate = calculateDate(schedules, ScheduleRequest::getFestivalDate, true);
+        LocalDate endDate = calculateDate(schedules, ScheduleRequest::getFestivalDate, false);
+        LocalTime startTime = calculateTime(schedules, ScheduleRequest::getFestivalTime);
 
         if (request.mainImage() == null || request.mainImage().isEmpty()) {
             throw new CustomException(FestivalErrorCode.MISSING_MAIN_IMAGE);
@@ -154,9 +160,9 @@ public class FestivalService {
         stageService.syncStages(festival, request.stages());
         categoryService.syncCategories(festival, request.activeCategoryIds());
 
-        LocalDate startDate = calculateDateFromEntities(festival.getSchedules(), true);
-        LocalDate endDate = calculateDateFromEntities(festival.getSchedules(), false);
-        LocalTime startTime = calculateStartTimeFromEntities(festival.getSchedules());
+        LocalDate startDate = calculateDate(festival.getSchedules(), FestivalSchedule::getFestivalDate, true);
+        LocalDate endDate = calculateDate(festival.getSchedules(), FestivalSchedule::getFestivalDate, false);
+        LocalTime startTime = calculateTime(festival.getSchedules(), FestivalSchedule::getFestivalTime);
 
         festival.updateDates(startDate, endDate);
         festival.updateStartTime(startTime);
@@ -180,39 +186,18 @@ public class FestivalService {
 
     }
 
-    private LocalDate calculateDate(List<ScheduleRequest> schedules, boolean isStart) {
-        List<LocalDate> dates = schedules.stream()
-                .map(ScheduleRequest::getFestivalDate)
-                .toList();
-        return getMinMax(dates, isStart);
-    }
-
-    private LocalDate calculateDateFromEntities(List<FestivalSchedule> schedules, boolean isStart) {
-        List<LocalDate> dates = schedules.stream()
-                .map(FestivalSchedule::getFestivalDate)
-                .toList();
-        return getMinMax(dates, isStart);
-    }
-
-    private LocalTime calculateStartTime(List<ScheduleRequest> schedules) {
+    private <T> LocalDate calculateDate(List<T> schedules, Function<T, LocalDate> dateExtractor, boolean isStart) {
         return schedules.stream()
-                .map(ScheduleRequest::getFestivalTime)
-                .min(Comparator.naturalOrder())
-                .orElseThrow(() -> new CustomException(FestivalErrorCode.INVALID_SCHEDULE_FORMAT));
-    }
-
-    private LocalTime calculateStartTimeFromEntities(List<FestivalSchedule> schedules) {
-        return schedules.stream()
-                .map(FestivalSchedule::getFestivalTime)
-                .min(Comparator.naturalOrder())
-                .orElseThrow(() -> new CustomException(FestivalErrorCode.INVALID_SCHEDULE_FORMAT));
-    }
-
-    private LocalDate getMinMax(List<LocalDate> dates, boolean isStart) {
-        return dates.stream()
-                .reduce(isStart ? BinaryOperator.minBy(Comparator.naturalOrder())
-                        : BinaryOperator.maxBy(Comparator.naturalOrder()))
+                .map(dateExtractor)
+                .reduce(isStart ? BinaryOperator.minBy(Comparator.naturalOrder()) : BinaryOperator.maxBy(Comparator.naturalOrder()))
                 .orElseThrow(() -> new CustomException(FestivalErrorCode.INVALID_FESTIVAL_PERIOD));
+    }
+
+    private <T> LocalTime calculateTime(List<T> schedules, Function<T, LocalTime> timeExtractor) {
+        return schedules.stream()
+                .map(timeExtractor)
+                .min(Comparator.naturalOrder())
+                .orElseThrow(() -> new CustomException(FestivalErrorCode.INVALID_SCHEDULE_FORMAT));
     }
 
     @LogExecutionTime("이미지 업로드")
@@ -224,36 +209,14 @@ public class FestivalService {
         }
     }
 
-    private List<ScheduleRequest> parseSchedules(String json) {
-        try {
-            return objectMapper.readValue(json, new TypeReference<List<ScheduleRequest>>() {
-            });
-        } catch (Exception e) {
-            throw new CustomException(FestivalErrorCode.INVALID_SCHEDULE_FORMAT);
-        }
-    }
-
-    private List<StageRequest> parseStages(String json) {
+    private <T> T parseJson(String json, TypeReference<T> typeReference, FestivalErrorCode errorCode) {
         if (json == null || json.trim().isEmpty()) {
             return null;
         }
         try {
-            return objectMapper.readValue(json, new TypeReference<List<StageRequest>>() {
-            });
+            return objectMapper.readValue(json, typeReference);
         } catch (Exception e) {
-            throw new CustomException(FestivalErrorCode.INVALID_STAGE_FORMAT);
-        }
-    }
-
-    private List<Long> parseCategoryIds(String json) {
-        if (json == null || json.trim().isEmpty()) {
-            return null;
-        }
-        try {
-            return objectMapper.readValue(json, new TypeReference<List<Long>>() {
-            });
-        } catch (Exception e) {
-            throw new CustomException(FestivalErrorCode.INVALID_CATEGORY_FORMAT);
+            throw new CustomException(errorCode);
         }
     }
 
