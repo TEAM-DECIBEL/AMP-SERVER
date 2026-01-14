@@ -25,7 +25,8 @@ public class BookmarkController {
     // 공지 북마크 업데이트
     @Operation(summary = "공지 북마크 업데이트")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_UPDATE_BOOKMARK)
-    @PostMapping("/{noticeId}/bookmark")    public ResponseEntity<BaseResponse<BookmarkResponse>> saveNotice(
+    @PostMapping("/{noticeId}/bookmark")
+    public ResponseEntity<BaseResponse<BookmarkResponse>> saveNotice(
             @PathVariable("noticeId") @Positive Long noticeId,
             @RequestBody BookmarkRequest bookmarkRequest
     ) {
