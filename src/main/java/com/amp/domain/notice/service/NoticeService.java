@@ -100,10 +100,6 @@ public class NoticeService {
                 .orElseThrow(() ->
                         new NoticeException(NoticeErrorCode.NOTICE_NOT_FOUND));
 
-        if (notice.getDeletedAt() != null) {
-            throw new NoticeException(NoticeErrorCode.NOTICE_ALREADY_DELETED);
-        }
-
         Authentication authentication =
                 SecurityContextHolder.getContext().getAuthentication();
 
