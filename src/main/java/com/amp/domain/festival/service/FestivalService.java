@@ -20,25 +20,25 @@ import com.amp.domain.stage.dto.request.StageRequest;
 import com.amp.domain.stage.repository.StageRepository;
 import com.amp.domain.stage.service.StageService;
 import com.amp.domain.user.entity.User;
-import com.amp.domain.user.exception.UserErrorCode;
-import com.amp.domain.user.repository.UserRepository;
 import com.amp.global.annotation.LogExecutionTime;
 import com.amp.global.common.CommonErrorCode;
 import com.amp.global.exception.CustomException;
 import com.amp.global.s3.S3ErrorCode;
 import com.amp.global.s3.S3Service;
+import com.amp.global.security.service.AuthService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.function.BinaryOperator;
+import java.util.function.Function;
 
 @Service
 @Slf4j
@@ -47,7 +47,6 @@ public class FestivalService {
 
     private final FestivalRepository festivalRepository;
     private final OrganizerRepository organizerRepository;
-    private final UserRepository userRepository;
     private final StageRepository stageRepository;
     private final FestivalScheduleRepository festivalScheduleRepository;
     private final FestivalCategoryRepository festivalCategoryRepository;
@@ -55,17 +54,23 @@ public class FestivalService {
     private final FestivalScheduleService scheduleService;
     private final StageService stageService;
     private final FestivalCategoryService categoryService;
+    private final AuthService authService;
 
     private final S3Service s3Service;
     private final ObjectMapper objectMapper;
 
     @Transactional
     public FestivalCreateResponse createFestival(FestivalCreateRequest request) {
-        User user = getCurrentUser();
+        User user = authService.getCurrentUser();
 
-        List<ScheduleRequest> schedules = parseSchedules(request.schedules());
-        List<StageRequest> stages = parseStages(request.stages());
-        List<Long> activeCategoryIds = parseCategoryIds(request.activeCategoryIds());
+        List<ScheduleRequest> schedules = parseJson(request.schedules(), new TypeReference<List<ScheduleRequest>>() {
+        }, FestivalErrorCode.INVALID_SCHEDULE_FORMAT);
+
+        List<StageRequest> stages = parseJson(request.stages(), new TypeReference<List<StageRequest>>() {
+        }, FestivalErrorCode.INVALID_STAGE_FORMAT);
+
+        List<Long> activeCategoryIds = parseJson(request.activeCategoryIds(), new TypeReference<List<Long>>() {
+        }, FestivalErrorCode.INVALID_CATEGORY_FORMAT);
 
         if (schedules == null || schedules.isEmpty()) {
             throw new CustomException(FestivalErrorCode.SCHEDULES_REQUIRED);
@@ -74,9 +79,9 @@ public class FestivalService {
             throw new CustomException(CategoryErrorCode.CATEGORY_REQUIRED);
         }
 
-        LocalDate startDate = calculateDate(schedules, true);
-        LocalDate endDate = calculateDate(schedules, false);
-
+        LocalDate startDate = calculateDate(schedules, ScheduleRequest::getFestivalDate, true);
+        LocalDate endDate = calculateDate(schedules, ScheduleRequest::getFestivalDate, false);
+        LocalTime startTime = calculateTime(schedules, ScheduleRequest::getFestivalTime);
 
         if (request.mainImage() == null || request.mainImage().isEmpty()) {
             throw new CustomException(FestivalErrorCode.MISSING_MAIN_IMAGE);
@@ -92,6 +97,7 @@ public class FestivalService {
                     .location(request.location())
                     .startDate(startDate)
                     .endDate(endDate)
+                    .startTime(startTime)
                     .mainImageUrl(publicUrl)
                     .build();
 
@@ -133,7 +139,7 @@ public class FestivalService {
 
     @Transactional(readOnly = true)
     public FestivalDetailResponse getFestivalDetail(Long festivalId) {
-        User user = getCurrentUser();
+        User user = authService.getCurrentUser();
         Festival festival = findFestival(festivalId);
 
         validateOrganizer(festival, user);
@@ -143,7 +149,7 @@ public class FestivalService {
 
     @Transactional
     public FestivalUpdateResponse updateFestival(Long festivalId, FestivalUpdateRequest request) {
-        User user = getCurrentUser();
+        User user = authService.getCurrentUser();
         Festival festival = findFestival(festivalId);
 
         validateOrganizer(festival, user);
@@ -154,10 +160,12 @@ public class FestivalService {
         stageService.syncStages(festival, request.stages());
         categoryService.syncCategories(festival, request.activeCategoryIds());
 
-        LocalDate startDate = calculateDateFromEntities(festival.getSchedules(), true);
-        LocalDate endDate = calculateDateFromEntities(festival.getSchedules(), false);
+        LocalDate startDate = calculateDate(festival.getSchedules(), FestivalSchedule::getFestivalDate, true);
+        LocalDate endDate = calculateDate(festival.getSchedules(), FestivalSchedule::getFestivalDate, false);
+        LocalTime startTime = calculateTime(festival.getSchedules(), FestivalSchedule::getFestivalTime);
 
         festival.updateDates(startDate, endDate);
+        festival.updateStartTime(startTime);
         festival.updateStatus();
 
         return FestivalUpdateResponse.from(festival);
@@ -165,7 +173,7 @@ public class FestivalService {
 
     @Transactional
     public void deleteFestival(Long festivalId) {
-        User user = getCurrentUser();
+        User user = authService.getCurrentUser();
         Festival festival = findFestival(festivalId);
         validateOrganizer(festival, user);
 
@@ -176,47 +184,20 @@ public class FestivalService {
 
         festivalRepository.softDeleteById(festivalId);
 
-/*
-        String imageUrl = festival.getMainImageUrl();
-
-        if (imageUrl != null && !imageUrl.isEmpty()) {
-            try {
-                String key = extractKeyFromUrl(imageUrl);
-                s3Service.delete(key);
-            } catch (Exception e) {
-                log.error("S3 파일 삭제 실패 (이미지 URL: {}): {}", imageUrl, e.getMessage());
-            }
-        }*/
     }
 
-/*    private String extractKeyFromUrl(String imageUrl) {
-        String delimiter = "festivals/";
-        int index = imageUrl.lastIndexOf(delimiter);
-        if (index != -1) {
-            return imageUrl.substring(index);
-        }
-        throw new CustomException(S3ErrorCode.INVALID_DIRECTORY_ROUTE);
-    }*/
-
-    private LocalDate calculateDate(List<ScheduleRequest> schedules, boolean isStart) {
-        List<LocalDate> dates = schedules.stream()
-                .map(ScheduleRequest::getFestivalDate)
-                .toList();
-        return getMinMax(dates, isStart);
-    }
-
-    private LocalDate calculateDateFromEntities(List<FestivalSchedule> schedules, boolean isStart) {
-        List<LocalDate> dates = schedules.stream()
-                .map(FestivalSchedule::getFestivalDate)
-                .toList();
-        return getMinMax(dates, isStart);
-    }
-
-    private LocalDate getMinMax(List<LocalDate> dates, boolean isStart) {
-        return dates.stream()
-                .reduce(isStart ? BinaryOperator.minBy(Comparator.naturalOrder())
-                        : BinaryOperator.maxBy(Comparator.naturalOrder()))
+    private <T> LocalDate calculateDate(List<T> schedules, Function<T, LocalDate> dateExtractor, boolean isStart) {
+        return schedules.stream()
+                .map(dateExtractor)
+                .reduce(isStart ? BinaryOperator.minBy(Comparator.naturalOrder()) : BinaryOperator.maxBy(Comparator.naturalOrder()))
                 .orElseThrow(() -> new CustomException(FestivalErrorCode.INVALID_FESTIVAL_PERIOD));
+    }
+
+    private <T> LocalTime calculateTime(List<T> schedules, Function<T, LocalTime> timeExtractor) {
+        return schedules.stream()
+                .map(timeExtractor)
+                .min(Comparator.naturalOrder())
+                .orElseThrow(() -> new CustomException(FestivalErrorCode.INVALID_SCHEDULE_FORMAT));
     }
 
     @LogExecutionTime("이미지 업로드")
@@ -228,43 +209,15 @@ public class FestivalService {
         }
     }
 
-    private List<ScheduleRequest> parseSchedules(String json) {
-        try {
-            return objectMapper.readValue(json, new TypeReference<List<ScheduleRequest>>() {
-            });
-        } catch (Exception e) {
-            throw new CustomException(FestivalErrorCode.INVALID_SCHEDULE_FORMAT);
-        }
-    }
-
-    private List<StageRequest> parseStages(String json) {
+    private <T> T parseJson(String json, TypeReference<T> typeReference, FestivalErrorCode errorCode) {
         if (json == null || json.trim().isEmpty()) {
             return null;
         }
         try {
-            return objectMapper.readValue(json, new TypeReference<List<StageRequest>>() {
-            });
+            return objectMapper.readValue(json, typeReference);
         } catch (Exception e) {
-            throw new CustomException(FestivalErrorCode.INVALID_STAGE_FORMAT);
+            throw new CustomException(errorCode);
         }
-    }
-
-    private List<Long> parseCategoryIds(String json) {
-        if (json == null || json.trim().isEmpty()) {
-            return null;
-        }
-        try {
-            return objectMapper.readValue(json, new TypeReference<List<Long>>() {
-            });
-        } catch (Exception e) {
-            throw new CustomException(FestivalErrorCode.INVALID_CATEGORY_FORMAT);
-        }
-    }
-
-    private User getCurrentUser() {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
     }
 
     private Festival findFestival(Long id) {
