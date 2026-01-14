@@ -10,6 +10,6 @@ public record FestivalCreateRequest(
         @NotNull(message = "공연 이미지는 필수입니다.") MultipartFile mainImage,
         @NotBlank(message = "공연 일시는 필수입니다.") String schedules,
         String stages,
-        @NotBlank(message = "1개 이상의 카테고리 선택은 필수입니다.")String activeCategoryIds
+        @NotBlank(message = "1개 이상의 카테고리 선택은 필수입니다.") String activeCategoryIds
 ) {
 }
