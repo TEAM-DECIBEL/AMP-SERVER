@@ -48,30 +48,29 @@ public class User {
     @Enumerated(EnumType.STRING)
     private UserType userType;
 
-    private String organizerName; // 조직명도 nickName 으로 퉁칠까 회의 후 결정
-
     public void updateExistingUser(String username, String profileImageUrl) {
         this.nickname = username;
         this.profileImageUrl = profileImageUrl;
     }
 
-
-    public void completeOnboarding(UserType userType, String name) {
+    // 온보딩 중 UserType 임시 설정
+    public void updateUserType(UserType userType) {
         this.userType = userType;
+    }
+
+    // 관객 온보딩 완료
+    public void completeAudienceOnboarding(String nickname) {
+        this.nickname = nickname;
+        this.role = Role.USER;
         this.registrationStatus = RegistrationStatus.COMPLETED;
-
-        if (userType == UserType.ORGANIZER) {
-            this.organizerName = name;
-            this.role = Role.ORGANIZER;
-        } else {
-            this.nickname = name;
-            this.role = Role.USER;
-        }
+        this.isActive = true;
     }
 
-
-    public boolean isOnboardingCompleted() {
-        return this.registrationStatus == RegistrationStatus.COMPLETED;
+    // 주최자 온보딩 완료 (닉네임만 업데이트, Organizer 엔티티는 별도 생성)
+    public void completeOrganizerOnboarding(String nickname) {
+        this.nickname = nickname;
+        this.role = Role.ORGANIZER;
+        this.registrationStatus = RegistrationStatus.COMPLETED;
+        this.isActive = true;
     }
-
 }
