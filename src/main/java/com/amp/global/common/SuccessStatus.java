@@ -16,9 +16,7 @@ public enum SuccessStatus implements SuccessCode {
 
     // UserFestival
     USER_FESTIVAL_RECENT_FOUND(HttpStatus.OK, "UFE", "001", "관람 예정 최근에 보는 공연 정보가 조회되었습니다."),
-    USER_FESTIVAL_RECENT_NOT_FOUND(HttpStatus.OK,"UFE","002","관람 예정 정보가 없습니다.");
-    USER_FESTIVAL_RECENT_FOUND(HttpStatus.OK, "UFE", "001", "관람 예정 최근에 보는 공연 정보가 조회되었습니다.");
-    FESTIVAL_CREATE_SUCCESS(HttpStatus.CREATED, "FES", "001", "공연 등록이 완료되었습니다."),
+    USER_FESTIVAL_RECENT_NOT_FOUND(HttpStatus.OK,"UFE","002","관람 예정 정보가 없습니다."),
     GET_FESTIVAL_DETAIL_INFO(HttpStatus.OK, "FES", "002", "공연 상세 정보가 조회되었습니다."),
     FESTIVAL_UPDATE_SUCCESS(HttpStatus.OK, "FES", "003", "공연 정보 수정이 완료되었습니다."),
     FESTIVAL_DELETE_SUCCESS(HttpStatus.OK, "FES", "004", "공연 삭제가 완료되었습니다."),
