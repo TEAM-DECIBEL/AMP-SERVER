@@ -64,6 +64,18 @@ public enum SwaggerResponseDescription {
             NoticeErrorCode.NOTICE_NOT_FOUND
     ))),
 
+    FAIL_TO_UPDATE_NOTICE(new LinkedHashSet<>(Set.of(
+            UserErrorCode.USER_NOT_FOUND,
+            FestivalErrorCode.FESTIVAL_NOT_FOUND,
+            UserErrorCode.USER_NOT_AUTHENTICATED,
+            NoticeErrorCode.NOTICE_NOT_FOUND,
+            NoticeErrorCode.NOTICE_ALREADY_DELETED,
+            NoticeErrorCode.NOTICE_UPDATE_FORBIDDEN,
+            FestivalCategoryErrorCode.NOTICE_CATEGORY_NOT_FOUND,
+            NoticeErrorCode.UPDATE_NOTICE_FAILED,
+            S3ErrorCode.S3_DELETE_FAILED
+    ))),
+
     // 공지 북마크 업데이트 API
     FAIL_TO_UPDATE_BOOKMARK(new LinkedHashSet<>(Set.of(
             NoticeErrorCode.NOTICE_NOT_FOUND,
