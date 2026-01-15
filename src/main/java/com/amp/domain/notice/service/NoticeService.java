@@ -21,11 +21,11 @@ import com.amp.domain.user.entity.User;
 import com.amp.domain.user.exception.UserErrorCode;
 import com.amp.domain.user.repository.UserRepository;
 import com.amp.global.exception.CustomException;
+import com.amp.global.security.service.AuthService;
 import com.amp.global.s3.S3ErrorCode;
 import com.amp.global.s3.S3Service;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -35,7 +35,6 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 @Slf4j
 @AllArgsConstructor
-@Transactional(readOnly = true)
 public class NoticeService {
 
     private final NoticeRepository noticeRepository;
@@ -122,6 +121,8 @@ public class NoticeService {
         }
     }
 
+    private final AuthService authService;
+
     public NoticeDetailResponse getNoticeDetail(Long noticeId) {
 
         // 공지 조회 (존재 검증 포함)
@@ -167,7 +168,7 @@ public class NoticeService {
                 SecurityContextHolder.getContext().getAuthentication();
 
         // 로그인한 사용자만 북마크 여부 확인
-        if (isLoggedInUser(authentication)) {
+        if (authService.isLoggedInUser(authentication)) {
             String userEmail = authentication.getName();
             User user = userRepository.findByEmail(userEmail).orElseThrow(() ->
                     new CustomException(UserErrorCode.USER_NOT_FOUND));
@@ -177,12 +178,6 @@ public class NoticeService {
                     .existsByNoticeAndUser(notice, user);
         }
         return isSaved;
-    }
-
-    private boolean isLoggedInUser(Authentication authentication) {
-        return authentication != null &&
-                authentication.isAuthenticated() &&
-                !(authentication instanceof AnonymousAuthenticationToken);
     }
 
     @Transactional
@@ -198,7 +193,7 @@ public class NoticeService {
         Authentication authentication =
                 SecurityContextHolder.getContext().getAuthentication();
 
-        if (!isLoggedInUser(authentication)) {
+        if (!authService.isLoggedInUser(authentication)) {
             throw new CustomException(UserErrorCode.USER_NOT_FOUND);
         }
 

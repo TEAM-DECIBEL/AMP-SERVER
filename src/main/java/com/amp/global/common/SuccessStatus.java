@@ -31,6 +31,8 @@ public enum SuccessStatus implements SuccessCode {
     SAVED_ANNOUNCEMENTS_RETRIEVED(HttpStatus.OK,"USE","001", "저장한 공지 조회가 완료되었습니다."),
 
     // NOTICE
+    NOTICE_DETAIL_GET_SUCCESS(HttpStatus.OK, "NOT", "001", "공지 상세 조회되었습니다."),
+    NOTICE_LIST_GET_SUCCESS(HttpStatus.OK,  "NOT", "002", "공지 목록 조회되었습니다."),
     NOTICE_CREATE_SUCCESS(HttpStatus.CREATED, "NTC", "001", "공지가 등록되었습니다."),
     NOTICE_DETAIL_GET_SUCCESS(HttpStatus.OK, "NTC", "002", "공지 상세 조회되었습니다."),
 

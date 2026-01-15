@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
@@ -33,4 +34,7 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
             Pageable pageable
     );
 
+
+    @Query("SELECT b.notice.id FROM Bookmark b WHERE b.user = :user AND b.notice.id IN :noticeIds")
+    List<Long> findNoticeIdsByUserAndNoticeIdIn(@Param("user") User user, @Param("noticeIds") List<Long> noticeIds);
 }
