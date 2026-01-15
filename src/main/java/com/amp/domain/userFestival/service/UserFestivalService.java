@@ -3,7 +3,7 @@ package com.amp.domain.userFestival.service;
 import com.amp.domain.festival.entity.Festival;
 import com.amp.domain.festival.repository.FestivalRepository;
 import com.amp.domain.user.entity.User;
-import com.amp.domain.userFestival.dto.RecentFestivalResponse;
+import com.amp.domain.userFestival.dto.response.RecentFestivalResponse;
 import com.amp.domain.userFestival.dto.response.UserFestivalListResponse;
 import com.amp.domain.userFestival.dto.response.UserFestivalPageResponse;
 import com.amp.domain.userFestival.repository.UserFestivalRepository;
