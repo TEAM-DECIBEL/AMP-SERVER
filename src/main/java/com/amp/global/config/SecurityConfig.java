@@ -71,8 +71,9 @@ public class SecurityConfig {
                         ).authenticated()   // 북마크 기능 비로그인 환경에서 비허용
 
                         .requestMatchers(
-                                "/api/v1/notices/*"
-                        ).permitAll()   // 게시글 상세 조회 비회원 환경에서 허용
+                                "/api/v1/notices/*",    // 게시글 상세 조회 비회원 환경에서 허용
+                                "/api/common/v1/festivals/*/notices"  // 페스티벌 내 공지 목록 조회
+                        ).permitAll()
 
                         // 공개 엔드포인트
                         .requestMatchers(
