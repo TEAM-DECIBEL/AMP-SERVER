@@ -21,6 +21,7 @@ public class User {
     @Column(nullable = false)
     private String email;
 
+    @Column(unique = true)
     private String nickname;
 
     @Column(nullable = false, name = "profile_image_url")
