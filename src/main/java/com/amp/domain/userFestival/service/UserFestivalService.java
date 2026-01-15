@@ -77,7 +77,7 @@ public class UserFestivalService {
                         .festival(festival)
                         .build());
 
-        userFestival.updateWishList(request.wishList());
+        userFestival.updateWishList(request.isWishList());
 
         userFestivalRepository.save(userFestival);
 
