@@ -8,6 +8,7 @@ import com.amp.domain.userFestival.service.UserFestivalService;
 import com.amp.global.common.SuccessStatus;
 import com.amp.global.response.success.BaseResponse;
 import com.amp.global.security.CustomUserPrincipal;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -43,7 +44,7 @@ public class UserFestivalController {
                 .body(BaseResponse.of(SuccessStatus.USER_FESTIVAL_RECENT_FOUND, response));
     }
 
-    
+
     @GetMapping
     public ResponseEntity<BaseResponse<UserFestivalPageResponse>> getAllFestivalLists(
             @PageableDefault(size = 20) Pageable pageable) {
@@ -62,7 +63,7 @@ public class UserFestivalController {
     @PutMapping("{festivalId}/wishList")
     public ResponseEntity<BaseResponse<WishListResponse>> toggleWishList(
             @PathVariable Long festivalId,
-            @RequestBody WishListRequest request
+            @RequestBody @Valid WishListRequest request
     ) {
         WishListResponse response = userFestivalService.toggleWishlist(festivalId, request);
 
