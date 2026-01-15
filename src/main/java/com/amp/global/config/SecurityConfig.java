@@ -95,6 +95,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/organizer/**").hasRole("ORGANIZER")
                         .requestMatchers("/api/auth/onboarding/**").authenticated() // 온보딩 api는 일단 소셜로그인 거친 이후로 접근 가능
 
+                        // 관객만 접근 가능
+                        .requestMatchers("/api/v1/festivals/*/wishList").hasRole("USER")
+                        .requestMatchers("/api/v1/festivals/my").hasRole("USER")
+
                         // 관리자 권한
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
