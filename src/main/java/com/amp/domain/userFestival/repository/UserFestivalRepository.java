@@ -13,13 +13,14 @@ import java.util.Set;
 public interface UserFestivalRepository extends JpaRepository<UserFestival, Long> {
 
     @Query("""
-            SELECT uf.festival 
-            FROM UserFestival uf 
-            WHERE uf.user.id = :userId 
-            AND uf.wishList = true 
-            AND uf.festival.endDate >= :today
-            ORDER BY uf.festival.startDate ASC
-            """)
+        SELECT uf.festival 
+        FROM UserFestival uf 
+        WHERE uf.user.id = :userId 
+        AND uf.wishList = true 
+        AND uf.festival.endDate >= :today
+        AND uf.festival.deletedAt IS NULL
+        ORDER BY uf.festival.startDate ASC
+        """)
     List<Festival> findUpcomingWishlistFestivals(
             @Param("userId") Long userId,
             @Param("today") LocalDate today
