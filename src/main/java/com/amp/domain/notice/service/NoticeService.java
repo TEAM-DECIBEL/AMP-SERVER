@@ -63,7 +63,7 @@ public class NoticeService {
                 .orElseThrow(() -> new CustomException(FestivalErrorCode.FESTIVAL_NOT_FOUND));
 
         if (!organizerRepository.existsByFestivalAndUser(festival, user)) {
-            throw new CustomException(UserErrorCode.USER_NOT_AUTHENTICATED);
+            throw new CustomException(UserErrorCode.USER_NOT_AUTHORIZED);
         }
 
         FestivalCategory festivalCategory = festivalCategoryRepository
