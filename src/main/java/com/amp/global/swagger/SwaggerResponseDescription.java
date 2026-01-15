@@ -1,11 +1,13 @@
 package com.amp.global.swagger;
 
+import com.amp.domain.category.exception.FestivalCategoryErrorCode;
 import com.amp.domain.festival.exception.FestivalErrorCode;
 import com.amp.domain.notice.exception.BookmarkErrorCode;
 import com.amp.domain.notice.exception.NoticeErrorCode;
 import com.amp.domain.user.exception.UserErrorCode;
 import com.amp.global.common.CommonErrorCode;
 import com.amp.global.common.ErrorCode;
+import com.amp.global.s3.S3ErrorCode;
 import lombok.Getter;
 
 import java.util.LinkedHashSet;
@@ -67,6 +69,16 @@ public enum SwaggerResponseDescription {
             NoticeErrorCode.NOTICE_NOT_FOUND,
             BookmarkErrorCode.NOTICE_ALREADY_BOOKMARKED,
             BookmarkErrorCode.SAVED_NOTICE_NOT_EXIST
+    ))),
+
+    // 공지 작성 API
+    FAIL_TO_CREATE_NOTICE(new LinkedHashSet<>(Set.of(
+            UserErrorCode.USER_NOT_FOUND,
+            FestivalErrorCode.FESTIVAL_NOT_FOUND,
+            UserErrorCode.USER_NOT_AUTHENTICATED,
+            FestivalCategoryErrorCode.NOTICE_CATEGORY_NOT_FOUND,
+            NoticeErrorCode.NOTICE_CREATE_FAIL,
+            S3ErrorCode.S3_UPLOAD_FAILED
     ))),
 
     // 공지 삭제 API

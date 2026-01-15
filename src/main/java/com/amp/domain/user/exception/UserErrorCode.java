@@ -8,6 +8,8 @@ import org.springframework.http.HttpStatus;
 @Getter
 @RequiredArgsConstructor
 public enum UserErrorCode implements ErrorCode {
+    // 401 UNAUTHORIZED
+    USER_NOT_AUTHORIZED(HttpStatus.UNAUTHORIZED, "USE", "001", "해당 요청의 권한이 없습니다."),
 
     // 403 FORBIDDEN
     USER_NOT_AUTHENTICATED(HttpStatus.FORBIDDEN, "USE", "001", "유효하지 않은 권한입니다."),
