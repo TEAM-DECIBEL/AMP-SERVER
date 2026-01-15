@@ -1,6 +1,7 @@
 package com.amp.domain.userFestival.controller;
 
 import com.amp.domain.userFestival.dto.request.WishListRequest;
+import com.amp.domain.userFestival.dto.response.MyWishListPageResponse;
 import com.amp.domain.userFestival.dto.response.UserFestivalPageResponse;
 import com.amp.domain.userFestival.dto.response.WishListResponse;
 import com.amp.domain.userFestival.service.UserFestivalService;
@@ -41,7 +42,7 @@ public class UserFestivalController {
     ) {
         WishListResponse response = userFestivalService.toggleWishlist(festivalId, request);
 
-        SuccessStatus status = response.wishlist()
+        SuccessStatus status = response.wishList()
                 ? SuccessStatus.WISHLIST_ADDED
                 : SuccessStatus.WISHLIST_REMOVED;
 
@@ -49,4 +50,19 @@ public class UserFestivalController {
                 .status(status.getHttpStatus())
                 .body(BaseResponse.ok(status.getMsg(), response));
     }
+
+    @GetMapping("/my")
+    public ResponseEntity<BaseResponse<MyWishListPageResponse>> getMyWishListResponse(
+            @PageableDefault(size = 20) Pageable pageable
+    ) {
+        MyWishListPageResponse response = userFestivalService.getMyWishListResponse(pageable);
+        SuccessStatus status = response.festivals().isEmpty()
+                ? SuccessStatus.MY_WISHLIST_IS_EMPTY
+                : SuccessStatus.MY_WISHLIST_FOUND;
+
+        return ResponseEntity
+                .status(status.getHttpStatus())
+                .body(BaseResponse.ok(status.getMsg(), response));
+    }
+
 }
