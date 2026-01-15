@@ -10,9 +10,9 @@ import org.springframework.http.HttpStatus;
 public enum UserErrorCode implements ErrorCode {
 
     // 400 Bad Request
-
+    USER_TYPE_UNCHANGEABLE(HttpStatus.BAD_REQUEST,"USE","001","권한을 바꿀 수 없습니다."),
     // 404 Not Found
-    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USE", "001", "존재하지 않는 유저 정보입니다.");
+    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USE", "002", "존재하지 않는 유저 정보입니다.");
 
     private final HttpStatus httpStatus;
     private final String domain;

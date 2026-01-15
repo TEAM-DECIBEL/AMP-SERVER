@@ -25,7 +25,7 @@ public class Organizer extends BaseTimeEntity {
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "festival_id", nullable = false)
+    @JoinColumn(name = "festival_id", nullable = true)
     private Festival festival;
 
     @Column(name = "organizer_name", nullable = false, length = 100)
