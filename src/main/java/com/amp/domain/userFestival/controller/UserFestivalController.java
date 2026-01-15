@@ -1,6 +1,6 @@
 package com.amp.domain.userFestival.controller;
 
-import com.amp.domain.userFestival.dto.RecentFestivalResponse;
+import com.amp.domain.userFestival.dto.response.RecentFestivalResponse;
 import com.amp.domain.userFestival.dto.response.UserFestivalPageResponse;
 import com.amp.domain.userFestival.service.UserFestivalService;
 import com.amp.global.common.SuccessStatus;
