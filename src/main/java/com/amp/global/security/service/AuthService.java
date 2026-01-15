@@ -34,4 +34,11 @@ public class AuthService {
                 !(authentication instanceof AnonymousAuthenticationToken);
     }
 
+    public User getCurrentUserOrNull() {
+        try {
+            return getCurrentUser();
+        } catch (CustomException e) {
+            return null;
+        }
+    }
 }
