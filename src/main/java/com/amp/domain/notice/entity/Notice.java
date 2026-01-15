@@ -63,4 +63,8 @@ public class Notice extends BaseTimeEntity {
         this.isPinned = isPinned != null ? isPinned : false;
     }
 
+    public void delete() {
+        this.deletedAt = LocalDateTime.now();
+    }
+
 }
