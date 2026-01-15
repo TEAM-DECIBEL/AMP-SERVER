@@ -20,6 +20,8 @@ public enum SuccessStatus implements SuccessCode {
     GET_FESTIVAL_DETAIL_INFO(HttpStatus.OK, "FES", "002", "공연 상세 정보가 조회되었습니다."),
     FESTIVAL_UPDATE_SUCCESS(HttpStatus.OK, "FES", "003", "공연 정보 수정이 완료되었습니다."),
     FESTIVAL_DELETE_SUCCESS(HttpStatus.OK, "FES", "004", "공연 삭제가 완료되었습니다."),
+    FESTIVAL_LIST_EMPTY(HttpStatus.OK, "FES", "005", "등록된 공연이 없습니다."),
+    FESTIVAL_LIST_FOUND(HttpStatus.OK, "FES", "006", "전체 공연 정보가 조회되었습니다."),
 
     // ORGANIZER
     GET_MY_ALL_FESTIVALS(HttpStatus.OK, "ORG", "001", "나의 진행한 모든 공연 조회가 완료되었습니다."),

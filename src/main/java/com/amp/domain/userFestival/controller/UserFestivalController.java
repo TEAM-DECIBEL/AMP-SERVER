@@ -1,11 +1,14 @@
 package com.amp.domain.userFestival.controller;
 
 import com.amp.domain.userFestival.dto.RecentFestivalResponse;
+import com.amp.domain.userFestival.dto.response.UserFestivalPageResponse;
 import com.amp.domain.userFestival.service.UserFestivalService;
 import com.amp.global.common.SuccessStatus;
 import com.amp.global.response.success.BaseResponse;
 import com.amp.global.security.CustomUserPrincipal;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,5 +38,21 @@ public class UserFestivalController {
         return ResponseEntity
                 .status(SuccessStatus.USER_FESTIVAL_RECENT_FOUND.getHttpStatus())
                 .body(BaseResponse.of(SuccessStatus.USER_FESTIVAL_RECENT_FOUND, response));
+    }
+
+    
+    @GetMapping
+    public ResponseEntity<BaseResponse<UserFestivalPageResponse>> getAllFestivalLists(
+            @PageableDefault(size = 20) Pageable pageable) {
+
+        UserFestivalPageResponse response = userFestivalService.getAllFestivalLists(pageable);
+
+        SuccessStatus status = response.isEmpty()
+                ? SuccessStatus.FESTIVAL_LIST_EMPTY
+                : SuccessStatus.FESTIVAL_LIST_FOUND;
+
+        return ResponseEntity
+                .status(status.getHttpStatus())
+                .body(BaseResponse.ok(status.getMsg(), response));
     }
 }

@@ -66,5 +66,4 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(CommonErrorCode.INVALID_INPUT_VALUE.getHttpStatus())
                 .body(BaseErrorResponse.of(CommonErrorCode.INVALID_INPUT_VALUE));
     }
-
 }

@@ -31,7 +31,6 @@ public enum CommonErrorCode implements ErrorCode {
     // 500 Internal Server Error
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "COM", "001", "서버 내부 오류가 발생했습니다.");
 
-
     private final HttpStatus httpStatus;
     private final String domain;
     private final String numbering;
