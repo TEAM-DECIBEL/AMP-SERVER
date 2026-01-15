@@ -9,8 +9,6 @@ import com.amp.domain.festival.entity.Festival;
 import com.amp.domain.festival.repository.FestivalRepository;
 import com.amp.domain.user.entity.User;
 import com.amp.domain.userFestival.dto.response.RecentFestivalResponse;
-import com.amp.domain.userFestival.dto.response.UserFestivalListResponse;
-import com.amp.domain.userFestival.dto.response.UserFestivalPageResponse;
 import com.amp.domain.userFestival.dto.response.WishListResponse;
 import com.amp.domain.userFestival.repository.UserFestivalRepository;
 import com.amp.global.exception.CustomException;
