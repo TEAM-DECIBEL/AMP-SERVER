@@ -1,10 +1,13 @@
 package com.amp.domain.user.entity;
 
+import com.amp.global.exception.CustomException;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import static com.amp.domain.user.exception.UserErrorCode.USER_TYPE_UNCHANGEABLE;
 
 @Entity
 @Table(name = "users")
@@ -51,6 +54,9 @@ public class User {
 
     // 온보딩 중 UserType 임시 설정
     public void updateUserType(UserType userType) {
+        if (this.userType != null) {
+            throw new CustomException(USER_TYPE_UNCHANGEABLE);
+        }
         this.userType = userType;
     }
 
