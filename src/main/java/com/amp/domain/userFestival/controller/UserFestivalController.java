@@ -26,7 +26,7 @@ public class UserFestivalController {
         UserFestivalPageResponse response = userFestivalService.getAllFestivalLists(pageable);
 
         SuccessStatus status = response.isEmpty()
-                ? SuccessStatus.FESTIVAL_NOT_FOUND
+                ? SuccessStatus.FESTIVAL_LIST_EMPTY
                 : SuccessStatus.FESTIVAL_LIST_FOUND;
 
         return ResponseEntity
