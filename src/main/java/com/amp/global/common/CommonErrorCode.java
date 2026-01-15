@@ -29,14 +29,7 @@ public enum CommonErrorCode implements ErrorCode {
     // 405 Method Not Allowed
     METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, "COM", "001", "지원하지 않는 HTTP 메소드입니다."),
     // 500 Internal Server Error
-    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "COM", "001", "서버 내부 오류가 발생했습니다."),
-
-    //비즈니스 Error
-    NO_RECENT_FESTIVAL(HttpStatus.NOT_FOUND, "UFE", "001", "최근에 보는 공연이 없습니다."),
-    ALREADY_COMPLETED_ONBOARDING(HttpStatus.BAD_REQUEST,"OBD","002", "이미 온보딩이 완료되었습니다."),
-    INVALID_USER_TYPE(HttpStatus.BAD_REQUEST,"OBD", "003","유효하지 않은 사용자 타입입니다."),
-    ORGANIZER_NAME_REQUIRED(HttpStatus.BAD_REQUEST,"OBD", "004","주최사명은 필수입니다."),
-    DUPLICATE_NICKNAME(HttpStatus.BAD_REQUEST,"OBD", "005","이미 사용 중인 닉네임입니다.");
+    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "COM", "001", "서버 내부 오류가 발생했습니다.");
 
     private final HttpStatus httpStatus;
     private final String domain;
