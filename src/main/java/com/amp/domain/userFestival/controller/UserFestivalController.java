@@ -1,0 +1,39 @@
+package com.amp.domain.userFestival.controller;
+
+import com.amp.domain.userFestival.dto.RecentFestivalResponse;
+import com.amp.domain.userFestival.service.UserFestivalService;
+import com.amp.global.common.SuccessStatus;
+import com.amp.global.response.success.BaseResponse;
+import com.amp.global.security.CustomUserPrincipal;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api/v1/users/me/festivals")
+@RequiredArgsConstructor
+public class UserFestivalController {
+
+    private final UserFestivalService userFestivalService;
+
+    @GetMapping("/recent")
+    public ResponseEntity<BaseResponse<RecentFestivalResponse>> getRecentFestival(
+            @AuthenticationPrincipal CustomUserPrincipal principal) {
+
+        Long userId = principal.getUserId();
+        RecentFestivalResponse response = userFestivalService.getRecentFestival(userId).orElse(null);
+
+        if (response == null) {
+            return ResponseEntity
+                    .status(SuccessStatus.USER_FESTIVAL_RECENT_NOT_FOUND.getHttpStatus())
+                    .body(BaseResponse.of(SuccessStatus.USER_FESTIVAL_RECENT_NOT_FOUND, null));
+        }
+
+        return ResponseEntity
+                .status(SuccessStatus.USER_FESTIVAL_RECENT_FOUND.getHttpStatus())
+                .body(BaseResponse.of(SuccessStatus.USER_FESTIVAL_RECENT_FOUND, response));
+    }
+}
