@@ -24,9 +24,9 @@ public class FestivalNoticeController {
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_GET_NOTICE_LIST)
     @GetMapping("/{festivalId}/notices")
     public ResponseEntity<BaseResponse<NoticeListResponse>> getFestivalNotices(
-            @PathVariable Long festivalId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size
+            @PathVariable("festivalId") Long festivalId,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "20") int size
     ) {
         NoticeListResponse response = festivalNoticeService.getFestivalNoticeList(festivalId, page, size);
         return ResponseEntity
