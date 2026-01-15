@@ -27,7 +27,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -51,8 +54,10 @@ public class FestivalNoticeService {
 
         Page<Notice> noticePage = noticeRepository.findAllByFestival(festival, pageable);
 
+        Set<Long> savedNoticeIds = getSavedNoticeIds(noticePage.getContent());
+
         List<FestivalNoticeListResponse> announcements = noticePage.getContent().stream().map(notice -> {
-            boolean isSaved = getIsSaved(notice);
+            boolean isSaved = savedNoticeIds.contains(notice.getId());
             return new FestivalNoticeListResponse(
                     notice.getId(),
                     notice.getFestivalCategory().getCategory().getCategoryName(),
@@ -77,23 +82,18 @@ public class FestivalNoticeService {
         return new NoticeListResponse(announcements, pagination);
     }
 
-    private boolean getIsSaved(Notice notice) {
-        boolean isSaved = false;
 
-        Authentication authentication =
-                SecurityContextHolder.getContext().getAuthentication();
-
-        // 로그인한 사용자만 북마크 여부 확인
-        if (isLoggedInUser(authentication)) {
-            String userEmail = authentication.getName();
-            User user = userRepository.findByEmail(userEmail).orElseThrow(() ->
-                    new CustomException(UserErrorCode.USER_NOT_FOUND));
-
-
-            isSaved = bookmarkRepository
-                    .existsByNoticeAndUser(notice, user);
+    private Set<Long> getSavedNoticeIds(List<Notice> notices) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (!isLoggedInUser(authentication)) {
+            return Collections.emptySet();
         }
-        return isSaved;
+        String userEmail = authentication.getName();
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
+
+        List<Long> noticeIds = notices.stream().map(Notice::getId).toList();
+        return new HashSet<>(bookmarkRepository.findNoticeIdsByUserAndNoticeIdIn(user, noticeIds));
     }
 
     private boolean isLoggedInUser(Authentication authentication) {
