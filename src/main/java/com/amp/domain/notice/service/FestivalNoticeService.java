@@ -44,7 +44,6 @@ public class FestivalNoticeService {
     private final UserRepository userRepository;
     private final FestivalRepository festivalRepository;
 
-    @Transactional(readOnly = true)
     public NoticeListResponse getFestivalNoticeList(Long festivalId, int page, int size) {
 
         Festival festival = festivalRepository.findById(festivalId)
