@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +26,12 @@ public class AuthService {
         String email = authentication.getName();
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
+    }
+
+    public boolean isLoggedInUser(Authentication authentication) {
+        return authentication != null &&
+                authentication.isAuthenticated() &&
+                !(authentication instanceof AnonymousAuthenticationToken);
     }
 
     public User getCurrentUserOrNull() {
