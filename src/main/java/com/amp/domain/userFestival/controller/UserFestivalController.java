@@ -66,7 +66,7 @@ public class UserFestivalController {
     ) {
         WishListResponse response = userFestivalService.toggleWishlist(festivalId, request);
 
-        SuccessStatus status = response.wishlist()
+        SuccessStatus status = response.wishList()
                 ? SuccessStatus.WISHLIST_ADDED
                 : SuccessStatus.WISHLIST_REMOVED;
 
