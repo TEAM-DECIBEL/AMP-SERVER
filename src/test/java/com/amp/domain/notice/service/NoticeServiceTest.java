@@ -39,6 +39,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+
 import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
@@ -61,6 +62,9 @@ class NoticeServiceTest {
 
     @Mock
     private OrganizerRepository organizerRepository;
+
+    @Mock
+    private S3Service s3Service;
 
     @InjectMocks
     private NoticeService noticeService;
