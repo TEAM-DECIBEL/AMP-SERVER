@@ -1,4 +1,4 @@
-package com.amp.domain.userFestival.dto;
+package com.amp.domain.userFestival.dto.response;
 
 import com.amp.domain.festival.entity.Festival;
 import lombok.AllArgsConstructor;
