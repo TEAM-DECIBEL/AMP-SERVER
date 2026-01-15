@@ -28,6 +28,8 @@ public enum SuccessStatus implements SuccessCode {
     GET_MY_ALL_ACTIVE_FESTIVALS(HttpStatus.OK, "ORG", "002", "진행 중 및 진행 예정 공연 조회가 완료되었습니다."),
 
     // NOTICE
+    NOTICE_DETAIL_GET_SUCCESS(HttpStatus.OK, "NOT", "001", "공지 상세 조회되었습니다."),
+    NOTICE_LIST_GET_SUCCESS(HttpStatus.OK,  "NOT", "002", "공지 목록 조회되었습니다."),
     NOTICE_CREATE_SUCCESS(HttpStatus.CREATED, "NTC", "001", "공지가 등록되었습니다."),
     NOTICE_DETAIL_GET_SUCCESS(HttpStatus.OK, "NTC", "002", "공지 상세 조회되었습니다."),
     UPDATE_NOTICE_SUCCESS(HttpStatus.OK, "NTC", "003", "공지 수정되었습니다."),

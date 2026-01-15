@@ -73,7 +73,11 @@ public enum SwaggerResponseDescription {
             NoticeErrorCode.NOTICE_UPDATE_FORBIDDEN,
             FestivalCategoryErrorCode.NOTICE_CATEGORY_NOT_FOUND,
             NoticeErrorCode.UPDATE_NOTICE_FAILED,
-            S3ErrorCode.S3_DELETE_FAILED
+            S3ErrorCode.S3_DELETE_FAILED))),
+  
+    // 페스티벌 별 공지 조회 API
+    FAIL_TO_GET_NOTICE_LIST(new LinkedHashSet<>(Set.of(
+            FestivalErrorCode.FESTIVAL_NOT_FOUND
     ))),
 
     // 공지 북마크 업데이트 API
