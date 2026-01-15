@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 public interface UserFestivalRepository extends JpaRepository<UserFestival, Long> {
 
@@ -25,4 +26,6 @@ public interface UserFestivalRepository extends JpaRepository<UserFestival, Long
             @Param("today") LocalDate today
     );
 
+    @Query("SELECT uf.festival.id FROM UserFestival uf WHERE uf.user.id = :userId AND uf.wishList = true")
+    Set<Long> findAllFestivalIdsByUserId(@Param("userId") Long userId);
 }

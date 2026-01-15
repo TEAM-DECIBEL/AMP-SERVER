@@ -5,12 +5,12 @@ import org.springframework.data.domain.Page;
 
 import java.util.List;
 
-public record FestivalPageResponse(
-        List<FestivalSummaryResponse> festivals,
+public record OrganizerFestivalPageResponse(
+        List<OrganizerFestivalSummaryResponse> festivals,
         PaginationResponse pagination
 ) {
-    public static FestivalPageResponse of(Page<FestivalSummaryResponse> page) {
-        return new FestivalPageResponse(
+    public static OrganizerFestivalPageResponse of(Page<OrganizerFestivalSummaryResponse> page) {
+        return new OrganizerFestivalPageResponse(
                 page.getContent(),
                 PaginationResponse.from(page)
         );
