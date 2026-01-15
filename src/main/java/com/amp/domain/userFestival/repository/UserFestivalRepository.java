@@ -3,6 +3,8 @@ package com.amp.domain.userFestival.repository;
 import com.amp.domain.festival.entity.Festival;
 import com.amp.domain.festival.entity.UserFestival;
 import com.amp.domain.user.entity.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -16,4 +18,6 @@ public interface UserFestivalRepository extends JpaRepository<UserFestival, Long
     Set<Long> findAllFestivalIdsByUserId(@Param("userId") Long userId);
 
     Optional<UserFestival> findByUserAndFestival(User user, Festival festival);
+
+    Page<UserFestival> findAllByUserIdAndWishListTrue(Long userId, Pageable pageable);
 }
