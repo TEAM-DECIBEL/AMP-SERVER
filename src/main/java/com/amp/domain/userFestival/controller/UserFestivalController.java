@@ -60,7 +60,7 @@ public class UserFestivalController {
                 .body(BaseResponse.ok(status.getMsg(), response));
     }
 
-    @PutMapping("{festivalId}/wishList")
+    @PutMapping("/{festivalId}/wishList")
     public ResponseEntity<BaseResponse<WishListResponse>> toggleWishList(
             @PathVariable Long festivalId,
             @RequestBody @Valid WishListRequest request
