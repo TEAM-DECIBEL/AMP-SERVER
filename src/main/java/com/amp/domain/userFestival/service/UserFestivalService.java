@@ -44,7 +44,6 @@ public class UserFestivalService {
     }
 
 
-
     @Transactional(readOnly = true)
     public UserFestivalPageResponse getAllFestivalLists(Pageable pageable) {
         User user = authService.getCurrentUserOrNull();
