@@ -10,8 +10,8 @@ public record NoticeCreateRequest(
         @Size(max = 50, message = "공지 제목은 최대 50자까지 입력할 수 있습니다.") String title,
         @NotBlank(message = "공지 카테고리 값은 필수값입니다.") String categoryId,
         MultipartFile image,
-        @NotBlank(message = "공지 제목은 필수값입니다.") String content,
-        @NotNull(message = "고정 여부 값은 필수 값입니다.") boolean isPinned
+        @NotBlank(message = "공지 내용은 필수값입니다.") String content,
+        @NotNull(message = "고정 여부 값은 필수 값입니다.") Boolean isPinned
 ) {
 }
 
