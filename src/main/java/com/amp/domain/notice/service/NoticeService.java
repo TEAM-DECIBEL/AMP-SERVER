@@ -109,7 +109,7 @@ public class NoticeService {
                 } catch (Exception ignored) {
                 }
             }
-            throw new NoticeException(NoticeErrorCode.NOTICE_CREATE_FAILED);
+            throw new NoticeException(NoticeErrorCode.NOTICE_CREATE_FAIL);
         }
         return new NoticeCreateResponse(notice.getId());
     }

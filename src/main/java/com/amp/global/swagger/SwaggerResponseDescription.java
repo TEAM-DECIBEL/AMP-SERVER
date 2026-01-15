@@ -77,7 +77,7 @@ public enum SwaggerResponseDescription {
             FestivalErrorCode.FESTIVAL_NOT_FOUND,
             UserErrorCode.USER_NOT_AUTHENTICATED,
             FestivalCategoryErrorCode.NOTICE_CATEGORY_NOT_FOUND,
-            NoticeErrorCode.NOTICE_CREATE_FAILED,
+            NoticeErrorCode.NOTICE_CREATE_FAIL,
             S3ErrorCode.S3_UPLOAD_FAILED
     ))),
 
