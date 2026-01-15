@@ -30,7 +30,11 @@ public enum SuccessStatus implements SuccessCode {
     BOOKMARK_UPDATE_SUCCESS(HttpStatus.CREATED, "BOK", "001", "북마크 요청이 정상적으로 처리되었습니다."),
 
     // NOTICE DELETE
-    NOTICE_DELETE_SUCCESS(HttpStatus.OK, "NOT", "003", "공지 삭제가 성공적으로 완료되었습니다."),;
+    NOTICE_DELETE_SUCCESS(HttpStatus.OK, "NOT", "003", "공지 삭제가 성공적으로 완료되었습니다."),
+
+    // WISHLIST
+    WISHLIST_ADDED(HttpStatus.OK, "WIS", "001", "관람 예정 공연으로 등록되었습니다."),
+    WISHLIST_REMOVED(HttpStatus.OK, "WIS", "002", "관람 예정 공연에서 해제되었습니다.");
 
     private final HttpStatus httpStatus;
     private final String domain;
