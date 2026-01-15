@@ -26,7 +26,7 @@ public class NoticeUpdateController {
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_UPDATE_NOTICE)
     @PutMapping(path = "/{noticeId}",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<BaseResponse<Void>> updateBookmark(
+    public ResponseEntity<BaseResponse<Void>> updateNotice (
             @PathVariable("noticeId") @Positive Long noticeId,
             @ModelAttribute @Valid NoticeUpdateRequest noticeUpdateRequest
     ) {
