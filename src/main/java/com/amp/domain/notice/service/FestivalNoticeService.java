@@ -14,12 +14,12 @@ import com.amp.domain.user.entity.User;
 import com.amp.domain.user.exception.UserErrorCode;
 import com.amp.domain.user.repository.UserRepository;
 import com.amp.global.exception.CustomException;
+import com.amp.global.security.service.AuthService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -43,6 +43,8 @@ public class FestivalNoticeService {
     private final BookmarkRepository bookmarkRepository;
     private final UserRepository userRepository;
     private final FestivalRepository festivalRepository;
+
+    private final AuthService authService;
 
     public NoticeListResponse getFestivalNoticeList(Long festivalId, int page, int size) {
 
@@ -84,7 +86,7 @@ public class FestivalNoticeService {
 
     private Set<Long> getSavedNoticeIds(List<Notice> notices) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (!isLoggedInUser(authentication)) {
+        if (!authService.isLoggedInUser(authentication)) {
             return Collections.emptySet();
         }
         String userEmail = authentication.getName();
@@ -93,12 +95,6 @@ public class FestivalNoticeService {
 
         List<Long> noticeIds = notices.stream().map(Notice::getId).toList();
         return new HashSet<>(bookmarkRepository.findNoticeIdsByUserAndNoticeIdIn(user, noticeIds));
-    }
-
-    private boolean isLoggedInUser(Authentication authentication) {
-        return authentication != null &&
-                authentication.isAuthenticated() &&
-                !(authentication instanceof AnonymousAuthenticationToken);
     }
 
     private String formatTimeAgo(LocalDateTime createdAt) {

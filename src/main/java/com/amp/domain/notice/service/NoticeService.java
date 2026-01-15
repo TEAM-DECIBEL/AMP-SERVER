@@ -6,15 +6,15 @@ import com.amp.domain.notice.dto.response.NoticeDetailResponse;
 import com.amp.domain.notice.entity.Notice;
 import com.amp.domain.notice.exception.NoticeErrorCode;
 import com.amp.domain.notice.exception.NoticeException;
-import com.amp.domain.notice.repository.NoticeRepository;
 import com.amp.domain.notice.repository.BookmarkRepository;
+import com.amp.domain.notice.repository.NoticeRepository;
 import com.amp.domain.user.entity.User;
 import com.amp.domain.user.exception.UserErrorCode;
 import com.amp.domain.user.repository.UserRepository;
 import com.amp.global.exception.CustomException;
+import com.amp.global.security.service.AuthService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -28,6 +28,8 @@ public class NoticeService {
     private final NoticeRepository noticeRepository;
     private final BookmarkRepository bookmarkRepository;
     private final UserRepository userRepository;
+
+    private final AuthService authService;
 
     public NoticeDetailResponse getNoticeDetail(Long noticeId) {
 
@@ -74,7 +76,7 @@ public class NoticeService {
                 SecurityContextHolder.getContext().getAuthentication();
 
         // 로그인한 사용자만 북마크 여부 확인
-        if (isLoggedInUser(authentication)) {
+        if (authService.isLoggedInUser(authentication)) {
             String userEmail = authentication.getName();
             User user = userRepository.findByEmail(userEmail).orElseThrow(() ->
                     new CustomException(UserErrorCode.USER_NOT_FOUND));
@@ -84,12 +86,6 @@ public class NoticeService {
                     .existsByNoticeAndUser(notice, user);
         }
         return isSaved;
-    }
-
-    private boolean isLoggedInUser(Authentication authentication) {
-        return authentication != null &&
-                authentication.isAuthenticated() &&
-                !(authentication instanceof AnonymousAuthenticationToken);
     }
 
     @Transactional
@@ -102,7 +98,7 @@ public class NoticeService {
         Authentication authentication =
                 SecurityContextHolder.getContext().getAuthentication();
 
-        if (!isLoggedInUser(authentication)) {
+        if (!authService.isLoggedInUser(authentication)) {
             throw new CustomException(UserErrorCode.USER_NOT_FOUND);
         }
 
