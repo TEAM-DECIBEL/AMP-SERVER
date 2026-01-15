@@ -39,6 +39,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class NoticeServiceTest {
@@ -90,6 +91,8 @@ class NoticeServiceTest {
                 .status(FestivalStatus.ONGOING)
                 .build();
 
+        ReflectionTestUtils.setField(festival, "id", 1L);
+
         category = Category.builder()
                 .categoryName("공연")
                 .build();
@@ -98,6 +101,8 @@ class NoticeServiceTest {
                 .festival(festival)
                 .category(category)
                 .build();
+
+        ReflectionTestUtils.setField(festivalCategory, "id", 1L);
 
         loginUser = User.builder()
                 .id(1L)
