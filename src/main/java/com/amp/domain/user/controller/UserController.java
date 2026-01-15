@@ -25,3 +25,8 @@ public class UserController {
             @AuthenticationPrincipal CustomUserPrincipal principal) {
         Long userId = principal.getUserId();
         MyPageResponse response = userService.getMyPage(userId);
+        return ResponseEntity
+                .status(SuccessStatus.OK.getHttpStatus())
+                .body(BaseResponse.of(SuccessStatus.OK, response));
+    }
+}

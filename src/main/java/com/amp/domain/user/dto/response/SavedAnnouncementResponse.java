@@ -32,5 +32,4 @@ public class SavedAnnouncementResponse {
         private boolean hasNext;
         private boolean hasPrevious;
     }
-
 }
