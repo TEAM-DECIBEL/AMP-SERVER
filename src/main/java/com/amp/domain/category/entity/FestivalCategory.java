@@ -31,6 +31,9 @@ public class FestivalCategory extends BaseTimeEntity {
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
+    @Column(name = "is_active", nullable = false)
+    private boolean isActive = true;
+
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
@@ -38,5 +41,9 @@ public class FestivalCategory extends BaseTimeEntity {
     public FestivalCategory(Festival festival, Category category) {
         this.festival = festival;
         this.category = category;
+    }
+
+    public void updateStatus(boolean status) {
+        this.isActive = status;
     }
 }
