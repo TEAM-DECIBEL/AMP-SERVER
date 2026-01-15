@@ -2,13 +2,13 @@ package com.amp.domain.userFestival.service;
 
 import com.amp.domain.festival.entity.UserFestival;
 import com.amp.domain.festival.exception.FestivalErrorCode;
+import com.amp.domain.user.entity.Role;
+import com.amp.domain.user.exception.UserErrorCode;
 import com.amp.domain.userFestival.dto.request.WishListRequest;
-import com.amp.domain.userFestival.dto.response.UserFestivalListResponse;
-import com.amp.domain.userFestival.dto.response.UserFestivalPageResponse;
+import com.amp.domain.userFestival.dto.response.*;
 import com.amp.domain.festival.entity.Festival;
 import com.amp.domain.festival.repository.FestivalRepository;
 import com.amp.domain.user.entity.User;
-import com.amp.domain.userFestival.dto.response.WishListResponse;
 import com.amp.domain.userFestival.repository.UserFestivalRepository;
 import com.amp.global.exception.CustomException;
 import com.amp.global.security.service.AuthService;
@@ -36,10 +36,6 @@ public class UserFestivalService {
         User user = authService.getCurrentUserOrNull();
         Page<Festival> festivalPage = festivalRepository.findAllByDeletedAtIsNull(pageable);
 
-        if (festivalPage.isEmpty()) {
-            return UserFestivalPageResponse.of(Page.empty(pageable));
-        }
-
         Set<Long> wishlistIds = (user != null)
                 ? userFestivalRepository.findAllFestivalIdsByUserId(user.getId())
                 : Collections.emptySet();
@@ -54,6 +50,11 @@ public class UserFestivalService {
     @Transactional
     public WishListResponse toggleWishlist(Long festivalId, WishListRequest request) {
         User user = authService.getCurrentUser();
+
+        if (user.getRole() == Role.ORGANIZER) {
+            throw new CustomException(UserErrorCode.USER_NOT_AUTHENTICATED);
+        }
+
         Festival festival = festivalRepository.findById(festivalId)
                 .orElseThrow(() -> new CustomException(FestivalErrorCode.FESTIVAL_NOT_FOUND));
 
@@ -64,10 +65,19 @@ public class UserFestivalService {
                         .festival(festival)
                         .build());
 
+        userFestivalRepository.save(userFestival);
         userFestival.updateWishList(request.wishList());
 
-        userFestivalRepository.save(userFestival);
-
         return new WishListResponse(festival.getId(), userFestival.getWishList());
+    }
+
+    @Transactional(readOnly = true)
+    public MyWishListPageResponse getMyWishListResponse(Pageable pageable) {
+        User user = authService.getCurrentUser();
+
+        Page<UserFestival> userFestivals = userFestivalRepository.findAllByUserIdAndWishListTrue(user.getId(), pageable);
+        Page<MyWishListResponse> responsePage = userFestivals.map(MyWishListResponse::from);
+
+        return MyWishListPageResponse.of(responsePage);
     }
 }
