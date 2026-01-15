@@ -1,4 +1,4 @@
-package com.amp.domain.user.dto;
+package com.amp.domain.user.dto.response;
 
 import com.amp.domain.user.entity.User;
 import com.amp.domain.user.entity.UserType;
@@ -19,4 +19,5 @@ public record MyPageResponse(
                 .userType(user.getUserType())
                 .build();
     }
+
 }

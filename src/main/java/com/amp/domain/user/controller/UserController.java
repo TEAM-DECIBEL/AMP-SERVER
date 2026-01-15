@@ -1,7 +1,7 @@
 package com.amp.domain.user.controller;
 
 
-import com.amp.domain.user.dto.MyPageResponse;
+import com.amp.domain.user.dto.response.MyPageResponse;
 import com.amp.domain.user.service.UserService;
 import com.amp.global.common.SuccessStatus;
 import com.amp.global.response.success.BaseResponse;

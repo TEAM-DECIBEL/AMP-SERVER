@@ -1,6 +1,6 @@
 package com.amp.domain.user.service;
 
-import com.amp.domain.user.dto.MyPageResponse;
+import com.amp.domain.user.dto.response.MyPageResponse;
 import com.amp.domain.user.entity.User;
 import com.amp.domain.user.repository.UserRepository;
 import com.amp.global.exception.CustomException;
