@@ -37,4 +37,5 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
             "WHERE o.user = :user AND f.status = :status AND f.deletedAt IS NULL")
     long countByOrganizerAndStatus(@Param("user") User user, @Param("status") FestivalStatus status);
 
+    Page<Festival> findAllByDeletedAtIsNull(Pageable pageable);
 }

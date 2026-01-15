@@ -1,10 +1,13 @@
 package com.amp.domain.user.entity;
 
+import com.amp.global.exception.CustomException;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import static com.amp.domain.user.exception.UserErrorCode.USER_TYPE_UNCHANGEABLE;
 
 @Entity
 @Table(name = "users")
@@ -21,7 +24,7 @@ public class User {
     @Column(nullable = false)
     private String email;
 
-    @Column(nullable = false)
+    @Column(unique = true)
     private String nickname;
 
     @Column(nullable = false, name = "profile_image_url")
@@ -34,10 +37,6 @@ public class User {
     @Column(nullable = false, name = "provider_id")
     private String providerId;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Role role;
-
     private boolean isActive;
 
     @Enumerated(EnumType.STRING)
@@ -48,30 +47,30 @@ public class User {
     @Enumerated(EnumType.STRING)
     private UserType userType;
 
-    private String organizerName; // 조직명도 nickName 으로 퉁칠까 회의 후 결정
-
     public void updateExistingUser(String username, String profileImageUrl) {
         this.nickname = username;
         this.profileImageUrl = profileImageUrl;
     }
 
-
-    public void completeOnboarding(UserType userType, String name) {
-        this.userType = userType;
-        this.registrationStatus = RegistrationStatus.COMPLETED;
-
-        if (userType == UserType.ORGANIZER) {
-            this.organizerName = name;
-            this.role = Role.ORGANIZER;
-        } else {
-            this.nickname = name;
-            this.role = Role.USER;
+    // 온보딩 중 UserType 임시 설정
+    public void updateUserType(UserType userType) {
+        if (this.userType != null) {
+            throw new CustomException(USER_TYPE_UNCHANGEABLE);
         }
+        this.userType = userType;
     }
 
-
-    public boolean isOnboardingCompleted() {
-        return this.registrationStatus == RegistrationStatus.COMPLETED;
+    // 관객 온보딩 완료
+    public void completeAudienceOnboarding(String nickname) {
+        this.nickname = nickname;
+        this.registrationStatus = RegistrationStatus.COMPLETED;
+        this.isActive = true;
     }
 
+    // 주최자 온보딩 완료 (닉네임만 업데이트, Organizer 엔티티는 별도 생성)
+    public void completeOrganizerOnboarding(String nickname) {
+        this.nickname = nickname;
+        this.registrationStatus = RegistrationStatus.COMPLETED;
+        this.isActive = true;
+    }
 }

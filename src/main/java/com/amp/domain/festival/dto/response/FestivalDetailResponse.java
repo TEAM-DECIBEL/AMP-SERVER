@@ -11,7 +11,7 @@ public record FestivalDetailResponse(
         String title,
         String location,
         String mainImageUrl,
-        List<ScheduleResponse> schedules,
+        List<FestivalScheduleResponse> schedules,
         List<StageResponse> stages,
         List<Long> activeCategoryIds
 ) {
@@ -21,7 +21,7 @@ public record FestivalDetailResponse(
                 festival.getTitle(),
                 festival.getLocation(),
                 festival.getMainImageUrl(),
-                festival.getSchedules().stream().map(ScheduleResponse::from).toList(),
+                festival.getSchedules().stream().map(FestivalScheduleResponse::from).toList(),
                 festival.getStages().stream().map(StageResponse::from).toList(),
                 festival.getFestivalCategories().stream()
                         .filter(FestivalCategory::isActive)

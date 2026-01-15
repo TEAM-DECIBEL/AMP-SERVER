@@ -26,4 +26,12 @@ public class AuthService {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
     }
+
+    public User getCurrentUserOrNull() {
+        try {
+            return getCurrentUser();
+        } catch (CustomException e) {
+            return null;
+        }
+    }
 }

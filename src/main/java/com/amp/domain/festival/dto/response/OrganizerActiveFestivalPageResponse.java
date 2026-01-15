@@ -7,31 +7,31 @@ import org.springframework.data.domain.Page;
 
 import java.util.List;
 
-public record ActiveFestivalPageResponse(
-        ActiveFestivalSummary summary,
-        List<FestivalSummaryResponse> ongoingFestivals,
-        List<FestivalSummaryResponse> upcomingFestivals,
+public record OrganizerActiveFestivalPageResponse(
+        OrganizerActiveFestivalSummary summary,
+        List<OrganizerFestivalSummaryResponse> ongoingFestivals,
+        List<OrganizerFestivalSummaryResponse> upcomingFestivals,
         PaginationResponse paginationResponse
 ) {
-    public static ActiveFestivalPageResponse of(
+    public static OrganizerActiveFestivalPageResponse of(
             long ongoingCount,
             long upcomingCount,
             Page<Festival> festivalPage
     ) {
-        List<FestivalSummaryResponse> allItems = festivalPage.getContent().stream()
-                .map(FestivalSummaryResponse::withDDay)
+        List<OrganizerFestivalSummaryResponse> allItems = festivalPage.getContent().stream()
+                .map(OrganizerFestivalSummaryResponse::withDDay)
                 .toList();
 
-        List<FestivalSummaryResponse> ongoing = allItems.stream()
+        List<OrganizerFestivalSummaryResponse> ongoing = allItems.stream()
                 .filter(dto -> dto.status().equals(FestivalStatus.ONGOING.getKoreanName()))
                 .toList();
 
-        List<FestivalSummaryResponse> upcoming = allItems.stream()
+        List<OrganizerFestivalSummaryResponse> upcoming = allItems.stream()
                 .filter(dto -> dto.status().equals(FestivalStatus.UPCOMING.getKoreanName()))
                 .toList();
 
-        return new ActiveFestivalPageResponse(
-                new ActiveFestivalSummary(ongoingCount, upcomingCount, ongoingCount + upcomingCount),
+        return new OrganizerActiveFestivalPageResponse(
+                new OrganizerActiveFestivalSummary(ongoingCount, upcomingCount, ongoingCount + upcomingCount),
                 ongoing,
                 upcoming,
                 PaginationResponse.from(festivalPage)
