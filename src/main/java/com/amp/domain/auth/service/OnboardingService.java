@@ -67,9 +67,7 @@ public class OnboardingService {
         log.info("Completing audience onboarding for user: {}", user.getEmail());
 
         // 닉네임 중복 체크
-        if (userRepository.existsByNickname(request.getNickname())) {
-            throw new CustomException(DUPLICATE_NICKNAME);
-        }
+        validateNicknameUniqueness(request.getNickname());
 
         user.completeAudienceOnboarding(request.getNickname());
         userRepository.save(user);
@@ -85,9 +83,7 @@ public class OnboardingService {
         }
 
         // 닉네임 중복 체크
-        if (userRepository.existsByNickname(request.getNickname())) {
-            throw new CustomException(DUPLICATE_NICKNAME);
-        }
+        validateNicknameUniqueness(request.getNickname());
 
         // User 업데이트
         user.completeOrganizerOnboarding(request.getNickname());
@@ -122,5 +118,11 @@ public class OnboardingService {
                 .userType(user.getUserType())
                 .needsOnboarding(user.getRegistrationStatus() == RegistrationStatus.PENDING)
                 .build();
+    }
+
+    private void validateNicknameUniqueness(String nickname) {
+        if (userRepository.existsByNickname(nickname)) {
+            throw new CustomException(DUPLICATE_NICKNAME);
+        }
     }
 }
