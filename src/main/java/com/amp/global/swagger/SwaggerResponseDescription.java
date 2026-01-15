@@ -62,6 +62,11 @@ public enum SwaggerResponseDescription {
             NoticeErrorCode.NOTICE_NOT_FOUND
     ))),
 
+    // 페스티벌 별 공지 조회 API
+    FAIL_TO_GET_NOTICE_LIST(new LinkedHashSet<>(Set.of(
+            FestivalErrorCode.FESTIVAL_NOT_FOUND
+    ))),
+
     // 공지 북마크 업데이트 API
     FAIL_TO_UPDATE_BOOKMARK(new LinkedHashSet<>(Set.of(
             NoticeErrorCode.NOTICE_NOT_FOUND,
