@@ -7,6 +7,7 @@ import com.amp.global.common.SuccessStatus;
 import com.amp.global.response.success.BaseResponse;
 import com.amp.global.swagger.SwaggerResponseDescription;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -25,8 +26,8 @@ public class FestivalNoticeController {
     @GetMapping("/{festivalId}/notices")
     public ResponseEntity<BaseResponse<NoticeListResponse>> getFestivalNotices(
             @PathVariable("festivalId") Long festivalId,
-            @RequestParam(name = "page", defaultValue = "0") int page,
-            @RequestParam(name = "size", defaultValue = "20") int size
+            @RequestParam(name = "page", defaultValue = "0") @Min(0) int page,
+            @RequestParam(name = "size", defaultValue = "20") @Min(1) int size
     ) {
         NoticeListResponse response = festivalNoticeService.getFestivalNoticeList(festivalId, page, size);
         return ResponseEntity
