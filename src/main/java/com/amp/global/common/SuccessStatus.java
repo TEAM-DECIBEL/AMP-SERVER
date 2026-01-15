@@ -24,6 +24,7 @@ public enum SuccessStatus implements SuccessCode {
     // NOTICE
     NOTICE_CREATE_SUCCESS(HttpStatus.CREATED, "NTC", "001", "공지가 등록되었습니다."),
     NOTICE_DETAIL_GET_SUCCESS(HttpStatus.OK, "NTC", "002", "공지 상세 조회되었습니다."),
+    UPDATE_NOTICE_SUCCESS(HttpStatus.OK, "NTC", "003", "공지 수정되었습니다."),
 
     // NOTICE SAVE
     BOOKMARK_UPDATE_SUCCESS(HttpStatus.CREATED, "BOK", "001", "북마크 요청이 정상적으로 처리되었습니다."),
