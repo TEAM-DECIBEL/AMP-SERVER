@@ -1,11 +1,14 @@
 package com.amp.domain.userFestival.controller;
 
 import com.amp.domain.userFestival.dto.RecentFestivalResponse;
+import com.amp.domain.userFestival.dto.response.UserFestivalPageResponse;
 import com.amp.domain.userFestival.service.UserFestivalService;
 import com.amp.global.common.SuccessStatus;
 import com.amp.global.response.success.BaseResponse;
 import com.amp.global.security.CustomUserPrincipal;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
