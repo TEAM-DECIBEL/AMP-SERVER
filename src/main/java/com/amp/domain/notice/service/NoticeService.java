@@ -70,6 +70,10 @@ public class NoticeService {
                 .findById(Long.parseLong(request.categoryId()))
                 .orElseThrow(() -> new NoticeException(FestivalCategoryErrorCode.NOTICE_CATEGORY_NOT_FOUND));
 
+        if (!festivalCategory.getFestival().getId().equals(festival.getId())) {
+            throw new NoticeException(FestivalCategoryErrorCode.NOTICE_CATEGORY_NOT_FOUND);
+        }
+
         String imageKey = null;
         String imageUrl = null;
         Notice notice;
@@ -86,7 +90,7 @@ public class NoticeService {
                     .imageUrl(imageUrl)
                     .isPinned(request.isPinned())
                     .user(user)
-                    .festival(festivalCategory.getFestival())
+                    .festival(festival)
                     .festivalCategory(festivalCategory)
                     .build();
 
