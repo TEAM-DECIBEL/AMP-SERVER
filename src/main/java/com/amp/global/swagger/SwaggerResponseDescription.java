@@ -79,7 +79,6 @@ public enum SwaggerResponseDescription {
             FestivalCategoryErrorCode.NOTICE_CATEGORY_NOT_FOUND,
             NoticeErrorCode.NOTICE_CREATE_FAILED,
             S3ErrorCode.S3_UPLOAD_FAILED
-
     ))),
 
     // 공지 삭제 API
