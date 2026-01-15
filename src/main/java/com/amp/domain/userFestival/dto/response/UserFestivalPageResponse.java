@@ -14,6 +14,6 @@ public record UserFestivalPageResponse(
     }
 
     public boolean isEmpty() {
-        return festivals == null || festivals().isEmpty();
+        return festivals().isEmpty();
     }
 }
