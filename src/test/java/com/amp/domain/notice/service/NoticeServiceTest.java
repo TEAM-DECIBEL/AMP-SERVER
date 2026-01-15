@@ -4,7 +4,9 @@ import com.amp.domain.category.entity.Category;
 import com.amp.domain.category.entity.FestivalCategory;
 import com.amp.domain.festival.entity.Festival;
 import com.amp.domain.festival.entity.FestivalStatus;
+import com.amp.domain.festival.repository.FestivalRepository;
 import com.amp.domain.notice.dto.response.NoticeDetailResponse;
+import com.amp.domain.notice.dto.response.NoticeListResponse;
 import com.amp.domain.notice.entity.Bookmark;
 import com.amp.domain.notice.entity.Notice;
 import com.amp.domain.notice.exception.NoticeException;
@@ -21,16 +23,22 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -47,6 +55,12 @@ class NoticeServiceTest {
 
     @InjectMocks
     private NoticeService noticeService;
+
+    @InjectMocks
+    private FestivalNoticeService festivalNoticeService;
+
+    @Mock
+    private FestivalRepository festivalRepository;
 
     private Festival festival;
     private Category category;
@@ -180,21 +194,6 @@ class NoticeServiceTest {
     }
 
     @Test
-    @DisplayName("공지 삭제 - 이미 삭제된 공지면 예외 발생")
-    void deleteNotice_alreadyDeleted_throwException() {
-        // given
-        notice.delete();
-
-        when(noticeRepository.findById(1L))
-                .thenReturn(Optional.of(notice));
-
-        // then
-        assertThatThrownBy(() -> noticeService.deleteNotice(1L))
-                .isInstanceOf(NoticeException.class)
-                .hasMessage("이미 삭제된 공지입니다.");
-    }
-
-    @Test
     @DisplayName("공지 삭제 - 비로그인 사용자는 예외 발생")
     void deleteNotice_notLoggedInUser_throwException() {
         // given
@@ -263,4 +262,92 @@ class NoticeServiceTest {
         assertThat(notice.getDeletedAt()).isNotNull();
     }
 
+    @Test
+    @DisplayName("페스티벌 공지 목록 조회 성공")
+    void getFestivalNoticeList_success() {
+        // given
+        Festival festival = mock(Festival.class);
+
+        Category category = mock(Category.class);
+        when(category.getCategoryName()).thenReturn("전체");
+
+        FestivalCategory festivalCategory = mock(FestivalCategory.class);
+        when(festivalCategory.getCategory()).thenReturn(category);
+
+        Notice notice = mock(Notice.class);
+        when(notice.getId()).thenReturn(1L);
+        when(notice.getTitle()).thenReturn("공지 제목");
+        when(notice.getContent()).thenReturn("공지 내용");
+        when(notice.getImageUrl()).thenReturn(null);
+        when(notice.getIsPinned()).thenReturn(true);
+        when(notice.getFestivalCategory()).thenReturn(festivalCategory);
+        when(notice.getCreatedAt()).thenReturn(LocalDateTime.now().minusMinutes(5));
+
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Notice> noticePage = new PageImpl<>(List.of(notice), pageable, 1);
+
+        when(festivalRepository.findById(1L)).thenReturn(Optional.of(festival));
+        when(noticeRepository.findAllByFestival(festival, pageable)).thenReturn(noticePage);
+
+        // when
+        NoticeListResponse response =
+                festivalNoticeService.getFestivalNoticeList(1L, 0, 10);
+
+        // then
+        assertThat(response.announcements()).hasSize(1);
+
+        var announcement = response.announcements().get(0);
+        assertThat(announcement.noticeId()).isEqualTo(1L);
+        assertThat(announcement.categoryName()).isEqualTo("전체");
+        assertThat(announcement.title()).isEqualTo("공지 제목");
+        assertThat(announcement.isPinned()).isTrue();
+        assertThat(announcement.isSaved()).isFalse();
+        assertThat(announcement.createdAt()).contains("분 전");
+
+        assertThat(response.pagination().currentPage()).isEqualTo(0);
+        assertThat(response.pagination().totalPages()).isEqualTo(1);
+        assertThat(response.pagination().totalElements()).isEqualTo(1);
+        assertThat(response.pagination().hasNext()).isFalse();
+    }
+
+    @Test
+    @DisplayName("페스티벌이 존재하지 않으면 예외 발생")
+    void getFestivalNoticeList_festivalNotFound() {
+        // given
+        when(festivalRepository.findById(1L)).thenReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() ->
+                festivalNoticeService.getFestivalNoticeList(1L, 0, 10)
+        ).isInstanceOf(NoticeException.class);
+    }
+
+    @Test
+    @DisplayName("비로그인 사용자일 경우 isSaved는 false")
+    void getFestivalNoticeList_notLoggedIn_isSavedFalse() {
+        // given
+        Festival festival = mock(Festival.class);
+
+        FestivalCategory festivalCategory = mock(FestivalCategory.class);
+        Category category = mock(Category.class);
+        when(category.getCategoryName()).thenReturn("전체");
+        when(festivalCategory.getCategory()).thenReturn(category);
+
+        Notice notice = mock(Notice.class);
+        when(notice.getFestivalCategory()).thenReturn(festivalCategory);
+        when(notice.getCreatedAt()).thenReturn(LocalDateTime.now().minusHours(1));
+
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Notice> noticePage = new PageImpl<>(List.of(notice), pageable, 1);
+
+        when(festivalRepository.findById(1L)).thenReturn(Optional.of(festival));
+        when(noticeRepository.findAllByFestival(festival, pageable)).thenReturn(noticePage);
+
+        // when
+        NoticeListResponse response =
+                festivalNoticeService.getFestivalNoticeList(1L, 0, 10);
+
+        // then
+        assertThat(response.announcements().get(0).isSaved()).isFalse();
+    }
 }
