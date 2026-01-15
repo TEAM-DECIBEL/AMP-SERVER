@@ -70,6 +70,15 @@ public class SecurityConfig {
                 // 요청 권한 설정
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
+                                "/api/v1/notices/*/bookmark"
+                        ).authenticated()   // 북마크 기능 비로그인 환경에서 비허용
+
+                        .requestMatchers(
+                                "/api/v1/notices/*"
+                        ).permitAll()   // 게시글 상세 조회 비회원 환경에서 허용
+
+                        // 공개 엔드포인트
+                        .requestMatchers(
                                 "/api/auth/**",
                                 "/api/public/**",
                                 "/oauth2/**",
@@ -86,6 +95,7 @@ public class SecurityConfig {
                                 "/swagger-resources/**"
                         ).permitAll()
 
+                        // 주최사 권한
                         .requestMatchers("/api/organizer/**").hasRole("ORGANIZER")
                         .requestMatchers("/api/auth/onboarding/**").authenticated()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
