@@ -19,7 +19,10 @@ public interface UserFestivalRepository extends JpaRepository<UserFestival, Long
         AND uf.wishList = true 
         AND uf.festival.endDate >= :today
         AND uf.festival.deletedAt IS NULL
-        ORDER BY uf.festival.startDate ASC
+        ORDER BY 
+            uf.festival.startDate ASC, 
+            uf.festival.startTime ASC, 
+            uf.festival.title ASC
         """)
     List<Festival> findUpcomingWishlistFestivals(
             @Param("userId") Long userId,
