@@ -72,7 +72,7 @@ public class NoticeUpdateService {
         }
 
         FestivalCategory festivalCategory = festivalCategoryRepository
-                .findById(Long.parseLong(request.categoryId()))
+                .findById(request.categoryId())
                 .orElseThrow(() ->
                         new NoticeException(FestivalCategoryErrorCode.NOTICE_CATEGORY_NOT_FOUND)
                 );
