@@ -51,7 +51,7 @@ public class NoticeService {
         Authentication authentication =
                 SecurityContextHolder.getContext().getAuthentication();
 
-        if (!isLoggedInUser(authentication)) {
+        if (!authService.isLoggedInUser(authentication)) {
             throw new CustomException(UserErrorCode.USER_NOT_FOUND);
         }
 
