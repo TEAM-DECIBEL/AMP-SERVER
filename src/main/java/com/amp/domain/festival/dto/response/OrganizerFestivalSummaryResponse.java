@@ -1,11 +1,8 @@
 package com.amp.domain.festival.dto.response;
 
 import com.amp.domain.festival.entity.Festival;
+import com.amp.domain.festival.util.FestivalUtils;
 import com.fasterxml.jackson.annotation.JsonInclude;
-
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record OrganizerFestivalSummaryResponse(
@@ -17,16 +14,14 @@ public record OrganizerFestivalSummaryResponse(
         Long dDay
 
 ) {
-    private static final DateTimeFormatter PERIOD_FORMATTER = DateTimeFormatter.ofPattern("yyyy. MM. dd");
-
     public static OrganizerFestivalSummaryResponse withDDay(Festival festival) {
         return new OrganizerFestivalSummaryResponse(
                 festival.getId(),
                 festival.getMainImageUrl(),
                 festival.getTitle(),
-                formatPeriod(festival),
+                FestivalUtils.formatPeriod(festival.getStartDate(), festival.getEndDate()),
                 festival.getStatus().getKoreanName(),
-                calculateDDay(festival)
+                FestivalUtils.calculateDDay(festival.getStartDate(), festival.getEndDate())
         );
     }
 
@@ -35,34 +30,9 @@ public record OrganizerFestivalSummaryResponse(
                 festival.getId(),
                 festival.getMainImageUrl(),
                 festival.getTitle(),
-                formatPeriod(festival),
+                FestivalUtils.formatPeriod(festival.getStartDate(), festival.getEndDate()),
                 festival.getStatus().getKoreanName(),
                 null
         );
-    }
-
-    private static Long calculateDDay(Festival festival) {
-        LocalDate today = LocalDate.now();
-        LocalDate startDate = festival.getStartDate();
-        LocalDate endDate = festival.getEndDate();
-
-        if (today.isBefore(startDate)) {
-            return ChronoUnit.DAYS.between(startDate, today);
-        } else if (today.isAfter(endDate)) {
-            return ChronoUnit.DAYS.between(endDate, today);
-        } else {
-            return 0L;
-        }
-    }
-
-    public static String formatPeriod(Festival festival) {
-        String startStr = festival.getStartDate().format(PERIOD_FORMATTER);
-        String endStr = festival.getEndDate().format(PERIOD_FORMATTER);
-
-        if (festival.getStartDate().equals(festival.getEndDate())) {
-            return startStr;
-        }
-
-        return String.format("%s - %s", startStr, endStr);
     }
 }
