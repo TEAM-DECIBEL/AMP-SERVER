@@ -18,4 +18,5 @@ public class CustomUserPrincipal extends User {
         this.userId = userId;
         this.email = email;
     }
+
 }

@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class StageRequest {
 
+    private Long id;
+
     @NotBlank(message = "무대/부스 이름은 필수입니다.")
     private String title;
 

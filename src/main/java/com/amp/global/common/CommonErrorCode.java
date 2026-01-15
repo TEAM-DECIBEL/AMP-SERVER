@@ -38,7 +38,6 @@ public enum CommonErrorCode implements ErrorCode {
     ORGANIZER_NAME_REQUIRED(HttpStatus.BAD_REQUEST,"OBD", "004","주최사명은 필수입니다."),
     DUPLICATE_NICKNAME(HttpStatus.BAD_REQUEST,"OBD", "005","이미 사용 중인 닉네임입니다.");
 
-
     private final HttpStatus httpStatus;
     private final String domain;
     private final String numbering;
