@@ -1,7 +1,17 @@
 package com.amp.domain.organizer.repository;
 
+import com.amp.domain.festival.entity.Festival;
 import com.amp.domain.organizer.entity.Organizer;
+import com.amp.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface OrganizerRepository extends JpaRepository<Organizer, Long> {
+    boolean existsByFestivalAndUser(Festival festival, User user);
+
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE Organizer o SET o.deletedAt = CURRENT_TIMESTAMP WHERE o.festival.id = :festivalId AND o.deletedAt IS NULL")
+    void softDeleteByFestivalId(@Param("festivalId") Long festivalId);
 }
