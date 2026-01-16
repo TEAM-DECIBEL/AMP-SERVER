@@ -70,7 +70,7 @@ public class UserFestivalController {
     public ResponseEntity<BaseResponse<MyWishListPageResponse>> getMyWishListResponse(
             @PageableDefault(size = 20) Pageable pageable
     ) {
-        MyWishListPageResponse response = userFestivalService.getMyWishListResponse(pageable);
+        MyWishListPageResponse response = userFestivalService.getMyWishList(pageable);
         SuccessStatus status = response.festivals().isEmpty()
                 ? SuccessStatus.MY_WISHLIST_IS_EMPTY
                 : SuccessStatus.MY_WISHLIST_FOUND;
