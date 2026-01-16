@@ -1,7 +1,7 @@
 package com.amp.domain.user.controller;
 
 import com.amp.domain.user.dto.response.MyPageResponse;
-import com.amp.domain.user.dto.response.SavedAnnouncementResponse;
+import com.amp.domain.user.dto.response.SavedNoticesResponse;
 import com.amp.domain.user.service.UserNoticesService;
 import com.amp.domain.user.service.UserService;
 import com.amp.global.common.SuccessStatus;
@@ -42,7 +42,7 @@ public class UserController {
 
     @GetMapping("/me/saved-notices")
     @Operation(summary = "저장한 공지 조회", description = "사용자가 저장한 공지사항 목록을 조회합니다.")
-    public ResponseEntity<BaseResponse<SavedAnnouncementResponse>> getSavedNotices(
+    public ResponseEntity<BaseResponse<SavedNoticesResponse>> getSavedNotices(
             @AuthenticationPrincipal CustomUserPrincipal principal,
             @Parameter(description = "페이지 번호 (0부터 시작)")
             @RequestParam(defaultValue = "0") @Min(0) int page,
@@ -50,7 +50,7 @@ public class UserController {
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size
     ) {
         Long userId = principal.getUserId();
-        SavedAnnouncementResponse response = userNoticesService.getSavedAnnouncements(userId, page, size);
+        SavedNoticesResponse response = userNoticesService.getSavedAnnouncements(userId, page, size);
         return ResponseEntity
                 .status(SuccessStatus.SAVED_NOTICES_RETRIEVED.getHttpStatus())
                 .body(BaseResponse.of(SuccessStatus.SAVED_NOTICES_RETRIEVED, response));

@@ -2,7 +2,8 @@ package com.amp.domain.user.service;
 
 import com.amp.domain.notice.entity.Bookmark;
 import com.amp.domain.notice.repository.BookmarkRepository;
-import com.amp.domain.user.dto.response.SavedAnnouncementResponse;
+import com.amp.domain.user.dto.response.SavedNoticesResponse;
+import com.amp.global.common.dto.PaginationResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -22,8 +23,7 @@ public class UserNoticesService {
 
     private final BookmarkRepository bookmarkRepository;
 
-
-    public SavedAnnouncementResponse getSavedAnnouncements(Long userId, int page, int size) {
+    public SavedNoticesResponse getSavedAnnouncements(Long userId, int page, int size) {
         log.info("저장한 공지 조회 - userId: {}, page: {}, size: {}", userId, page, size);
 
         // 페이지네이션 설정
@@ -34,30 +34,19 @@ public class UserNoticesService {
                 bookmarkRepository.findByUserIdWithDetails(userId, pageable);
 
         // DTO 변환
-        List<SavedAnnouncementResponse.SavedAnnouncementDto> notices =
+        List<SavedNoticesResponse.SavedAnnouncementDto> notices =
                 bookmarksPage.getContent().stream()
                         .map(this::convertToDto)
                         .collect(Collectors.toList());
 
-        // 페이지네이션 정보 생성
-        SavedAnnouncementResponse.PaginationDto pagination = SavedAnnouncementResponse.PaginationDto.builder()
-                .currentPage(bookmarksPage.getNumber())
-                .totalPages(bookmarksPage.getTotalPages())
-                .totalElements(bookmarksPage.getTotalElements())
-                .size(bookmarksPage.getSize())
-                .hasNext(bookmarksPage.hasNext())
-                .hasPrevious(bookmarksPage.hasPrevious())
-                .build();
-
-        return SavedAnnouncementResponse.builder()
+        return SavedNoticesResponse.builder()
                 .notices(notices)
-                .pagination(pagination)
+                .pagination(PaginationResponse.from(bookmarksPage))
                 .build();
     }
 
-
-    private SavedAnnouncementResponse.SavedAnnouncementDto convertToDto(Bookmark bookmark) {
-        return SavedAnnouncementResponse.SavedAnnouncementDto.builder()
+    private SavedNoticesResponse.SavedAnnouncementDto convertToDto(Bookmark bookmark) {
+        return SavedNoticesResponse.SavedAnnouncementDto.builder()
                 .savedNoticeId(bookmark.getId())
                 .noticeId(bookmark.getNotice().getId())
                 .festivalTitle(bookmark.getNotice().getFestival().getTitle())
