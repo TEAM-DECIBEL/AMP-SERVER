@@ -1,12 +1,17 @@
 package com.amp.domain.userFestival.service;
 
+import com.amp.domain.festival.entity.UserFestival;
+import com.amp.domain.festival.exception.FestivalErrorCode;
+import com.amp.domain.userFestival.dto.request.WishListRequest;
+import com.amp.domain.userFestival.dto.response.UserFestivalListResponse;
+import com.amp.domain.userFestival.dto.response.UserFestivalPageResponse;
 import com.amp.domain.festival.entity.Festival;
 import com.amp.domain.festival.repository.FestivalRepository;
 import com.amp.domain.user.entity.User;
 import com.amp.domain.userFestival.dto.response.RecentFestivalResponse;
-import com.amp.domain.userFestival.dto.response.UserFestivalListResponse;
-import com.amp.domain.userFestival.dto.response.UserFestivalPageResponse;
+import com.amp.domain.userFestival.dto.response.WishListResponse;
 import com.amp.domain.userFestival.repository.UserFestivalRepository;
+import com.amp.global.exception.CustomException;
 import com.amp.global.security.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -39,7 +44,6 @@ public class UserFestivalService {
     }
 
 
-
     @Transactional(readOnly = true)
     public UserFestivalPageResponse getAllFestivalLists(Pageable pageable) {
         User user = authService.getCurrentUserOrNull();
@@ -58,5 +62,25 @@ public class UserFestivalService {
         );
 
         return UserFestivalPageResponse.of(festivalList);
+    }
+
+    @Transactional
+    public WishListResponse toggleWishlist(Long festivalId, WishListRequest request) {
+        User user = authService.getCurrentUser();
+        Festival festival = festivalRepository.findById(festivalId)
+                .orElseThrow(() -> new CustomException(FestivalErrorCode.FESTIVAL_NOT_FOUND));
+
+
+        UserFestival userFestival = userFestivalRepository.findByUserAndFestival(user, festival)
+                .orElseGet(() -> UserFestival.builder()
+                        .user(user)
+                        .festival(festival)
+                        .build());
+
+        userFestival.updateWishList(request.isWishList());
+
+        userFestivalRepository.save(userFestival);
+
+        return new WishListResponse(festival.getId(), userFestival.getWishList());
     }
 }
