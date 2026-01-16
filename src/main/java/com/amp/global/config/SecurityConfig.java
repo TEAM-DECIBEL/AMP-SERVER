@@ -99,7 +99,8 @@ public class SecurityConfig {
                                 "/*.js",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
-                                "/swagger-resources/**"
+                                "/swagger-resources/**",
+                                "/actuator/**"
                         ).permitAll()
 
                         // 주최사 권한
