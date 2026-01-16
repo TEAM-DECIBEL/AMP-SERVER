@@ -3,6 +3,8 @@ package com.amp.domain.auth.service;
 import com.amp.domain.auth.dto.OnboardingRequest;
 import com.amp.domain.auth.dto.OnboardingResponse;
 import com.amp.domain.auth.dto.OnboardingStatusResponse;
+import com.amp.domain.auth.exception.OnboardingErrorCode;
+import com.amp.domain.auth.exception.OnboardingException;
 import com.amp.domain.organizer.entity.Organizer;
 import com.amp.domain.organizer.repository.OrganizerRepository;
 import com.amp.domain.user.entity.RegistrationStatus;
@@ -15,7 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import static com.amp.global.common.CommonErrorCode.*;
+import static com.amp.global.common.CommonErrorCode.USER_NOT_FOUND;
 
 @Slf4j
 @Service
@@ -33,14 +35,14 @@ public class OnboardingService {
 
         // 이미 온보딩 완료된 경우
         if (user.getRegistrationStatus() == RegistrationStatus.COMPLETED) {
-            throw new CustomException(ALREADY_COMPLETED_ONBOARDING);
+            throw new OnboardingException(OnboardingErrorCode.ALREADY_COMPLETED_ONBOARDING);
         }
 
         // OAuth2 핸들러에서 설정한 UserType과 요청의 UserType이 일치하는지 확인
         if (user.getUserType() != request.getUserType()) {
             log.warn("UserType mismatch - stored: {}, requested: {}",
                     user.getUserType(), request.getUserType());
-            throw new CustomException(INVALID_USER_TYPE);
+            throw new OnboardingException(OnboardingErrorCode.INVALID_USER_TYPE);
         }
 
         // 사용자 타입에 따라 온보딩 처리
@@ -49,7 +51,7 @@ public class OnboardingService {
         } else if (request.getUserType() == UserType.ORGANIZER) {
             completeOrganizerOnboarding(user, request);
         } else {
-            throw new CustomException(INVALID_USER_TYPE);
+            throw new OnboardingException(OnboardingErrorCode.INVALID_USER_TYPE);
         }
 
         return OnboardingResponse.builder()
@@ -79,7 +81,7 @@ public class OnboardingService {
 
         // 주최사명 필수 체크
         if (request.getOrganizerName() == null || request.getOrganizerName().isBlank()) {
-            throw new CustomException(ORGANIZER_NAME_REQUIRED);
+            throw new OnboardingException(OnboardingErrorCode.ORGANIZER_NAME_REQUIRED);
         }
 
         // 닉네임 중복 체크
@@ -122,7 +124,7 @@ public class OnboardingService {
 
     private void validateNicknameUniqueness(String nickname) {
         if (userRepository.existsByNickname(nickname)) {
-            throw new CustomException(DUPLICATE_NICKNAME);
+            throw new OnboardingException(OnboardingErrorCode.DUPLICATE_NICKNAME);
         }
     }
 }
