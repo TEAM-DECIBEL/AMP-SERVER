@@ -2,6 +2,7 @@ package com.amp.domain.festival.dto.response;
 
 import com.amp.domain.festival.entity.Festival;
 import com.amp.domain.festival.entity.FestivalStatus;
+import com.amp.domain.festival.util.FestivalUtils;
 
 public record OrganizerFestivalListResponse(
         String title,
@@ -11,7 +12,7 @@ public record OrganizerFestivalListResponse(
     public static OrganizerFestivalListResponse from(Festival festival) {
         return new OrganizerFestivalListResponse(
                 festival.getTitle(),
-                String.format("%s ~ %s", festival.getStartDate(), festival.getEndDate()),
+                FestivalUtils.formatPeriod(festival.getStartDate(), festival.getEndDate()),
                 convertToKorean(festival.getStatus())
         );
     }
