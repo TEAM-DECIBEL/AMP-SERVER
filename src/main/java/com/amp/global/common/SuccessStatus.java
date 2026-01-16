@@ -11,6 +11,9 @@ public enum SuccessStatus implements SuccessCode {
     OK(HttpStatus.OK, "COM", "001", "요청이 성공적으로 처리되었습니다."),
     CREATED(HttpStatus.CREATED, "COM", "002", "리소스가 성공적으로 생성되었습니다."),
 
+    // AUTH
+    LOGOUT_SUCCESS(HttpStatus.OK, "AUT", "001", "로그아웃이 완료되었습니다."),
+
     // FESTIVAL
     FESTIVAL_CREATE_SUCCESS(HttpStatus.CREATED, "FES","001", "공연 등록이 완료되었습니다."),
 
@@ -31,7 +34,6 @@ public enum SuccessStatus implements SuccessCode {
     NOTICE_DETAIL_GET_SUCCESS(HttpStatus.OK, "NOT", "001", "공지 상세 조회되었습니다."),
     NOTICE_LIST_GET_SUCCESS(HttpStatus.OK,  "NOT", "002", "공지 목록 조회되었습니다."),
     NOTICE_CREATE_SUCCESS(HttpStatus.CREATED, "NTC", "001", "공지가 등록되었습니다."),
-    NOTICE_DETAIL_GET_SUCCESS(HttpStatus.OK, "NTC", "002", "공지 상세 조회되었습니다."),
 
     // NOTICE SAVE
     BOOKMARK_UPDATE_SUCCESS(HttpStatus.CREATED, "BOK", "001", "북마크 요청이 정상적으로 처리되었습니다."),
