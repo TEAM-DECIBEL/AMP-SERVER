@@ -29,7 +29,7 @@ public class UsersFestivalService {
     @Transactional(readOnly = true)
     public UserFestivalPageResponse getAllFestivalLists(Pageable pageable) {
         User user = authService.getCurrentUserOrNull();
-        Page<Festival> festivalPage = festivalRepository.findAllByDeletedAtIsNull(pageable);
+        Page<Festival> festivalPage = festivalRepository.findAll(pageable);
 
         Set<Long> wishlistIds = (user != null)
                 ? userFestivalRepository.findAllFestivalIdsByUserId(user.getId())
