@@ -67,7 +67,7 @@ public class UserFestivalService {
     }
 
     @Transactional(readOnly = true)
-    public MyWishListPageResponse getMyWishListResponse(Pageable pageable) {
+    public MyWishListPageResponse getMyWishList(Pageable pageable) {
         User user = authService.getCurrentUser();
 
         Page<UserFestival> userFestivals = userFestivalRepository.findAllByUserIdAndWishListTrue(user.getId(), pageable);
