@@ -2,7 +2,7 @@ package com.amp.domain.userFestival.service;
 
 import com.amp.domain.festival.entity.UserFestival;
 import com.amp.domain.festival.exception.FestivalErrorCode;
-import com.amp.domain.user.entity.Role;
+import com.amp.domain.user.entity.UserType;
 import com.amp.domain.user.exception.UserErrorCode;
 import com.amp.domain.userFestival.dto.request.WishListRequest;
 import com.amp.domain.userFestival.dto.response.*;
@@ -65,7 +65,7 @@ public class UserFestivalService {
     public WishListResponse toggleWishlist(Long festivalId, WishListRequest request) {
         User user = authService.getCurrentUser();
 
-        if (user.getRole() == Role.ORGANIZER) {
+        if (user.getUserType() == UserType.ORGANIZER) {
             throw new CustomException(UserErrorCode.USER_NOT_AUTHENTICATED);
         }
 
@@ -80,7 +80,7 @@ public class UserFestivalService {
                         .build());
 
         userFestivalRepository.save(userFestival);
-        userFestival.updateWishList(request.wishList());
+        userFestival.updateWishList(request.isWishList());
 
         return new WishListResponse(festival.getId(), userFestival.getWishList());
     }
