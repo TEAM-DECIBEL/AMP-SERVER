@@ -64,6 +64,7 @@ public enum SwaggerResponseDescription {
             NoticeErrorCode.NOTICE_NOT_FOUND
     ))),
 
+    // 공지 업데이트 API
     FAIL_TO_UPDATE_NOTICE(new LinkedHashSet<>(Set.of(
             UserErrorCode.USER_NOT_FOUND,
             FestivalErrorCode.FESTIVAL_NOT_FOUND,
@@ -74,7 +75,7 @@ public enum SwaggerResponseDescription {
             FestivalCategoryErrorCode.NOTICE_CATEGORY_NOT_FOUND,
             NoticeErrorCode.UPDATE_NOTICE_FAILED,
             S3ErrorCode.S3_DELETE_FAILED))),
-  
+
     // 페스티벌 별 공지 조회 API
     FAIL_TO_GET_NOTICE_LIST(new LinkedHashSet<>(Set.of(
             FestivalErrorCode.FESTIVAL_NOT_FOUND
@@ -97,6 +98,25 @@ public enum SwaggerResponseDescription {
             S3ErrorCode.S3_UPLOAD_FAILED
     ))),
 
+    // 관람 예정 공연 등록/해제 API
+    FAIL_TO_ADD_WISHLIST(new LinkedHashSet<>(Set.of(
+            UserErrorCode.USER_NOT_FOUND,
+            FestivalErrorCode.FESTIVAL_NOT_FOUND,
+            UserErrorCode.USER_NOT_AUTHENTICATED
+    ))),
+
+    // 관람 예정 공연 리스트 조회
+    FAIL_TO_GET_WISHLISTS(new LinkedHashSet<>(Set.of(
+            UserErrorCode.USER_NOT_FOUND,
+            UserErrorCode.USER_NOT_AUTHENTICATED
+    ))),
+
+    // 관람 예정 공연 중 가장 임박한 공연 조회 API
+    FAIL_TO_GET_RECENT_WISHLIST(new LinkedHashSet<>(Set.of(
+            UserErrorCode.USER_NOT_FOUND,
+            UserErrorCode.USER_NOT_AUTHENTICATED
+    ))),
+
     // 공지 삭제 API
     FAIL_TO_DELETE_NOTICE(new LinkedHashSet<>(Set.of(
             NoticeErrorCode.NOTICE_NOT_FOUND,
@@ -104,7 +124,7 @@ public enum SwaggerResponseDescription {
             NoticeErrorCode.DELETE_NOTICE_FAIL,
             UserErrorCode.USER_NOT_FOUND,
             NoticeErrorCode.NOTICE_DELETE_FORBIDDEN
-    ))),;
+    )));
 
     private final Set<ErrorCode> errorCodeList;
 
