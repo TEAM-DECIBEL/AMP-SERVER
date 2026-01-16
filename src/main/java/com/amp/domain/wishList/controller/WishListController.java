@@ -1,10 +1,10 @@
-package com.amp.domain.userFestival.controller;
+package com.amp.domain.wishList.controller;
 
-import com.amp.domain.userFestival.dto.response.RecentFestivalResponse;
-import com.amp.domain.userFestival.dto.request.WishListRequest;
-import com.amp.domain.userFestival.dto.response.MyWishListPageResponse;
-import com.amp.domain.userFestival.dto.response.WishListResponse;
-import com.amp.domain.userFestival.service.UserFestivalService;
+import com.amp.domain.wishList.dto.response.RecentWishListResponse;
+import com.amp.domain.wishList.dto.request.WishListRequest;
+import com.amp.domain.wishList.dto.response.MyWishListPageResponse;
+import com.amp.domain.wishList.dto.response.UpdateWishListResponse;
+import com.amp.domain.wishList.service.UserFestivalService;
 import com.amp.global.annotation.ApiErrorCodes;
 import com.amp.global.common.SuccessStatus;
 import com.amp.global.response.success.BaseResponse;
@@ -22,18 +22,18 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/users/me/festivals")
 @RequiredArgsConstructor
-public class UserFestivalController {
+public class WishListController {
 
     private final UserFestivalService userFestivalService;
 
     @GetMapping("/recent")
     @Operation(summary = "관람 예정 공연 중 가장 임박한 공연 조회")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_GET_RECENT_WISHLIST)
-    public ResponseEntity<BaseResponse<RecentFestivalResponse>> getRecentFestival(
+    public ResponseEntity<BaseResponse<RecentWishListResponse>> getRecentFestival(
             @AuthenticationPrincipal CustomUserPrincipal principal) {
 
         Long userId = principal.getUserId();
-        RecentFestivalResponse response = userFestivalService.getRecentFestival(userId).orElse(null);
+        RecentWishListResponse response = userFestivalService.getRecentFestival(userId).orElse(null);
 
         if (response == null) {
             return ResponseEntity
@@ -49,11 +49,11 @@ public class UserFestivalController {
     @PutMapping("/{festivalId}/wishList")
     @Operation(summary = "관람 예정 공연 등록/해제")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_ADD_WISHLIST)
-    public ResponseEntity<BaseResponse<WishListResponse>> toggleWishList(
+    public ResponseEntity<BaseResponse<UpdateWishListResponse>> toggleWishList(
             @PathVariable Long festivalId,
             @RequestBody @Valid WishListRequest request
     ) {
-        WishListResponse response = userFestivalService.toggleWishlist(festivalId, request);
+        UpdateWishListResponse response = userFestivalService.toggleWishlist(festivalId, request);
 
         SuccessStatus status = response.wishList()
                 ? SuccessStatus.WISHLIST_ADDED

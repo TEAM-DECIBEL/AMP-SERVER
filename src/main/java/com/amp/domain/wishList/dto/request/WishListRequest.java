@@ -1,4 +1,4 @@
-package com.amp.domain.userFestival.dto.request;
+package com.amp.domain.wishList.dto.request;
 
 public record WishListRequest(
         boolean wishList

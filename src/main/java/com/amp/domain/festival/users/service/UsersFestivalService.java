@@ -3,9 +3,9 @@ package com.amp.domain.festival.users.service;
 import com.amp.domain.festival.common.entity.Festival;
 import com.amp.domain.festival.common.repository.FestivalRepository;
 import com.amp.domain.user.entity.User;
-import com.amp.domain.userFestival.dto.response.UserFestivalListResponse;
-import com.amp.domain.userFestival.dto.response.UserFestivalPageResponse;
-import com.amp.domain.userFestival.repository.UserFestivalRepository;
+import com.amp.domain.wishList.dto.response.WishListSummaryResponse;
+import com.amp.domain.wishList.dto.response.WishListPageResponse;
+import com.amp.domain.wishList.repository.UserFestivalRepository;
 import com.amp.global.security.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -27,7 +27,7 @@ public class UsersFestivalService {
 
 
     @Transactional(readOnly = true)
-    public UserFestivalPageResponse getAllFestivalLists(Pageable pageable) {
+    public WishListPageResponse getAllFestivalLists(Pageable pageable) {
         User user = authService.getCurrentUserOrNull();
         Page<Festival> festivalPage = festivalRepository.findAll(pageable);
 
@@ -35,11 +35,11 @@ public class UsersFestivalService {
                 ? userFestivalRepository.findAllFestivalIdsByUserId(user.getId())
                 : Collections.emptySet();
 
-        Page<UserFestivalListResponse> festivalList = festivalPage.map(f ->
-                UserFestivalListResponse.from(f, wishlistIds.contains(f.getId()))
+        Page<WishListSummaryResponse> festivalList = festivalPage.map(f ->
+                WishListSummaryResponse.from(f, wishlistIds.contains(f.getId()))
         );
 
-        return UserFestivalPageResponse.of(festivalList);
+        return WishListPageResponse.of(festivalList);
     }
 
 }

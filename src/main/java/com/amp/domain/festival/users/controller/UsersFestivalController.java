@@ -1,7 +1,7 @@
 package com.amp.domain.festival.users.controller;
 
 import com.amp.domain.festival.users.service.UsersFestivalService;
-import com.amp.domain.userFestival.dto.response.UserFestivalPageResponse;
+import com.amp.domain.wishList.dto.response.WishListPageResponse;
 import com.amp.global.common.SuccessStatus;
 import com.amp.global.response.success.BaseResponse;
 import lombok.RequiredArgsConstructor;
@@ -19,10 +19,10 @@ public class UsersFestivalController {
     private final UsersFestivalService usersFestivalService;
 
     @GetMapping
-    public ResponseEntity<BaseResponse<UserFestivalPageResponse>> getAllFestivalLists(
+    public ResponseEntity<BaseResponse<WishListPageResponse>> getAllFestivalLists(
             @PageableDefault(size = 20) Pageable pageable) {
 
-        UserFestivalPageResponse response = usersFestivalService.getAllFestivalLists(pageable);
+        WishListPageResponse response = usersFestivalService.getAllFestivalLists(pageable);
 
         SuccessStatus status = response.isEmpty()
                 ? SuccessStatus.FESTIVAL_LIST_EMPTY

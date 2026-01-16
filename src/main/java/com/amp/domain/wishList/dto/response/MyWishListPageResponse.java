@@ -1,4 +1,4 @@
-package com.amp.domain.userFestival.dto.response;
+package com.amp.domain.wishList.dto.response;
 
 import com.amp.global.common.dto.PaginationResponse;
 import org.springframework.data.domain.Page;

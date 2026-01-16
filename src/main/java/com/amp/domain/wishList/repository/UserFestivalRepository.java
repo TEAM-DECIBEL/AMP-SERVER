@@ -1,4 +1,4 @@
-package com.amp.domain.userFestival.repository;
+package com.amp.domain.wishList.repository;
 
 import com.amp.domain.festival.common.entity.Festival;
 import com.amp.domain.festival.common.entity.UserFestival;

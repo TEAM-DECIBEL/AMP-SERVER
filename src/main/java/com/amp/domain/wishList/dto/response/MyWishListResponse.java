@@ -1,4 +1,4 @@
-package com.amp.domain.userFestival.dto.response;
+package com.amp.domain.wishList.dto.response;
 
 import com.amp.domain.festival.common.entity.Festival;
 import com.amp.domain.festival.common.entity.FestivalStatus;
