@@ -1,6 +1,6 @@
 package com.amp.domain.notice.common.controller;
 
-import com.amp.domain.notice.dto.response.NoticeListResponse;
+import com.amp.domain.notice.common.dto.response.NoticeListResponse;
 import com.amp.domain.notice.common.service.FestivalNoticeService;
 import com.amp.global.annotation.ApiErrorCodes;
 import com.amp.global.common.SuccessStatus;

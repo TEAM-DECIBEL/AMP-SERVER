@@ -1,4 +1,4 @@
-package com.amp.domain.notice.dto.response;
+package com.amp.domain.notice.common.dto.response;
 
 import java.util.List;
 
