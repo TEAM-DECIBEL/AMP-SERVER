@@ -1,10 +1,13 @@
 package com.amp.global.swagger;
 
+import com.amp.domain.category.exception.FestivalCategoryErrorCode;
 import com.amp.domain.festival.exception.FestivalErrorCode;
 import com.amp.domain.notice.exception.BookmarkErrorCode;
 import com.amp.domain.notice.exception.NoticeErrorCode;
+import com.amp.domain.user.exception.UserErrorCode;
 import com.amp.global.common.CommonErrorCode;
 import com.amp.global.common.ErrorCode;
+import com.amp.global.s3.S3ErrorCode;
 import lombok.Getter;
 
 import java.util.LinkedHashSet;
@@ -61,13 +64,47 @@ public enum SwaggerResponseDescription {
             NoticeErrorCode.NOTICE_NOT_FOUND
     ))),
 
+    FAIL_TO_UPDATE_NOTICE(new LinkedHashSet<>(Set.of(
+            UserErrorCode.USER_NOT_FOUND,
+            FestivalErrorCode.FESTIVAL_NOT_FOUND,
+            UserErrorCode.USER_NOT_AUTHENTICATED,
+            NoticeErrorCode.NOTICE_NOT_FOUND,
+            NoticeErrorCode.NOTICE_ALREADY_DELETED,
+            NoticeErrorCode.NOTICE_UPDATE_FORBIDDEN,
+            FestivalCategoryErrorCode.NOTICE_CATEGORY_NOT_FOUND,
+            NoticeErrorCode.UPDATE_NOTICE_FAILED,
+            S3ErrorCode.S3_DELETE_FAILED))),
+  
+    // 페스티벌 별 공지 조회 API
+    FAIL_TO_GET_NOTICE_LIST(new LinkedHashSet<>(Set.of(
+            FestivalErrorCode.FESTIVAL_NOT_FOUND
+    ))),
+
     // 공지 북마크 업데이트 API
     FAIL_TO_UPDATE_BOOKMARK(new LinkedHashSet<>(Set.of(
             NoticeErrorCode.NOTICE_NOT_FOUND,
             BookmarkErrorCode.NOTICE_ALREADY_BOOKMARKED,
             BookmarkErrorCode.SAVED_NOTICE_NOT_EXIST
     ))),
-    ;
+
+    // 공지 작성 API
+    FAIL_TO_CREATE_NOTICE(new LinkedHashSet<>(Set.of(
+            UserErrorCode.USER_NOT_FOUND,
+            FestivalErrorCode.FESTIVAL_NOT_FOUND,
+            UserErrorCode.USER_NOT_AUTHENTICATED,
+            FestivalCategoryErrorCode.NOTICE_CATEGORY_NOT_FOUND,
+            NoticeErrorCode.NOTICE_CREATE_FAIL,
+            S3ErrorCode.S3_UPLOAD_FAILED
+    ))),
+
+    // 공지 삭제 API
+    FAIL_TO_DELETE_NOTICE(new LinkedHashSet<>(Set.of(
+            NoticeErrorCode.NOTICE_NOT_FOUND,
+            NoticeErrorCode.NOTICE_ALREADY_DELETED,
+            NoticeErrorCode.DELETE_NOTICE_FAIL,
+            UserErrorCode.USER_NOT_FOUND,
+            NoticeErrorCode.NOTICE_DELETE_FORBIDDEN
+    ))),;
 
     private final Set<ErrorCode> errorCodeList;
 
