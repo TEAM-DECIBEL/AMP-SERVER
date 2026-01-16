@@ -1,6 +1,6 @@
 package com.amp.domain.festival.user.controller;
 
-import com.amp.domain.festival.user.service.UsersFestivalService;
+import com.amp.domain.festival.user.service.AudienceFestivalService;
 import com.amp.domain.wishList.dto.response.WishListPageResponse;
 import com.amp.global.common.SuccessStatus;
 import com.amp.global.response.success.BaseResponse;
@@ -15,8 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/users/festivals")
 @RequiredArgsConstructor
-public class UsersFestivalController {
-    private final UsersFestivalService usersFestivalService;
+public class AudienceFestivalController {
+    private final AudienceFestivalService usersFestivalService;
 
     @GetMapping
     public ResponseEntity<BaseResponse<WishListPageResponse>> getAllFestivalLists(

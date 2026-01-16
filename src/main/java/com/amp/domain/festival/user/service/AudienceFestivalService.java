@@ -19,7 +19,7 @@ import java.util.Set;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class UsersFestivalService {
+public class AudienceFestivalService {
 
     private final UserFestivalRepository userFestivalRepository;
     private final FestivalRepository festivalRepository;
