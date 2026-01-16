@@ -2,9 +2,10 @@ package com.amp.domain.userFestival.service;
 
 import com.amp.domain.festival.entity.UserFestival;
 import com.amp.domain.festival.exception.FestivalErrorCode;
+import com.amp.domain.user.entity.UserType;
+import com.amp.domain.user.exception.UserErrorCode;
 import com.amp.domain.userFestival.dto.request.WishListRequest;
-import com.amp.domain.userFestival.dto.response.UserFestivalListResponse;
-import com.amp.domain.userFestival.dto.response.UserFestivalPageResponse;
+import com.amp.domain.userFestival.dto.response.*;
 import com.amp.domain.festival.entity.Festival;
 import com.amp.domain.festival.repository.FestivalRepository;
 import com.amp.domain.user.entity.User;
@@ -20,10 +21,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -43,30 +42,14 @@ public class UserFestivalService {
                 .map(RecentFestivalResponse::from);
     }
 
-
-    @Transactional(readOnly = true)
-    public UserFestivalPageResponse getAllFestivalLists(Pageable pageable) {
-        User user = authService.getCurrentUserOrNull();
-        Page<Festival> festivalPage = festivalRepository.findAllByDeletedAtIsNull(pageable);
-
-        if (festivalPage.isEmpty()) {
-            return UserFestivalPageResponse.of(Page.empty(pageable));
-        }
-
-        Set<Long> wishlistIds = (user != null)
-                ? userFestivalRepository.findAllFestivalIdsByUserId(user.getId())
-                : Collections.emptySet();
-
-        Page<UserFestivalListResponse> festivalList = festivalPage.map(f ->
-                UserFestivalListResponse.from(f, wishlistIds.contains(f.getId()))
-        );
-
-        return UserFestivalPageResponse.of(festivalList);
-    }
-
     @Transactional
     public WishListResponse toggleWishlist(Long festivalId, WishListRequest request) {
         User user = authService.getCurrentUser();
+
+        if (user.getUserType() == UserType.ORGANIZER) {
+            throw new CustomException(UserErrorCode.USER_NOT_AUTHENTICATED);
+        }
+
         Festival festival = festivalRepository.findById(festivalId)
                 .orElseThrow(() -> new CustomException(FestivalErrorCode.FESTIVAL_NOT_FOUND));
 
@@ -77,10 +60,19 @@ public class UserFestivalService {
                         .festival(festival)
                         .build());
 
-        userFestival.updateWishList(request.isWishList());
-
         userFestivalRepository.save(userFestival);
+        userFestival.updateWishList(request.wishList());
 
         return new WishListResponse(festival.getId(), userFestival.getWishList());
+    }
+
+    @Transactional(readOnly = true)
+    public MyWishListPageResponse getMyWishList(Pageable pageable) {
+        User user = authService.getCurrentUser();
+
+        Page<UserFestival> userFestivals = userFestivalRepository.findAllByUserIdAndWishListTrue(user.getId(), pageable);
+        Page<MyWishListResponse> responsePage = userFestivals.map(MyWishListResponse::from);
+
+        return MyWishListPageResponse.of(responsePage);
     }
 }
