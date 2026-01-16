@@ -1,7 +1,7 @@
 package com.amp.domain.userFestival.dto.response;
 
-import com.amp.domain.festival.entity.Festival;
-import com.amp.domain.festival.util.FestivalUtils;
+import com.amp.domain.festival.common.entity.Festival;
+import com.amp.domain.festival.common.util.FestivalUtils;
 
 public record UserFestivalListResponse(
         Long festivalId,
