@@ -106,8 +106,14 @@ public class SecurityConfig {
                         // 주최사 권한
                         .requestMatchers("/api/organizer/**").hasRole("ORGANIZER")
                         .requestMatchers("/api/auth/onboarding/**").authenticated()
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
+                        // 관객만 접근 가능
+                        .requestMatchers("/api/v1/festivals/my").hasRole("AUDIENCE")
+                        .requestMatchers("/api/v1/festivals/*/wishList").hasRole("AUDIENCE")
+                        .requestMatchers("/api/v1/users/me/**").hasRole("AUDIENCE")
+
+                        // 관리자 권한
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exception -> exception
