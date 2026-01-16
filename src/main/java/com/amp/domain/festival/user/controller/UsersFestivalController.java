@@ -1,6 +1,6 @@
-package com.amp.domain.festival.users.controller;
+package com.amp.domain.festival.user.controller;
 
-import com.amp.domain.festival.users.service.UsersFestivalService;
+import com.amp.domain.festival.user.service.UsersFestivalService;
 import com.amp.domain.wishList.dto.response.WishListPageResponse;
 import com.amp.global.common.SuccessStatus;
 import com.amp.global.response.success.BaseResponse;

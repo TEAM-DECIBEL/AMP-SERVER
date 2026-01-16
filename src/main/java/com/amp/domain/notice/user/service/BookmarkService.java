@@ -1,7 +1,7 @@
-package com.amp.domain.notice.users.service;
+package com.amp.domain.notice.user.service;
 
-import com.amp.domain.notice.users.dto.request.BookmarkRequest;
-import com.amp.domain.notice.users.dto.response.BookmarkResponse;
+import com.amp.domain.notice.user.dto.request.BookmarkRequest;
+import com.amp.domain.notice.user.dto.response.BookmarkResponse;
 import com.amp.domain.notice.common.entity.Bookmark;
 import com.amp.domain.notice.common.entity.Notice;
 import com.amp.domain.notice.common.exception.BookmarkErrorCode;

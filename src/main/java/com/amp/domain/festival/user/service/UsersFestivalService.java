@@ -1,4 +1,4 @@
-package com.amp.domain.festival.users.service;
+package com.amp.domain.festival.user.service;
 
 import com.amp.domain.festival.common.entity.Festival;
 import com.amp.domain.festival.common.repository.FestivalRepository;
