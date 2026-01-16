@@ -1,9 +1,9 @@
-package com.amp.domain.userFestival.service;
+package com.amp.domain.wishList.service;
 
 import com.amp.domain.festival.common.entity.Festival;
 import com.amp.domain.festival.common.entity.FestivalStatus;
-import com.amp.domain.userFestival.dto.response.RecentFestivalResponse;
-import com.amp.domain.userFestival.repository.UserFestivalRepository;
+import com.amp.domain.wishList.dto.response.RecentWishListResponse;
+import com.amp.domain.wishList.repository.UserFestivalRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,7 +44,7 @@ class UserFestivalServiceTest {
                 .willReturn(List.of(festival));
 
         // when
-        Optional<RecentFestivalResponse> result = userFestivalService.getRecentFestival(userId);
+        Optional<RecentWishListResponse> result = userFestivalService.getRecentFestival(userId);
 
         // then
         assertThat(result).isPresent(); // Optional 안에 데이터가 있는지 확인
@@ -61,7 +61,7 @@ class UserFestivalServiceTest {
                 .willReturn(List.of()); // 빈 리스트 반환
 
         // when
-        Optional<RecentFestivalResponse> result = userFestivalService.getRecentFestival(userId);
+        Optional<RecentWishListResponse> result = userFestivalService.getRecentFestival(userId);
 
         // then
         assertThat(result).isEmpty(); // 예외가 터지지 않고 비어있는지 확인
@@ -85,7 +85,7 @@ class UserFestivalServiceTest {
                 .willReturn(List.of(festival1, festival2));
 
         // when
-        Optional<RecentFestivalResponse> result = userFestivalService.getRecentFestival(userId);
+        Optional<RecentWishListResponse> result = userFestivalService.getRecentFestival(userId);
 
         // then
         assertThat(result).isPresent();

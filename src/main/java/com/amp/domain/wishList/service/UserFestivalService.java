@@ -1,17 +1,17 @@
-package com.amp.domain.userFestival.service;
+package com.amp.domain.wishList.service;
 
 import com.amp.domain.festival.common.entity.UserFestival;
 import com.amp.domain.festival.common.exception.FestivalErrorCode;
 import com.amp.domain.user.entity.UserType;
 import com.amp.domain.user.exception.UserErrorCode;
-import com.amp.domain.userFestival.dto.request.WishListRequest;
-import com.amp.domain.userFestival.dto.response.*;
+import com.amp.domain.wishList.dto.request.WishListRequest;
+import com.amp.domain.wishList.dto.response.*;
 import com.amp.domain.festival.common.entity.Festival;
 import com.amp.domain.festival.common.repository.FestivalRepository;
 import com.amp.domain.user.entity.User;
-import com.amp.domain.userFestival.dto.response.RecentFestivalResponse;
-import com.amp.domain.userFestival.dto.response.WishListResponse;
-import com.amp.domain.userFestival.repository.UserFestivalRepository;
+import com.amp.domain.wishList.dto.response.RecentWishListResponse;
+import com.amp.domain.wishList.dto.response.UpdateWishListResponse;
+import com.amp.domain.wishList.repository.UserFestivalRepository;
 import com.amp.global.exception.CustomException;
 import com.amp.global.security.service.AuthService;
 import lombok.RequiredArgsConstructor;
@@ -33,17 +33,17 @@ public class UserFestivalService {
     private final FestivalRepository festivalRepository;
     private final AuthService authService;
 
-    public Optional<RecentFestivalResponse> getRecentFestival(Long userId) {
+    public Optional<RecentWishListResponse> getRecentFestival(Long userId) {
         LocalDate today = LocalDate.now();
         List<Festival> festivals = userFestivalRepository.findUpcomingWishlistFestivals(userId, today);
 
         return festivals.stream()
                 .findFirst()
-                .map(RecentFestivalResponse::from);
+                .map(RecentWishListResponse::from);
     }
 
     @Transactional
-    public WishListResponse toggleWishlist(Long festivalId, WishListRequest request) {
+    public UpdateWishListResponse toggleWishlist(Long festivalId, WishListRequest request) {
         User user = authService.getCurrentUser();
 
         if (user.getUserType() == UserType.ORGANIZER) {
@@ -63,7 +63,7 @@ public class UserFestivalService {
         userFestivalRepository.save(userFestival);
         userFestival.updateWishList(request.wishList());
 
-        return new WishListResponse(festival.getId(), userFestival.getWishList());
+        return new UpdateWishListResponse(festival.getId(), userFestival.getWishList());
     }
 
     @Transactional(readOnly = true)

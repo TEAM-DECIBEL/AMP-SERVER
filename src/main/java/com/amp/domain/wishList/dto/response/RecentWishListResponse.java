@@ -1,4 +1,4 @@
-package com.amp.domain.userFestival.dto.response;
+package com.amp.domain.wishList.dto.response;
 
 import com.amp.domain.festival.common.entity.Festival;
 import lombok.AllArgsConstructor;
@@ -13,7 +13,7 @@ import java.time.temporal.ChronoUnit;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class RecentFestivalResponse {
+public class RecentWishListResponse {
 
     private Long festivalId;
     private String title;
@@ -23,10 +23,10 @@ public class RecentFestivalResponse {
     private LocalDate endDate;
     private Long dDay;
 
-    public static RecentFestivalResponse from(Festival festival) {
+    public static RecentWishListResponse from(Festival festival) {
         long dDay = ChronoUnit.DAYS.between(LocalDate.now(), festival.getStartDate());
 
-        return RecentFestivalResponse.builder()
+        return RecentWishListResponse.builder()
                 .festivalId(festival.getId())
                 .title(festival.getTitle())
                 .mainImageUrl(festival.getMainImageUrl())
