@@ -1,5 +1,6 @@
 package com.amp.domain.user.dto.response;
 
+import com.amp.global.common.dto.PaginationResponse;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -7,9 +8,9 @@ import java.util.List;
 
 @Getter
 @Builder
-public class SavedAnnouncementResponse {
+public class SavedNoticesResponse {
     private List<SavedAnnouncementDto> notices;
-    private PaginationDto pagination;
+    private PaginationResponse pagination;
 
     @Getter
     @Builder
@@ -20,16 +21,5 @@ public class SavedAnnouncementResponse {
         private String categoryName;
         private String title;
         private String imageUrl;
-    }
-
-    @Getter
-    @Builder
-    public static class PaginationDto {
-        private int currentPage;
-        private int totalPages;
-        private long totalElements;
-        private int size;
-        private boolean hasNext;
-        private boolean hasPrevious;
     }
 }
