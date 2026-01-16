@@ -36,4 +36,8 @@ public class UserFestival extends BaseTimeEntity {
         this.festival = festival;
         this.wishList = wishList != null ? wishList : false;
     }
+
+    public void updateWishList(boolean wishList) {
+        this.wishList = wishList;
+    }
 }

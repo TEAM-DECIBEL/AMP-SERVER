@@ -51,7 +51,7 @@ public class NoticeService {
         Authentication authentication =
                 SecurityContextHolder.getContext().getAuthentication();
 
-        if (!isLoggedInUser(authentication)) {
+        if (!authService.isLoggedInUser(authentication)) {
             throw new CustomException(UserErrorCode.USER_NOT_FOUND);
         }
 
@@ -66,7 +66,7 @@ public class NoticeService {
         }
 
         FestivalCategory festivalCategory = festivalCategoryRepository
-                .findById(Long.parseLong(request.categoryId()))
+                .findById(request.categoryId())
                 .orElseThrow(() -> new NoticeException(FestivalCategoryErrorCode.NOTICE_CATEGORY_NOT_FOUND));
 
         if (!festivalCategory.getFestival().getId().equals(festival.getId())) {
