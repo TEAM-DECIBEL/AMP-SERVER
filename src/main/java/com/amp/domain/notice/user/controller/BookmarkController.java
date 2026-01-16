@@ -1,8 +1,8 @@
-package com.amp.domain.notice.users.controller;
+package com.amp.domain.notice.user.controller;
 
-import com.amp.domain.notice.users.dto.request.BookmarkRequest;
-import com.amp.domain.notice.users.dto.response.BookmarkResponse;
-import com.amp.domain.notice.users.service.BookmarkService;
+import com.amp.domain.notice.user.dto.request.BookmarkRequest;
+import com.amp.domain.notice.user.dto.response.BookmarkResponse;
+import com.amp.domain.notice.user.service.BookmarkService;
 import com.amp.global.annotation.ApiErrorCodes;
 import com.amp.global.common.SuccessStatus;
 import com.amp.global.response.success.BaseResponse;
