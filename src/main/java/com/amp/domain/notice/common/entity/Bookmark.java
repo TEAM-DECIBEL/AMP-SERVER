@@ -1,6 +1,5 @@
-package com.amp.domain.notification.entity;
+package com.amp.domain.notice.common.entity;
 
-import com.amp.domain.notice.common.entity.Notice;
 import com.amp.domain.user.entity.User;
 import com.amp.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
@@ -10,14 +9,18 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "notification")
+@Table(name = "user_saved_notice",
+        uniqueConstraints = @UniqueConstraint(
+                name = "uk_user_notice",
+                columnNames = {"user_id", "notice_id"}
+        ))
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Notification extends BaseTimeEntity {
+public class Bookmark extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "notification_id")
+    @Column(name = "saved_notice_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -28,21 +31,10 @@ public class Notification extends BaseTimeEntity {
     @JoinColumn(name = "notice_id", nullable = false)
     private Notice notice;
 
-    @Column(nullable = false, length = 255)
-    private String title;
-
-    @Column(nullable = false, columnDefinition = "TEXT")
-    private String message;
-
-    @Column(name = "is_read", nullable = false)
-    private Boolean isRead = false;
-
     @Builder
-    public Notification(User user, Notice notice, String title, String message) {
+    public Bookmark(User user, Notice notice) {
         this.user = user;
         this.notice = notice;
-        this.title = title;
-        this.message = message;
-        this.isRead = false;
     }
+
 }

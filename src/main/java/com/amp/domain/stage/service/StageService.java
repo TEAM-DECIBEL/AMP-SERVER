@@ -1,6 +1,6 @@
 package com.amp.domain.stage.service;
 
-import com.amp.domain.festival.entity.Festival;
+import com.amp.domain.festival.common.entity.Festival;
 import com.amp.domain.stage.dto.request.StageRequest;
 import com.amp.domain.stage.entity.Stage;
 import org.springframework.stereotype.Service;

@@ -6,7 +6,7 @@ import com.amp.domain.category.exception.CategoryErrorCode;
 import com.amp.domain.category.repository.CategoryRepository;
 import com.amp.domain.category.repository.FestivalCategoryRepository;
 import com.amp.domain.festival.common.entity.Festival;
-import com.amp.domain.notice.repository.NoticeRepository;
+import com.amp.domain.notice.common.repository.NoticeRepository;
 import com.amp.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
