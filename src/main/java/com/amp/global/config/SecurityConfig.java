@@ -7,6 +7,8 @@ import com.amp.global.security.OnboardingCheckFilter;
 import com.amp.global.security.handler.CustomAccessDeniedHandler;
 import com.amp.global.security.handler.CustomAuthenticationEntryPoint;
 import com.amp.global.security.service.CustomOAuthUserService;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,6 +17,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
@@ -84,6 +87,7 @@ public class SecurityConfig {
                                 "/api/v1/festivals", // 비로그인 유저도 접속 가능
                                 "/api/auth/**",
                                 "/api/public/**",
+                                "/api/auth/logout",
                                 "/oauth2/**",
                                 "/login/**",
                                 "/error",
