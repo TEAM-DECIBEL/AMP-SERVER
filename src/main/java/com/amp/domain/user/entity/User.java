@@ -73,4 +73,5 @@ public class User {
         this.registrationStatus = RegistrationStatus.COMPLETED;
         this.isActive = true;
     }
+
 }
