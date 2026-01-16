@@ -3,7 +3,6 @@ package com.amp.domain.userFestival.controller;
 import com.amp.domain.userFestival.dto.response.RecentFestivalResponse;
 import com.amp.domain.userFestival.dto.request.WishListRequest;
 import com.amp.domain.userFestival.dto.response.MyWishListPageResponse;
-import com.amp.domain.userFestival.dto.response.UserFestivalPageResponse;
 import com.amp.domain.userFestival.dto.response.WishListResponse;
 import com.amp.domain.userFestival.service.UserFestivalService;
 import com.amp.global.common.SuccessStatus;
@@ -40,22 +39,6 @@ public class UserFestivalController {
         return ResponseEntity
                 .status(SuccessStatus.USER_FESTIVAL_RECENT_FOUND.getHttpStatus())
                 .body(BaseResponse.of(SuccessStatus.USER_FESTIVAL_RECENT_FOUND, response));
-    }
-
-
-    @GetMapping
-    public ResponseEntity<BaseResponse<UserFestivalPageResponse>> getAllFestivalLists(
-            @PageableDefault(size = 20) Pageable pageable) {
-
-        UserFestivalPageResponse response = userFestivalService.getAllFestivalLists(pageable);
-
-        SuccessStatus status = response.isEmpty()
-                ? SuccessStatus.FESTIVAL_LIST_EMPTY
-                : SuccessStatus.FESTIVAL_LIST_FOUND;
-
-        return ResponseEntity
-                .status(status.getHttpStatus())
-                .body(BaseResponse.ok(status.getMsg(), response));
     }
 
     @PutMapping("/{festivalId}/wishList")
