@@ -11,6 +11,9 @@ public enum SuccessStatus implements SuccessCode {
     OK(HttpStatus.OK, "COM", "001", "요청이 성공적으로 처리되었습니다."),
     CREATED(HttpStatus.CREATED, "COM", "002", "리소스가 성공적으로 생성되었습니다."),
 
+    // AUTH
+    LOGOUT_SUCCESS(HttpStatus.OK, "AUT", "001", "로그아웃이 완료되었습니다."),
+
     // FESTIVAL
     FESTIVAL_CREATE_SUCCESS(HttpStatus.CREATED, "FES", "001", "공연 등록이 완료되었습니다."),
 

@@ -84,6 +84,7 @@ public class SecurityConfig {
                                 "/api/v1/festivals", // 비로그인 유저도 접속 가능
                                 "/api/auth/**",
                                 "/api/public/**",
+                                "/api/auth/logout",
                                 "/oauth2/**",
                                 "/login/**",
                                 "/error",
@@ -95,7 +96,8 @@ public class SecurityConfig {
                                 "/*.js",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
-                                "/swagger-resources/**"
+                                "/swagger-resources/**",
+                                "/actuator/**"
                         ).permitAll()
 
                         // 주최사 권한
