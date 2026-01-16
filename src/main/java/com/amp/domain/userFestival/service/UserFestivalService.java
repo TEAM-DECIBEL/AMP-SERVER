@@ -9,27 +9,41 @@ import com.amp.domain.userFestival.dto.response.*;
 import com.amp.domain.festival.entity.Festival;
 import com.amp.domain.festival.repository.FestivalRepository;
 import com.amp.domain.user.entity.User;
+import com.amp.domain.userFestival.dto.response.RecentFestivalResponse;
+import com.amp.domain.userFestival.dto.response.WishListResponse;
 import com.amp.domain.userFestival.repository.UserFestivalRepository;
 import com.amp.global.exception.CustomException;
 import com.amp.global.security.service.AuthService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserFestivalService {
 
-    private final FestivalRepository festivalRepository;
     private final UserFestivalRepository userFestivalRepository;
+    private final FestivalRepository festivalRepository;
     private final AuthService authService;
+
+    public Optional<RecentFestivalResponse> getRecentFestival(Long userId) {
+        LocalDate today = LocalDate.now();
+        List<Festival> festivals = userFestivalRepository.findUpcomingWishlistFestivals(userId, today);
+
+        return festivals.stream()
+                .findFirst()
+                .map(RecentFestivalResponse::from);
+    }
+
 
     @Transactional(readOnly = true)
     public UserFestivalPageResponse getAllFestivalLists(Pageable pageable) {
