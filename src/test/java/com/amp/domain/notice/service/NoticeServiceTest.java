@@ -10,7 +10,7 @@ import com.amp.domain.notice.common.service.FestivalNoticeService;
 import com.amp.domain.notice.organizer.dto.request.NoticeCreateRequest;
 import com.amp.domain.notice.organizer.dto.response.NoticeCreateResponse;
 import com.amp.domain.notice.common.dto.response.NoticeDetailResponse;
-import com.amp.domain.notice.dto.response.NoticeListResponse;
+import com.amp.domain.notice.common.dto.response.NoticeListResponse;
 import com.amp.domain.notice.common.entity.Bookmark;
 import com.amp.domain.notice.common.entity.Notice;
 import com.amp.domain.notice.common.exception.NoticeException;
