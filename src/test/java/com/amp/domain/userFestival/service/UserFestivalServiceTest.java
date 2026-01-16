@@ -1,7 +1,7 @@
 package com.amp.domain.userFestival.service;
 
-import com.amp.domain.festival.entity.Festival;
-import com.amp.domain.festival.entity.FestivalStatus;
+import com.amp.domain.festival.common.entity.Festival;
+import com.amp.domain.festival.common.entity.FestivalStatus;
 import com.amp.domain.userFestival.dto.response.RecentFestivalResponse;
 import com.amp.domain.userFestival.repository.UserFestivalRepository;
 import org.junit.jupiter.api.DisplayName;

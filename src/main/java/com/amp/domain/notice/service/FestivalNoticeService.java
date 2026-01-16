@@ -1,13 +1,13 @@
 package com.amp.domain.notice.service;
 
-import com.amp.domain.festival.entity.Festival;
-import com.amp.domain.festival.exception.FestivalErrorCode;
-import com.amp.domain.festival.repository.FestivalRepository;
+import com.amp.domain.festival.common.entity.Festival;
+import com.amp.domain.festival.common.exception.FestivalErrorCode;
+import com.amp.domain.festival.common.repository.FestivalRepository;
 import com.amp.domain.notice.dto.response.FestivalNoticeListResponse;
 import com.amp.domain.notice.dto.response.NoticeListResponse;
 import com.amp.domain.notice.dto.response.Pagination;
-import com.amp.domain.notice.entity.Notice;
-import com.amp.domain.notice.exception.NoticeException;
+import com.amp.domain.notice.common.entity.Notice;
+import com.amp.domain.notice.common.exception.NoticeException;
 import com.amp.domain.notice.repository.BookmarkRepository;
 import com.amp.domain.notice.repository.NoticeRepository;
 import com.amp.domain.user.entity.User;

@@ -5,7 +5,7 @@ import com.amp.domain.category.entity.FestivalCategory;
 import com.amp.domain.category.exception.CategoryErrorCode;
 import com.amp.domain.category.repository.CategoryRepository;
 import com.amp.domain.category.repository.FestivalCategoryRepository;
-import com.amp.domain.festival.entity.Festival;
+import com.amp.domain.festival.common.entity.Festival;
 import com.amp.domain.notice.repository.NoticeRepository;
 import com.amp.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;

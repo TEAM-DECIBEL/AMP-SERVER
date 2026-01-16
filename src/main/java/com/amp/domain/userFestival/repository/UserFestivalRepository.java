@@ -1,7 +1,7 @@
 package com.amp.domain.userFestival.repository;
 
-import com.amp.domain.festival.entity.Festival;
-import com.amp.domain.festival.entity.UserFestival;
+import com.amp.domain.festival.common.entity.Festival;
+import com.amp.domain.festival.common.entity.UserFestival;
 import com.amp.domain.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
