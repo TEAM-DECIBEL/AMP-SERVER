@@ -15,10 +15,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/notices")
+@RequestMapping("/api/v1/organizer/notices")
 @RequiredArgsConstructor
 public class NoticeUpdateController {
-
     private final NoticeUpdateService noticeUpdateService;
 
     // 공지 수정/상단고정 수정
@@ -26,7 +25,7 @@ public class NoticeUpdateController {
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_UPDATE_NOTICE)
     @PutMapping(path = "/{noticeId}",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<BaseResponse<Void>> updateNotice (
+    public ResponseEntity<BaseResponse<Void>> updateNotice(
             @PathVariable("noticeId") @Positive Long noticeId,
             @ModelAttribute @Valid NoticeUpdateRequest noticeUpdateRequest
     ) {
