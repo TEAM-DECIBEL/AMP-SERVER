@@ -1,14 +1,14 @@
 package com.amp.domain.notice.service;
 
-import com.amp.domain.notice.user.dto.request.BookmarkRequest;
-import com.amp.domain.notice.user.dto.response.BookmarkResponse;
-import com.amp.domain.notice.common.entity.Bookmark;
-import com.amp.domain.notice.common.entity.Notice;
-import com.amp.domain.notice.common.exception.BookmarkException;
-import com.amp.domain.notice.common.exception.NoticeException;
-import com.amp.domain.notice.common.repository.BookmarkRepository;
-import com.amp.domain.notice.common.repository.NoticeRepository;
-import com.amp.domain.notice.user.service.BookmarkService;
+import com.amp.domain.notice.dto.request.BookmarkRequest;
+import com.amp.domain.notice.dto.response.BookmarkResponse;
+import com.amp.domain.notice.entity.Bookmark;
+import com.amp.domain.notice.entity.Notice;
+import com.amp.domain.notice.exception.BookmarkException;
+import com.amp.domain.notice.exception.NoticeException;
+import com.amp.domain.notice.repository.BookmarkRepository;
+import com.amp.domain.notice.repository.NoticeRepository;
+import com.amp.domain.notice.service.user.BookmarkService;
 import com.amp.domain.user.entity.User;
 import com.amp.domain.user.exception.UserErrorCode;
 import com.amp.domain.user.repository.UserRepository;

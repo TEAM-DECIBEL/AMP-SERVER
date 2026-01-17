@@ -1,6 +1,6 @@
 package com.amp.domain.category.entity;
 
-import com.amp.domain.festival.common.entity.Festival;
+import com.amp.domain.festival.entity.Festival;
 import com.amp.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;

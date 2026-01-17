@@ -1,7 +1,5 @@
 package com.amp.domain.festival.entity;
 
-import com.amp.domain.festival.common.entity.Festival;
-import com.amp.domain.festival.common.entity.FestivalStatus;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

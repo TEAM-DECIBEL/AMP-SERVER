@@ -1,6 +1,6 @@
 package com.amp.domain.notification.entity;
 
-import com.amp.domain.notice.common.entity.Notice;
+import com.amp.domain.notice.entity.Notice;
 import com.amp.domain.user.entity.User;
 import com.amp.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;

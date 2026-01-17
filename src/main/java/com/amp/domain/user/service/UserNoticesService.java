@@ -1,7 +1,7 @@
 package com.amp.domain.user.service;
 
-import com.amp.domain.notice.common.entity.Bookmark;
-import com.amp.domain.notice.common.repository.BookmarkRepository;
+import com.amp.domain.notice.entity.Bookmark;
+import com.amp.domain.notice.repository.BookmarkRepository;
 import com.amp.domain.user.dto.response.SavedNoticesResponse;
 import com.amp.global.common.dto.PaginationResponse;
 import lombok.RequiredArgsConstructor;

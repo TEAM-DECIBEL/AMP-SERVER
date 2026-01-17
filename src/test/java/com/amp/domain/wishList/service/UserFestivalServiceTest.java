@@ -1,7 +1,7 @@
 package com.amp.domain.wishList.service;
 
-import com.amp.domain.festival.common.entity.Festival;
-import com.amp.domain.festival.common.entity.FestivalStatus;
+import com.amp.domain.festival.entity.Festival;
+import com.amp.domain.festival.entity.FestivalStatus;
 import com.amp.domain.wishList.dto.response.RecentWishListResponse;
 import com.amp.domain.wishList.repository.UserFestivalRepository;
 import org.junit.jupiter.api.DisplayName;
