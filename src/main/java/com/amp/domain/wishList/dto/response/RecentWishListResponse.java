@@ -1,6 +1,6 @@
 package com.amp.domain.wishList.dto.response;
 
-import com.amp.domain.festival.common.entity.Festival;
+import com.amp.domain.festival.entity.Festival;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

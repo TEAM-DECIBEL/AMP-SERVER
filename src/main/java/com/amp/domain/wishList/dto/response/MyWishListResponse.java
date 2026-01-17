@@ -1,9 +1,9 @@
 package com.amp.domain.wishList.dto.response;
 
-import com.amp.domain.festival.common.entity.Festival;
-import com.amp.domain.festival.common.entity.FestivalStatus;
-import com.amp.domain.festival.common.entity.UserFestival;
-import com.amp.domain.festival.common.util.FestivalUtils;
+import com.amp.domain.festival.entity.Festival;
+import com.amp.domain.festival.entity.FestivalStatus;
+import com.amp.domain.festival.entity.UserFestival;
+import com.amp.domain.festival.util.FestivalUtils;
 
 public record MyWishListResponse(
         Long festivalId,

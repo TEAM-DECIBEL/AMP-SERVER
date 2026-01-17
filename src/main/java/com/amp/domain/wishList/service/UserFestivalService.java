@@ -1,13 +1,13 @@
 package com.amp.domain.wishList.service;
 
-import com.amp.domain.festival.common.entity.UserFestival;
-import com.amp.domain.festival.common.exception.FestivalErrorCode;
+import com.amp.domain.festival.entity.UserFestival;
+import com.amp.domain.festival.exception.FestivalErrorCode;
 import com.amp.domain.user.entity.UserType;
 import com.amp.domain.user.exception.UserErrorCode;
 import com.amp.domain.wishList.dto.request.WishListRequest;
 import com.amp.domain.wishList.dto.response.*;
-import com.amp.domain.festival.common.entity.Festival;
-import com.amp.domain.festival.common.repository.FestivalRepository;
+import com.amp.domain.festival.entity.Festival;
+import com.amp.domain.festival.repository.FestivalRepository;
 import com.amp.domain.user.entity.User;
 import com.amp.domain.wishList.dto.response.RecentWishListResponse;
 import com.amp.domain.wishList.dto.response.UpdateWishListResponse;
