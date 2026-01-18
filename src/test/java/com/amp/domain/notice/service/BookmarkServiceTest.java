@@ -8,6 +8,7 @@ import com.amp.domain.notice.exception.BookmarkException;
 import com.amp.domain.notice.exception.NoticeException;
 import com.amp.domain.notice.repository.BookmarkRepository;
 import com.amp.domain.notice.repository.NoticeRepository;
+import com.amp.domain.notice.service.user.BookmarkService;
 import com.amp.domain.user.entity.User;
 import com.amp.domain.user.exception.UserErrorCode;
 import com.amp.domain.user.repository.UserRepository;
