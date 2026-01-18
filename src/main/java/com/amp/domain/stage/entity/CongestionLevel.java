@@ -6,17 +6,18 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum CongestionLevel {
-    SMOOTH("여유", 0, 30),
-    NORMAL("보통", 31, 70),
-    CROWDED("혼잡", 71, 100);
+    NONE("입력값이 없습니다.", 0),
+    SMOOTH("여유", 1),
+    NORMAL("보통", 2),
+    CROWDED("혼잡", 3);
 
     private final String description;
-    private final int minPercent;
-    private final int maxPercent;
+    private final int score;
 
-    public static CongestionLevel fromPercent(int percent) {
-        if (percent <= 30) return SMOOTH;
-        if (percent <= 70) return NORMAL;
+    public static CongestionLevel fromScore(double score) {
+        if (score <= 0) return NONE;
+        if (score <= 1.5) return SMOOTH;
+        if (score <= 2.5) return NORMAL;
         return CROWDED;
     }
 }
