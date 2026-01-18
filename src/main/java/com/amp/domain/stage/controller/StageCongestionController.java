@@ -1,4 +1,4 @@
-package com.amp.domain.stage.controller.user;
+package com.amp.domain.stage.controller;
 
 import com.amp.domain.stage.dto.request.CongestionReportRequest;
 import com.amp.domain.stage.service.CongestionReportService;
