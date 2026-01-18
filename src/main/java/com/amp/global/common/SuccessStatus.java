@@ -53,7 +53,11 @@ public enum SuccessStatus implements SuccessCode {
     WISHLIST_ADDED(HttpStatus.OK, "WIS", "001", "관람 예정 공연으로 등록되었습니다."),
     WISHLIST_REMOVED(HttpStatus.OK, "WIS", "002", "관람 예정 공연에서 해제되었습니다."),
     MY_WISHLIST_IS_EMPTY(HttpStatus.OK, "WIS", "003", "예정된 관람 공연이 없습니다."),
-    MY_WISHLIST_FOUND(HttpStatus.OK, "WIS", "004", "관람 공연 조회가 완료되었습니다.");
+    MY_WISHLIST_FOUND(HttpStatus.OK, "WIS", "004", "관람 공연 조회가 완료되었습니다."),
+
+    // FCM
+    SUBSCRIBE_SUCCESS(HttpStatus.OK, "FCM", "001", "카테고리 알림 구독이 완료되었습니다."),
+    UNSUBSTRIBE_SUCCESS(HttpStatus.OK, "FCM", "002", "카테고리 알림 구독 취소가 성공적으로 완료되었습니다.");
 
     private final HttpStatus httpStatus;
     private final String domain;
