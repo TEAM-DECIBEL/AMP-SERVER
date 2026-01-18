@@ -1,5 +1,6 @@
 package com.amp.domain.stage.scheduler;
 
+import com.amp.domain.festival.entity.FestivalStatus;
 import com.amp.domain.stage.entity.CongestionLevel;
 import com.amp.domain.stage.entity.UserCongestionReport;
 import com.amp.domain.stage.repository.StageRepository;
@@ -28,7 +29,8 @@ public class CongestionScheduler {
     @Scheduled(cron = "0 0/15 * * * *")
     @Transactional
     public void processCongestion() {
-        List<Long> stageIds = stageRepository.findAllActiveIds();
+        List<FestivalStatus> targetStatuses = List.of(FestivalStatus.ONGOING, FestivalStatus.UPCOMING);
+        List<Long> stageIds = stageRepository.findAllActiveIds(targetStatuses);
         for (Long id : stageIds) {
             migrateRedisToDb(id);
             calculationService.calculateAndSave(id);
