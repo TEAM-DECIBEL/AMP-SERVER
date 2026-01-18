@@ -6,7 +6,9 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 public interface FestivalScheduleRepository extends JpaRepository<FestivalSchedule, Long> {
     @Modifying(clearAutomatically = true)
@@ -17,4 +19,6 @@ public interface FestivalScheduleRepository extends JpaRepository<FestivalSchedu
             "WHERE fs.festival.id = :festivalId " +
             "ORDER BY fs.festivalDate")
     List<FestivalSchedule> findByFestivalIdOrderByFestivalDate(@Param("festivalId") Long festivalId);
+
+    Optional<FestivalSchedule> findByFestivalIdAndFestivalDate(Long festivalId, LocalDate festivalDate);
 }
