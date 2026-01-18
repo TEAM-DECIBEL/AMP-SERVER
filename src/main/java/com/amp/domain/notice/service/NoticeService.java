@@ -12,6 +12,7 @@ import com.amp.domain.notice.dto.response.CategoryData;
 import com.amp.domain.notice.dto.response.NoticeCreateResponse;
 import com.amp.domain.notice.dto.response.NoticeDetailResponse;
 import com.amp.domain.notice.entity.Notice;
+import com.amp.domain.notice.event.NoticeCreatedEvent;
 import com.amp.domain.notice.exception.NoticeErrorCode;
 import com.amp.domain.notice.exception.NoticeException;
 import com.amp.domain.notice.repository.BookmarkRepository;
@@ -21,11 +22,12 @@ import com.amp.domain.user.entity.User;
 import com.amp.domain.user.exception.UserErrorCode;
 import com.amp.domain.user.repository.UserRepository;
 import com.amp.global.exception.CustomException;
-import com.amp.global.security.service.AuthService;
 import com.amp.global.s3.S3ErrorCode;
 import com.amp.global.s3.S3Service;
+import com.amp.global.security.service.AuthService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -44,6 +46,8 @@ public class NoticeService {
     private final FestivalCategoryRepository festivalCategoryRepository;
     private final FestivalRepository festivalRepository;
     private final S3Service s3Service;
+
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public NoticeCreateResponse createNotice(Long festivalId, NoticeCreateRequest request) {
@@ -94,6 +98,17 @@ public class NoticeService {
                     .build();
 
             noticeRepository.save(notice);
+
+            eventPublisher.publishEvent(
+                    new NoticeCreatedEvent(
+                            festivalCategory.getId(),
+                            festivalCategory.getCategory().getCategoryName(),
+                            notice.getFestival().getTitle(),
+                            notice.getId(),
+                            notice.getTitle(),
+                            notice.getCreatedAt()
+                    )
+            );
 
         } catch (CustomException e) {
             if (imageKey != null) {
