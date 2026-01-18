@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/common/v1/festivals")
+@RequestMapping("/api/v1/common/festivals")
 @RequiredArgsConstructor
 public class FestivalCongestionController {
 
