@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/organizer/v1/me/festivals")
+@RequestMapping("/api/v1/organizer/me/festivals")
 @RequiredArgsConstructor
 public class OrganizerFestivalController {
 
