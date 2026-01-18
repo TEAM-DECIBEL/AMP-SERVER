@@ -79,9 +79,6 @@ class NoticeServiceTest {
     @InjectMocks
     private FestivalNoticeService festivalNoticeService;
 
-    @Mock
-    private FestivalRepository festivalRepository;
-
     private Festival festival;
     private Category category;
     private FestivalCategory festivalCategory;
@@ -159,7 +156,7 @@ class NoticeServiceTest {
 
         NoticeCreateRequest request = new NoticeCreateRequest(
                 "공지 제목",
-                "1",
+                1L,
                 null,
                 "내용",
                 true
