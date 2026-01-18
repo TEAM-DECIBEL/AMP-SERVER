@@ -31,7 +31,7 @@ public enum SuccessStatus implements SuccessCode {
     GET_MY_ALL_ACTIVE_FESTIVALS(HttpStatus.OK, "ORG", "002", "진행 중 및 진행 예정 공연 조회가 완료되었습니다."),
 
     //UserBookMark
-    SAVED_ANNOUNCEMENTS_RETRIEVED(HttpStatus.OK,"USE","001", "저장한 공지 조회가 완료되었습니다."),
+    SAVED_ANNOUNCEMENTS_RETRIEVED(HttpStatus.OK, "USE", "001", "저장한 공지 조회가 완료되었습니다."),
 
     // USER
     USER_PROFILE_RETRIEVED(HttpStatus.OK, "USE", "001", "사용자 프로필 조회가 완료되었습니다."),
@@ -39,7 +39,7 @@ public enum SuccessStatus implements SuccessCode {
 
     // NOTICE
     NOTICE_DETAIL_GET_SUCCESS(HttpStatus.OK, "NOT", "001", "공지 상세 조회되었습니다."),
-    NOTICE_LIST_GET_SUCCESS(HttpStatus.OK,  "NOT", "002", "공지 목록 조회되었습니다."),
+    NOTICE_LIST_GET_SUCCESS(HttpStatus.OK, "NOT", "002", "공지 목록 조회되었습니다."),
     NOTICE_CREATE_SUCCESS(HttpStatus.CREATED, "NOT", "003", "공지가 등록되었습니다."),
     UPDATE_NOTICE_SUCCESS(HttpStatus.OK, "NOT", "004", "공지 수정되었습니다."),
 
@@ -56,7 +56,9 @@ public enum SuccessStatus implements SuccessCode {
     MY_WISHLIST_FOUND(HttpStatus.OK, "WIS", "004", "관람 공연 조회가 완료되었습니다."),
 
     // CONGESTION
-    CONGESTION_INPUT_SUCCESS(HttpStatus.OK, "CON", "001", "혼잡도 선택이 완료되었습니다.");
+    CONGESTION_INPUT_SUCCESS(HttpStatus.OK, "CON", "001", "혼잡도 선택이 완료되었습니다."),
+    CONGESTION_GET_SUCCESS(HttpStatus.OK, "CON", "002", "혼잡도 조회가 완료되었습니다."),
+    CONGESTION_LIST_EMPTY(HttpStatus.OK, "CON", "003", "혼잡도 조회할 무대(부스)가 없습니다.");;
 
     private final HttpStatus httpStatus;
     private final String domain;
