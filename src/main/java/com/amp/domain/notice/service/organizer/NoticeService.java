@@ -32,6 +32,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import static com.amp.global.common.dto.TimeFormatter.formatTimeAgo;
+
 @Service
 @Slf4j
 @AllArgsConstructor
@@ -156,8 +158,7 @@ public class NoticeService {
                 notice.getIsPinned(),
                 isSaved,
                 author,
-                notice.getCreatedAt(),
-                notice.getUpdatedAt()
+                formatTimeAgo(notice.getCreatedAt())
         );
     }
 

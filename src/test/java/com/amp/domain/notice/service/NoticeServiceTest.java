@@ -81,9 +81,6 @@ class NoticeServiceTest {
     @InjectMocks
     private FestivalNoticeService festivalNoticeService;
 
-    @Mock
-    private FestivalRepository festivalRepository;
-
     private Festival festival;
     private Category category;
     private FestivalCategory festivalCategory;
@@ -161,7 +158,7 @@ class NoticeServiceTest {
 
         NoticeCreateRequest request = new NoticeCreateRequest(
                 "공지 제목",
-                "1",
+                1L,
                 null,
                 "내용",
                 true
@@ -390,10 +387,10 @@ class NoticeServiceTest {
         assertThat(announcement.isSaved()).isFalse();
         assertThat(announcement.createdAt()).contains("분 전");
 
-        assertThat(response.pagination().currentPage()).isEqualTo(0);
-        assertThat(response.pagination().totalPages()).isEqualTo(1);
-        assertThat(response.pagination().totalElements()).isEqualTo(1);
-        assertThat(response.pagination().hasNext()).isFalse();
+        assertThat(response.paginationResponse().currentPage()).isEqualTo(0);
+        assertThat(response.paginationResponse().totalPages()).isEqualTo(1);
+        assertThat(response.paginationResponse().totalElements()).isEqualTo(1);
+        assertThat(response.paginationResponse().hasNext()).isFalse();
     }
 
     @Test
