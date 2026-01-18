@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
-import com.google.firebase.messaging.Notification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -65,17 +64,14 @@ public class FCMService {
         return "category-" + categoryId;
     }
 
-    public void sendCategoryTopicAlarm(Long categoryId, String title, String body) throws FirebaseMessagingException {
+    public void sendCategoryTopicAlarm(Long categoryId, String title, String noticeBody, String timeData) throws FirebaseMessagingException {
         String topic = "category-" + categoryId;
         try {
             Message message = Message.builder()
                     .setTopic(topic)
-                    .setNotification(
-                            Notification.builder()
-                                    .setTitle(title)
-                                    .setBody(body)
-                                    .build()
-                    )
+                    .putData("title", title)
+                    .putData("message", noticeBody)
+                    .putData("time", timeData)
                     .build();
             FirebaseMessaging.getInstance().send(message);
         } catch (FirebaseMessagingException e) {

@@ -12,8 +12,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
 
-import static org.mockito.ArgumentMatchers.contains;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -45,7 +44,8 @@ class NotificationServiceTest {
         verify(fcmService).sendCategoryTopicAlarm(
                 eq(1L),
                 eq("공지사항 공지가 업로드 되었어요!"),
-                contains("[공지사항]")
+                contains("[공지사항]"),
+                any()
         );
     }
 }

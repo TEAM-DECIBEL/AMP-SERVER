@@ -21,7 +21,8 @@ public class NotificationService {
         fcmService.sendCategoryTopicAlarm(
                 event.getCategoryId(),
                 title,
-                body
+                noticeBody,
+                timeData
         );
     }
 }
