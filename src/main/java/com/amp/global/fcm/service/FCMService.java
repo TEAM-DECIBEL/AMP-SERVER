@@ -20,9 +20,9 @@ public class FCMService {
     private final ObjectMapper objectMapper;
 
     @Value("${fcm.key.path}")
-    private String SERVICE_ACCOUNT_JSON;
+    private String serviceAccountJson;
     @Value("${fcm.api.url}")
-    private String FCM_API_URL;
+    private String fcmApiUrl;
 
     public void subscribeCategory(Long categoryId, String token) {
         try {

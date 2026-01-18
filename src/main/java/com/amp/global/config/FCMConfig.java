@@ -17,12 +17,12 @@ import java.io.InputStream;
 public class FCMConfig {
 
     @Value("${fcm.key.path}")
-    private String SERViCE_ACCOUNT_JSON;
+    private String serviceAccountJson;
 
     @PostConstruct
     public void init() {
         try {
-            ClassPathResource resource = new ClassPathResource(SERViCE_ACCOUNT_JSON);
+            ClassPathResource resource = new ClassPathResource(serviceAccountJson);
             InputStream serviceAccount = resource.getInputStream();
 
             FirebaseOptions options = FirebaseOptions.builder()
