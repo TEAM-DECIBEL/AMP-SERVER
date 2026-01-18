@@ -67,15 +67,19 @@ public class FCMService {
 
     public void sendCategoryTopicAlarm(Long categoryId, String title, String body) throws FirebaseMessagingException {
         String topic = "category-" + categoryId;
-        Message message = Message.builder()
-                .setTopic(topic)
-                .setNotification(
-                        Notification.builder()
-                                .setTitle(title)
-                                .setBody(body)
-                                .build()
-                )
-                .build();
-        FirebaseMessaging.getInstance().send(message);
+        try {
+            Message message = Message.builder()
+                    .setTopic(topic)
+                    .setNotification(
+                            Notification.builder()
+                                    .setTitle(title)
+                                    .setBody(body)
+                                    .build()
+                    )
+                    .build();
+            FirebaseMessaging.getInstance().send(message);
+        } catch (FirebaseMessagingException e) {
+            throw new IllegalArgumentException(FCMErrorCode.FAIL_TO_SEND_PUSH_ALARM.getMsg());
+        }
     }
 }
