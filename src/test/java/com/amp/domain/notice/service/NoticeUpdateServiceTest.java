@@ -10,6 +10,7 @@ import com.amp.domain.notice.dto.request.NoticeUpdateRequest;
 import com.amp.domain.notice.entity.Notice;
 import com.amp.domain.notice.exception.NoticeException;
 import com.amp.domain.notice.repository.NoticeRepository;
+import com.amp.domain.notice.service.organizer.NoticeUpdateService;
 import com.amp.domain.organizer.repository.OrganizerRepository;
 import com.amp.domain.user.entity.User;
 import com.amp.domain.user.exception.UserErrorCode;
