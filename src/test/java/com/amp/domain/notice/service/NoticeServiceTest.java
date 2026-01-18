@@ -6,6 +6,7 @@ import com.amp.domain.category.repository.FestivalCategoryRepository;
 import com.amp.domain.festival.entity.Festival;
 import com.amp.domain.festival.entity.FestivalStatus;
 import com.amp.domain.festival.repository.FestivalRepository;
+import com.amp.domain.notice.service.common.FestivalNoticeService;
 import com.amp.domain.notice.dto.request.NoticeCreateRequest;
 import com.amp.domain.notice.dto.response.NoticeCreateResponse;
 import com.amp.domain.notice.dto.response.NoticeDetailResponse;
@@ -15,6 +16,7 @@ import com.amp.domain.notice.entity.Notice;
 import com.amp.domain.notice.exception.NoticeException;
 import com.amp.domain.notice.repository.BookmarkRepository;
 import com.amp.domain.notice.repository.NoticeRepository;
+import com.amp.domain.notice.service.organizer.NoticeService;
 import com.amp.domain.organizer.repository.OrganizerRepository;
 import com.amp.domain.user.entity.User;
 import com.amp.domain.user.repository.UserRepository;
@@ -385,10 +387,10 @@ class NoticeServiceTest {
         assertThat(announcement.isSaved()).isFalse();
         assertThat(announcement.createdAt()).contains("분 전");
 
-        assertThat(response.pagination().currentPage()).isEqualTo(0);
-        assertThat(response.pagination().totalPages()).isEqualTo(1);
-        assertThat(response.pagination().totalElements()).isEqualTo(1);
-        assertThat(response.pagination().hasNext()).isFalse();
+        assertThat(response.paginationResponse().currentPage()).isEqualTo(0);
+        assertThat(response.paginationResponse().totalPages()).isEqualTo(1);
+        assertThat(response.paginationResponse().totalElements()).isEqualTo(1);
+        assertThat(response.paginationResponse().hasNext()).isFalse();
     }
 
     @Test
