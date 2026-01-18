@@ -18,7 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/organizer/v1/festivals")
+@RequestMapping("/api/v1/organizer/festivals")
 @RequiredArgsConstructor
 public class FestivalController {
 
