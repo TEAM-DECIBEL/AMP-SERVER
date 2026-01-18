@@ -5,7 +5,6 @@ import com.amp.domain.festival.exception.FestivalErrorCode;
 import com.amp.domain.festival.repository.FestivalRepository;
 import com.amp.domain.notice.dto.response.FestivalNoticeListResponse;
 import com.amp.domain.notice.dto.response.NoticeListResponse;
-import com.amp.domain.notice.dto.response.Pagination;
 import com.amp.domain.notice.entity.Notice;
 import com.amp.domain.notice.exception.NoticeException;
 import com.amp.domain.notice.repository.BookmarkRepository;
@@ -13,6 +12,7 @@ import com.amp.domain.notice.repository.NoticeRepository;
 import com.amp.domain.user.entity.User;
 import com.amp.domain.user.exception.UserErrorCode;
 import com.amp.domain.user.repository.UserRepository;
+import com.amp.global.common.dto.PaginationResponse;
 import com.amp.global.exception.CustomException;
 import com.amp.global.security.service.AuthService;
 import lombok.AllArgsConstructor;
@@ -71,14 +71,8 @@ public class FestivalNoticeService {
             );
         }).collect(Collectors.toList());
 
-        Pagination pagination = new Pagination(
-                noticePage.getNumber(),
-                noticePage.getTotalPages(),
-                noticePage.getTotalElements(),
-                noticePage.getSize(),
-                noticePage.hasNext(),
-                noticePage.hasPrevious()
-        );
+        PaginationResponse pagination = PaginationResponse.from(noticePage);
+
 
         return new NoticeListResponse(announcements, pagination);
     }
