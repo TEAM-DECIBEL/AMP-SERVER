@@ -4,6 +4,7 @@ import com.amp.domain.category.entity.FestivalCategory;
 import com.amp.domain.category.exception.FestivalCategoryErrorCode;
 import com.amp.domain.category.repository.FestivalCategoryRepository;
 import com.amp.domain.notification.entity.Alarm;
+import com.amp.domain.notification.entity.CategorySubscribeEvent;
 import com.amp.domain.notification.repository.AlarmRepository;
 import com.amp.domain.user.entity.User;
 import com.amp.domain.user.exception.UserErrorCode;
@@ -13,6 +14,7 @@ import com.amp.global.fcm.exception.FCMErrorCode;
 import com.amp.global.fcm.service.FCMService;
 import com.amp.global.security.service.AuthService;
 import com.google.firebase.messaging.FirebaseMessagingException;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,10 +32,10 @@ public class CategorySubscribeService {
     private final UserRepository userRepository;
     private final FestivalCategoryRepository festivalCategoryRepository;
     private final AuthService authService;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Transactional
-    public void subscribe(Long categoryId, String fcmToken) throws FirebaseMessagingException {
-        // 로그인 안한 유저가 요청시 예외처리
+    public void subscribe(Long categoryId, String fcmToken) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (!authService.isLoggedInUser(authentication)) {
@@ -54,10 +56,6 @@ public class CategorySubscribeService {
             throw new CustomException(FCMErrorCode.ALREADY_SUBSCRIBED);
         }
 
-        //이미 구독하고 있는지 예외처리 필요
-        fcmService.subscribeCategory(categoryId, fcmToken);
-
-        // DB 저장
         if (alarm == null) {
             alarm = new Alarm(user, festivalCategory);
         } else {
@@ -66,6 +64,10 @@ public class CategorySubscribeService {
 
         alarmRepository.save(alarm);
 
+        // 트랜잭션 안에서 이벤트만 발행
+        applicationEventPublisher.publishEvent(
+                new CategorySubscribeEvent(categoryId, fcmToken, true)
+        );
     }
 
     @Transactional
@@ -92,9 +94,11 @@ public class CategorySubscribeService {
             throw new CustomException(FCMErrorCode.NOT_SUBSCRIBED_CATEGORY);
         }
 
-        fcmService.unsubscribeCategory(categoryId, fcmToken);
-
         alarm.setActive(false);
         alarmRepository.save(alarm);
+
+        applicationEventPublisher.publishEvent(
+                new CategorySubscribeEvent(categoryId, fcmToken, false)
+        );
     }
 }
