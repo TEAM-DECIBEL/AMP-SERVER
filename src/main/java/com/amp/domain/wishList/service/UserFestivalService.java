@@ -14,7 +14,6 @@ import com.amp.domain.wishList.dto.response.UpdateWishListResponse;
 import com.amp.domain.wishList.repository.UserFestivalRepository;
 import com.amp.global.common.dto.PageResponse;
 import com.amp.global.exception.CustomException;
-import com.amp.global.response.success.BaseResponse;
 import com.amp.global.security.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -78,7 +77,7 @@ public class UserFestivalService {
         return PageResponse.of(responsePage);
     }
 
-    public PageResponse<WishListHistoryResponse> geHistoryWishList(Pageable pageable) {
+    public PageResponse<WishListHistoryResponse> getHistoryWishList(Pageable pageable) {
         User user = authService.getCurrentUser();
 
         Page<UserFestival> userFestivals = userFestivalRepository.findAllWishListHistory(user.getId(), pageable);

@@ -16,7 +16,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -104,7 +103,7 @@ public class WishListController {
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size
     ) {
         Pageable pageable = PageRequest.of(page, size);
-        PageResponse<WishListHistoryResponse> response = userFestivalService.geHistoryWishList(pageable);
+        PageResponse<WishListHistoryResponse> response = userFestivalService.getHistoryWishList(pageable);
         SuccessStatus status = response.festivals().isEmpty()
                 ? SuccessStatus.MY_WISHLIST_IS_EMPTY
                 : SuccessStatus.MY_WISHLIST_FOUND;
