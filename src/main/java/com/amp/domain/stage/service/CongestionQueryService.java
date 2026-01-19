@@ -45,12 +45,11 @@ public class CongestionQueryService {
 
         Map<Long, StageCongestion> latestCongestionMap = fetchLatestCongestion(stagePage.getContent());
 
-        List<StageCongestionSummary> summaries = stagePage.getContent().stream()
-                .map(stage -> mapToSummary(stage,
-                        latestCongestionMap.get(stage.getId()), isInputAvailable))
-                .toList();
+        Page<StageCongestionSummary> summaryPage = stagePage.map(stage ->
+                mapToSummary(stage, latestCongestionMap.get(stage.getId()), isInputAvailable)
+        );
 
-        return FestivalCongestionResponse.of(isInputAvailable, summaries, stagePage);
+        return FestivalCongestionResponse.of(isInputAvailable, summaryPage);
     }
 
     private Map<Long, StageCongestion> fetchLatestCongestion(List<Stage> stages) {
