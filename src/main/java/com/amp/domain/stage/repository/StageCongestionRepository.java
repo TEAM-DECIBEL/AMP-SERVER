@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface StageCongestionRepository extends JpaRepository<StageCongestion, Long> {
 
@@ -19,4 +20,10 @@ public interface StageCongestionRepository extends JpaRepository<StageCongestion
                 )
             """, nativeQuery = true)
     List<StageCongestion> findLatestByStageIds(@Param("stageIds") List<Long> stageIds);
+
+    @Query("SELECT sc FROM StageCongestion sc " +
+            "WHERE sc.stage.id = :stageId " +
+            "ORDER BY sc.measuredAt DESC LIMIT 1")
+    Optional<StageCongestion> findLatestByStageId(@Param("stageId") Long stageId);
+
 }
