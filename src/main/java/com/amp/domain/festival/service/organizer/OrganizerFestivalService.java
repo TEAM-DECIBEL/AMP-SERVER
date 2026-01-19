@@ -1,12 +1,12 @@
 package com.amp.domain.festival.service.organizer;
 
 import com.amp.domain.festival.dto.response.OrganizerActiveFestivalPageResponse;
-import com.amp.domain.festival.dto.response.OrganizerFestivalPageResponse;
-import com.amp.domain.festival.dto.response.OrganizerFestivalSummaryResponse;
+import com.amp.domain.festival.dto.response.OrganizerFestivalListResponse;
 import com.amp.domain.festival.entity.Festival;
 import com.amp.domain.festival.entity.FestivalStatus;
 import com.amp.domain.festival.repository.FestivalRepository;
 import com.amp.domain.user.entity.User;
+import com.amp.global.common.dto.PageResponse;
 import com.amp.global.security.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -25,12 +25,12 @@ public class OrganizerFestivalService {
     private final AuthService authService;
 
     @Transactional(readOnly = true)
-    public OrganizerFestivalPageResponse getMyFestivals(Pageable pageable) {
+    public PageResponse<OrganizerFestivalListResponse> getMyFestivals(Pageable pageable) {
         User user = authService.getCurrentUser();
 
         Page<Festival> festivalPage = festivalRepository.findAllByMyUser(user, pageable);
-        Page<OrganizerFestivalSummaryResponse> summaryPage = festivalPage.map(OrganizerFestivalSummaryResponse::from);
-        return OrganizerFestivalPageResponse.of(summaryPage);
+        Page<OrganizerFestivalListResponse> summaryPage = festivalPage.map(OrganizerFestivalListResponse::from);
+        return PageResponse.of(summaryPage);
     }
 
     @Transactional(readOnly = true)

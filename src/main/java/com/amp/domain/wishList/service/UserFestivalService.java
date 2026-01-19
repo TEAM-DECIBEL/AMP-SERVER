@@ -12,7 +12,9 @@ import com.amp.domain.user.entity.User;
 import com.amp.domain.wishList.dto.response.RecentWishListResponse;
 import com.amp.domain.wishList.dto.response.UpdateWishListResponse;
 import com.amp.domain.wishList.repository.UserFestivalRepository;
+import com.amp.global.common.dto.PageResponse;
 import com.amp.global.exception.CustomException;
+import com.amp.global.response.success.BaseResponse;
 import com.amp.global.security.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -67,20 +69,20 @@ public class UserFestivalService {
     }
 
     @Transactional(readOnly = true)
-    public MyUpcomingPageResponse getMyWishList(Pageable pageable) {
+    public PageResponse<MyUpcomingResponse> getMyWishList(Pageable pageable) {
         User user = authService.getCurrentUser();
 
         Page<UserFestival> userFestivals = userFestivalRepository.findAllByUserIdAndWishListTrue(user.getId(), pageable);
-        Page<WishListHistoryResponse> responsePage = userFestivals.map(WishListHistoryResponse::from);
+        Page<MyUpcomingResponse> responsePage = userFestivals.map(MyUpcomingResponse::of);
 
-        return MyUpcomingPageResponse.of(responsePage);
+        return PageResponse.of(responsePage);
     }
 
-    public WishListHistoryPageResponse geHistoryWishList(Pageable pageable) {
+    public PageResponse<WishListHistoryResponse> geHistoryWishList(Pageable pageable) {
         User user = authService.getCurrentUser();
 
         Page<UserFestival> userFestivals = userFestivalRepository.findAllWishListHistory(user.getId(), pageable);
         Page<WishListHistoryResponse> historyPage = userFestivals.map(WishListHistoryResponse::from);
-        return WishListHistoryPageResponse.of(historyPage);
+        return PageResponse.of(historyPage);
     }
 }
