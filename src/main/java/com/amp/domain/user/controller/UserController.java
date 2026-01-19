@@ -29,7 +29,7 @@ public class UserController {
     private final UserService userService;
     private final UserNoticesService userNoticesService;
 
-    @GetMapping("/me")
+    @GetMapping("/mypage")
     @Operation(summary = "마이페이지 조회", description = "현재 로그인한 사용자의 프로필 정보를 조회합니다.")
     public ResponseEntity<BaseResponse<MyPageResponse>> getMyPage(
             @AuthenticationPrincipal CustomUserPrincipal principal) {
