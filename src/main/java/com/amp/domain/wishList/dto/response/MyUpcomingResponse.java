@@ -4,6 +4,7 @@ import com.amp.domain.festival.entity.Festival;
 import com.amp.domain.festival.entity.FestivalStatus;
 import com.amp.domain.festival.entity.UserFestival;
 import com.amp.domain.festival.util.FestivalUtils;
+import com.amp.domain.wishList.util.WishListUtils;
 
 public record MyUpcomingResponse(
         Long festivalId,
@@ -21,18 +22,9 @@ public record MyUpcomingResponse(
                 festival.getTitle(),
                 festival.getMainImageUrl(),
                 FestivalUtils.formatPeriod(festival.getStartDate(), festival.getEndDate()),
-                convertToUserStatus(festival.getStatus()),
+                WishListUtils.convertToUserStatus(festival.getStatus()),
                 userFestival.getWishList(),
                 FestivalUtils.calculateDDay(festival.getStartDate(), festival.getEndDate())
         );
-    }
-
-    private static String convertToUserStatus(FestivalStatus status) {
-        return switch (status) {
-            case UPCOMING -> "관람 예정";
-            case ONGOING -> "관람 중";
-            case COMPLETED -> "관람 완료";
-            default -> status.getKoreanName();
-        };
     }
 }
