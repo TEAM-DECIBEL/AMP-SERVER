@@ -14,7 +14,7 @@ public record MyUpcomingResponse(
         boolean wishList,
         Long dDay
 ) {
-    public static MyUpcomingResponse from(UserFestival userFestival) {
+    public static MyUpcomingResponse of(UserFestival userFestival) {
         Festival festival = userFestival.getFestival();
         return new MyUpcomingResponse(
                 festival.getId(),

@@ -4,8 +4,8 @@ import com.amp.domain.festival.entity.Festival;
 import com.amp.domain.festival.repository.FestivalRepository;
 import com.amp.domain.user.entity.User;
 import com.amp.domain.festival.dto.response.AudienceFestivalSummaryResponse;
-import com.amp.domain.festival.dto.response.AudienceFestivalPageResponse;
 import com.amp.domain.wishList.repository.UserFestivalRepository;
+import com.amp.global.common.dto.PageResponse;
 import com.amp.global.security.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -27,7 +27,7 @@ public class AudienceFestivalService {
 
 
     @Transactional(readOnly = true)
-    public AudienceFestivalPageResponse getAllFestivals(Pageable pageable) {
+    public PageResponse<AudienceFestivalSummaryResponse> getAllFestivals(Pageable pageable) {
         User user = authService.getCurrentUserOrNull();
         Page<Festival> festivalPage = festivalRepository.findActiveFestivals(pageable);
 
@@ -39,7 +39,7 @@ public class AudienceFestivalService {
                 AudienceFestivalSummaryResponse.from(f, wishlistIds.contains(f.getId()))
         );
 
-        return AudienceFestivalPageResponse.of(festivalList);
+        return PageResponse.of(festivalList);
     }
 
 }
