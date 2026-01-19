@@ -2,6 +2,7 @@ package com.amp.global.fcm.service;
 
 import com.amp.global.exception.CustomException;
 import com.amp.global.fcm.exception.FCMErrorCode;
+import com.amp.global.security.service.AuthService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
@@ -19,6 +20,7 @@ import java.util.List;
 public class FCMService {
 
     private final ObjectMapper objectMapper;
+    private final AuthService authService;
 
     @Value("${fcm.key.path}")
     private String serviceAccountJson;
