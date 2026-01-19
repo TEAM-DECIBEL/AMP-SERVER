@@ -2,8 +2,10 @@ package com.amp.domain.festival.controller.common;
 
 import com.amp.domain.stage.dto.response.FestivalCongestionResponse;
 import com.amp.domain.stage.service.CongestionQueryService;
+import com.amp.global.annotation.ApiErrorCodes;
 import com.amp.global.common.SuccessStatus;
 import com.amp.global.response.success.BaseResponse;
+import com.amp.global.swagger.SwaggerResponseDescription;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +27,7 @@ public class FestivalCongestionController {
 
     @Operation(summary = "공연 별 전체 혼잡도 조회")
     @GetMapping("/{festivalId}/congestion")
+    @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_GET_CONGESTION)
     public ResponseEntity<BaseResponse<FestivalCongestionResponse>> getFestivalCongestion(@PathVariable @Positive Long festivalId,
                                                                                           Pageable pageable) {
         FestivalCongestionResponse response = congestionQueryService.getFestivalCongestion(festivalId, pageable);
