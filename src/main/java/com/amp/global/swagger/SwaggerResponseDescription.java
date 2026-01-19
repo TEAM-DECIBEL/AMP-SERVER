@@ -28,6 +28,12 @@ public enum SwaggerResponseDescription {
             CommonErrorCode.INVALID_JSON
     ))),
 
+    NO_AUTHORIZATION(new LinkedHashSet<>(Set.of(
+            UserErrorCode.USER_NOT_FOUND,
+            UserErrorCode.USER_NOT_AUTHENTICATED,
+            UserErrorCode.USER_NOT_AUTHORIZED
+    ))),
+
     // 공연 추가 API
     FAIL_TO_CREATE_FESTIVAL(new LinkedHashSet<>(Set.of(
             FestivalErrorCode.INVALID_FESTIVAL_PERIOD,
@@ -139,6 +145,34 @@ public enum SwaggerResponseDescription {
             UserErrorCode.USER_NOT_FOUND,
             FestivalCategoryErrorCode.NOTICE_CATEGORY_NOT_FOUND,
             FCMErrorCode.NOT_SUBSCRIBED_CATEGORY
+    ))),
+
+    // 무대 혼잡도 입력
+    FAIL_TO_INPUT_CONGESTION(new LinkedHashSet<>(Set.of(
+            StageErrorCode.STAGE_NOT_FOUND,
+            StageErrorCode.DAILY_INPUT_CLOSED,
+            StageErrorCode.ALREADY_REPORTED_RECENTLY,
+            StageErrorCode.NO_SCHEDULE_TODAY,
+            UserErrorCode.USER_NOT_FOUND,
+            UserErrorCode.USER_NOT_AUTHENTICATED
+    ))),
+
+    // 마이 페이지 조회
+    FAIL_GET_MY_PAGE(new LinkedHashSet<>(Set.of(
+            UserErrorCode.USER_NOT_FOUND,
+            UserErrorCode.USER_NOT_AUTHENTICATED
+    ))),
+
+    // 저장한 공지 조회
+    FAIL_GET_BOOKMARK_NOTICE(new LinkedHashSet<>(Set.of(
+            UserErrorCode.USER_NOT_FOUND,
+            UserErrorCode.USER_NOT_AUTHENTICATED,
+            NoticeErrorCode.NOTICE_NOT_FOUND
+    ))),
+
+    // 공연 별 혼잡도 조회
+    FAIL_TO_GET_CONGESTION(new LinkedHashSet<>(Set.of(
+            FestivalErrorCode.FESTIVAL_NOT_FOUND
     )));
 
     private final Set<ErrorCode> errorCodeList;

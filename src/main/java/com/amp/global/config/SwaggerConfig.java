@@ -7,6 +7,8 @@ import com.amp.global.swagger.ExampleHolder;
 import com.amp.global.swagger.SwaggerResponseDescription;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.info.Info;
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
+import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.examples.Example;
@@ -32,6 +34,12 @@ import java.util.stream.Collectors;
                 description = "AMP API 명세서",
                 version = "v1"
         )
+)
+@SecurityScheme(
+        name = "Bearer Authentication",
+        type = SecuritySchemeType.HTTP,
+        bearerFormat = "JWT",
+        scheme = "bearer"
 )
 @Configuration
 public class SwaggerConfig {
@@ -109,4 +117,5 @@ public class SwaggerConfig {
             responses.addApiResponse(status.toString(), apiResponse);
         });
     }
+
 }

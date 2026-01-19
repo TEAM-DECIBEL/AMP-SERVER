@@ -37,7 +37,8 @@ public class Stage extends BaseTimeEntity {
     private LocalDateTime deletedAt;
 
     @Builder
-    public Stage(Festival festival, String title, String location) {
+    public Stage(Long id, Festival festival, String title, String location) {
+        this.id = id;
         this.festival = festival;
         this.title = title;
         this.location = location;

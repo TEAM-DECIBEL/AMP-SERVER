@@ -12,6 +12,7 @@ import com.amp.domain.user.entity.User;
 import com.amp.domain.wishList.dto.response.RecentWishListResponse;
 import com.amp.domain.wishList.dto.response.UpdateWishListResponse;
 import com.amp.domain.wishList.repository.UserFestivalRepository;
+import com.amp.global.common.dto.PageResponse;
 import com.amp.global.exception.CustomException;
 import com.amp.global.security.service.AuthService;
 import lombok.RequiredArgsConstructor;
@@ -67,12 +68,20 @@ public class UserFestivalService {
     }
 
     @Transactional(readOnly = true)
-    public MyWishListPageResponse getMyWishList(Pageable pageable) {
+    public PageResponse<MyUpcomingResponse> getMyWishList(Pageable pageable) {
         User user = authService.getCurrentUser();
 
         Page<UserFestival> userFestivals = userFestivalRepository.findAllByUserIdAndWishListTrue(user.getId(), pageable);
-        Page<MyWishListResponse> responsePage = userFestivals.map(MyWishListResponse::from);
+        Page<MyUpcomingResponse> responsePage = userFestivals.map(MyUpcomingResponse::of);
 
-        return MyWishListPageResponse.of(responsePage);
+        return PageResponse.of(responsePage);
+    }
+
+    public PageResponse<WishListHistoryResponse> getHistoryWishList(Pageable pageable) {
+        User user = authService.getCurrentUser();
+
+        Page<UserFestival> userFestivals = userFestivalRepository.findAllWishListHistory(user.getId(), pageable);
+        Page<WishListHistoryResponse> historyPage = userFestivals.map(WishListHistoryResponse::from);
+        return PageResponse.of(historyPage);
     }
 }
