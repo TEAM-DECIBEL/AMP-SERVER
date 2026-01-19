@@ -24,14 +24,13 @@ public class FCMService {
 
     @Value("${fcm.key.path}")
     private String serviceAccountJson;
-    @Value("${fcm.api.url}")
-    private String fcmApiUrl;
 
     public void subscribeCategory(Long categoryId, String token) {
         try {
             FirebaseMessaging.getInstance()
                     .subscribeToTopic(List.of(token), topic(categoryId));
         } catch (FirebaseMessagingException e) {
+            log.error("FCM subscribe error: {}", e.getMessage());
             throw new CustomException(FCMErrorCode.FAIL_TO_SEND_PUSH_ALARM);
         }
     }
@@ -41,34 +40,13 @@ public class FCMService {
             FirebaseMessaging.getInstance()
                     .unsubscribeFromTopic(List.of(token), topic(categoryId));
         } catch (FirebaseMessagingException e) {
+            log.error("FCM unsubscribe error: {}", e.getMessage());
             throw new CustomException(FCMErrorCode.FAIL_TO_SEND_PUSH_ALARM);
         }
     }
 
-  /*  public void sendCategoryNotice(Long categoryId, String title, String body) {
-        try {
-            Message message = Message.builder()
-                    .setTopic(topic(categoryId))
-                    .setNotification(
-                            Notification.builder()
-                                    .setTitle(title)
-                                    .setBody(body)
-                                    .build()
-                    )
-                    .build();
-
-            FirebaseMessaging.getInstance().send(message);
-        } catch (FirebaseMessagingException e) {
-            throw new IllegalArgumentException(FCMErrorCode.FAIL_TO_SEND_PUSH_ALARM.getMsg());
-        }
-    }*/
-
-    private String topic(Long categoryId) {
-        return "category-" + categoryId;
-    }
-
     public void sendCategoryTopicAlarm(Long categoryId, String title, String noticeBody, String timeData) {
-        String topic = "category-" + categoryId;
+        String topic = topic(categoryId);
         try {
             Message message = Message.builder()
                     .setTopic(topic)
@@ -77,8 +55,14 @@ public class FCMService {
                     .putData("time", timeData)
                     .build();
             FirebaseMessaging.getInstance().send(message);
+            log.info("FCM 메시지 전송 성공: {}", topic);
         } catch (FirebaseMessagingException e) {
+            log.error("FCM send error: {}", e.getMessage());
             throw new CustomException(FCMErrorCode.FAIL_TO_SEND_PUSH_ALARM);
         }
+    }
+
+    private String topic(Long categoryId) {
+        return "category-" + categoryId;
     }
 }
