@@ -83,9 +83,9 @@ public class WishListController {
 
         Pageable pageable = PageRequest.of(page, size);
         PageResponse<MyUpcomingResponse> response = userFestivalService.getMyWishList(pageable);
-        SuccessStatus status = response.festivals().isEmpty()
+        SuccessStatus status = response.content().isEmpty()
                 ? SuccessStatus.MY_WISHLIST_IS_EMPTY
-                : SuccessStatus.MY_WISHLIST_FOUND;
+                : SuccessStatus.MY_UPCOMING_WISHLIST_FOUND;
 
         return ResponseEntity
                 .status(status.getHttpStatus())
@@ -104,9 +104,9 @@ public class WishListController {
     ) {
         Pageable pageable = PageRequest.of(page, size);
         PageResponse<WishListHistoryResponse> response = userFestivalService.getHistoryWishList(pageable);
-        SuccessStatus status = response.festivals().isEmpty()
+        SuccessStatus status = response.content().isEmpty()
                 ? SuccessStatus.MY_WISHLIST_IS_EMPTY
-                : SuccessStatus.MY_WISHLIST_FOUND;
+                : SuccessStatus.MY_HISTORY_WISHLIST_FOUND;
 
         return ResponseEntity
                 .status(status.getHttpStatus())
