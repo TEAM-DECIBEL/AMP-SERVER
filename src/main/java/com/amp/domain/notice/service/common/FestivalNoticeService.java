@@ -5,7 +5,6 @@ import com.amp.domain.festival.exception.FestivalErrorCode;
 import com.amp.domain.festival.repository.FestivalRepository;
 import com.amp.domain.notice.dto.response.FestivalNoticeListResponse;
 import com.amp.domain.notice.dto.response.NoticeListResponse;
-import com.amp.domain.notice.dto.response.Pagination;
 import com.amp.domain.notice.entity.Notice;
 import com.amp.domain.notice.exception.NoticeException;
 import com.amp.domain.notice.repository.BookmarkRepository;
@@ -13,6 +12,7 @@ import com.amp.domain.notice.repository.NoticeRepository;
 import com.amp.domain.user.entity.User;
 import com.amp.domain.user.exception.UserErrorCode;
 import com.amp.domain.user.repository.UserRepository;
+import com.amp.global.common.dto.PaginationResponse;
 import com.amp.global.exception.CustomException;
 import com.amp.global.security.service.AuthService;
 import lombok.AllArgsConstructor;
@@ -25,13 +25,13 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static com.amp.global.common.dto.TimeFormatter.formatTimeAgo;
 
 @Service
 @Slf4j
@@ -71,14 +71,8 @@ public class FestivalNoticeService {
             );
         }).collect(Collectors.toList());
 
-        Pagination pagination = new Pagination(
-                noticePage.getNumber(),
-                noticePage.getTotalPages(),
-                noticePage.getTotalElements(),
-                noticePage.getSize(),
-                noticePage.hasNext(),
-                noticePage.hasPrevious()
-        );
+        PaginationResponse pagination = PaginationResponse.from(noticePage);
+
 
         return new NoticeListResponse(announcements, pagination);
     }
@@ -96,26 +90,5 @@ public class FestivalNoticeService {
         List<Long> noticeIds = notices.stream().map(Notice::getId).toList();
         return new HashSet<>(bookmarkRepository.findNoticeIdsByUserAndNoticeIdIn(user, noticeIds));
     }
-
-    private String formatTimeAgo(LocalDateTime createdAt) {
-        LocalDateTime now = LocalDateTime.now();
-        Duration duration = Duration.between(createdAt, now);
-
-        long minutes = duration.toMinutes();
-        long hours = duration.toHours();
-        long days = duration.toDays();
-
-        if (minutes < 1) {
-            return "방금 전";
-        }
-        if (minutes < 60) {
-            return minutes + "분 전";
-        }
-        if (hours < 24) {
-            return hours + "시간 전";
-        }
-        return days + "일 전";
-    }
-
 
 }

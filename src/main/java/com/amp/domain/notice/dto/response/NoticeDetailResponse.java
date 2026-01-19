@@ -1,7 +1,5 @@
 package com.amp.domain.notice.dto.response;
 
-import java.time.LocalDateTime;
-
 public record NoticeDetailResponse(
         Long noticeId,
         Long festivalId,
@@ -13,8 +11,7 @@ public record NoticeDetailResponse(
         boolean isPinned,
         boolean isSaved,
         Author author,
-        LocalDateTime createdAt,
-        LocalDateTime updatedAt
+        String createdAt
 ) {
 }
 
