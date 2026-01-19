@@ -40,7 +40,7 @@ public class AudienceFestivalController {
         Pageable pageable = PageRequest.of(page, size);
         PageResponse<AudienceFestivalSummaryResponse> response = audienceFestivalService.getAllFestivals(pageable);
 
-        SuccessStatus status = response.festivals().isEmpty()
+        SuccessStatus status = response.content().isEmpty()
                 ? SuccessStatus.FESTIVAL_LIST_EMPTY
                 : SuccessStatus.FESTIVAL_LIST_FOUND;
 
