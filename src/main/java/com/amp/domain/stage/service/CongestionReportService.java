@@ -89,16 +89,12 @@ public class CongestionReportService {
 
         LocalDateTime enableInputTime = getEnableInputTime(todaySchedule, schedules, today);
 
-        LocalDateTime enableEndTime = today.atTime(23, 59);
-
         if (now.isBefore(enableInputTime)) {
             log.warn("입력 불가 (너무 이름): stageId={}, now={}, enableFrom={}",
                     stage.getId(), now, enableInputTime);
             throw new CustomException(StageErrorCode.TOO_EARLY_TO_REPORT);
         }
 
-        log.debug("입력 가능 시간 확인 완료: stageId={}, date={}, enableTime={} ~ {}",
-                stage.getId(), today, enableInputTime.toLocalTime(), enableEndTime.toLocalTime());
     }
 
     private static LocalDateTime getEnableInputTime(FestivalSchedule todaySchedule, List<FestivalSchedule> schedules, LocalDate today) {
