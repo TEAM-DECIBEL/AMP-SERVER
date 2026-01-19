@@ -5,11 +5,17 @@ import com.amp.domain.user.entity.User;
 import com.amp.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "alarm")
+@Table(
+        name = "alarm",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"user_id", "festival_category_id"})
+        }
+)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Alarm extends BaseTimeEntity {
@@ -28,5 +34,15 @@ public class Alarm extends BaseTimeEntity {
 
     @Column(name = "is_active", nullable = false)
     private boolean isActive = true;
+
+    public void setActive(boolean active) {
+        this.isActive = active;
+    }
+
+    @Builder
+    public Alarm(User user, FestivalCategory festivalCategory) {
+        this.user = user;
+        this.festivalCategory = festivalCategory;
+    }
 
 }
