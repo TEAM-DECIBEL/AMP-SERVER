@@ -13,7 +13,10 @@ import java.time.LocalDateTime;
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@Table(name = "user_congestion_report")
+@Table(
+        name = "user_congestion_report",
+        indexes = @Index(name = "idx_reported_at", columnList = "reported_at")
+)
 public class UserCongestionReport extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
