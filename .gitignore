@@ -40,3 +40,14 @@ out/
 application-secret.yml
 application-local.yml
 .env
+.env.local
+
+### Firebase / FCM (서버측 로그 및 설정) ###
+# Firebase CLI 로그 및 디버그 파일
+firebase-debug.log
+firestore-debug.log
+
+### JSON (서버용 Admin SDK 인증키 등) ###
+# Firebase Admin SDK 서비스 계정 키 (절대 업로드 금지)
+amp-firebase-adminsdk.json
+firebase-config.json
