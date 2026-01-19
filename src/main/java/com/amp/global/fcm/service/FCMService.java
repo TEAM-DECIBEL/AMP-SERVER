@@ -1,5 +1,6 @@
 package com.amp.global.fcm.service;
 
+import com.amp.global.exception.CustomException;
 import com.amp.global.fcm.exception.FCMErrorCode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.firebase.messaging.FirebaseMessaging;
@@ -29,7 +30,7 @@ public class FCMService {
             FirebaseMessaging.getInstance()
                     .subscribeToTopic(List.of(token), topic(categoryId));
         } catch (FirebaseMessagingException e) {
-            throw new IllegalArgumentException(FCMErrorCode.FAIL_TO_SEND_PUSH_ALARM.getMsg());
+            throw new CustomException(FCMErrorCode.FAIL_TO_SEND_PUSH_ALARM);
         }
     }
 
@@ -38,7 +39,7 @@ public class FCMService {
             FirebaseMessaging.getInstance()
                     .unsubscribeFromTopic(List.of(token), topic(categoryId));
         } catch (FirebaseMessagingException e) {
-            throw new IllegalArgumentException(FCMErrorCode.FAIL_TO_SEND_PUSH_ALARM.getMsg());
+            throw new CustomException(FCMErrorCode.FAIL_TO_SEND_PUSH_ALARM);
         }
     }
 
@@ -75,7 +76,7 @@ public class FCMService {
                     .build();
             FirebaseMessaging.getInstance().send(message);
         } catch (FirebaseMessagingException e) {
-            throw new IllegalArgumentException(FCMErrorCode.FAIL_TO_SEND_PUSH_ALARM.getMsg());
+            throw new CustomException(FCMErrorCode.FAIL_TO_SEND_PUSH_ALARM);
         }
     }
 }
