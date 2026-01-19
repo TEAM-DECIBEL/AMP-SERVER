@@ -15,7 +15,10 @@ import java.time.LocalDateTime;
 @Getter
 @Table(
         name = "user_congestion_report",
-        indexes = @Index(name = "idx_reported_at", columnList = "reported_at")
+        indexes = {
+                @Index(name = "idx_reported_at", columnList = "reported_at"),
+                @Index(name = "idx_stage_reported_at", columnList = "stage_id, reported_at")
+        }
 )
 public class UserCongestionReport extends BaseTimeEntity {
     @Id
@@ -26,7 +29,7 @@ public class UserCongestionReport extends BaseTimeEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToOne
+    @ManyToOne (fetch = FetchType.LAZY)
     @JoinColumn(name = "stage_id", nullable = false)
     private Stage stage;
 
