@@ -4,6 +4,7 @@ import com.amp.domain.auth.dto.OnboardingRequest;
 import com.amp.domain.auth.dto.OnboardingResponse;
 import com.amp.domain.auth.dto.OnboardingStatusResponse;
 import com.amp.domain.auth.service.OnboardingService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth/onboarding")
+@Tag(name = "Auth API")
 @RequiredArgsConstructor
 @Slf4j
 public class OnboardingController {

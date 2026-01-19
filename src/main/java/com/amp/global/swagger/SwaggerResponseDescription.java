@@ -4,6 +4,7 @@ import com.amp.domain.category.exception.FestivalCategoryErrorCode;
 import com.amp.domain.festival.exception.FestivalErrorCode;
 import com.amp.domain.notice.exception.BookmarkErrorCode;
 import com.amp.domain.notice.exception.NoticeErrorCode;
+import com.amp.domain.stage.exception.StageErrorCode;
 import com.amp.domain.user.exception.UserErrorCode;
 import com.amp.global.common.CommonErrorCode;
 import com.amp.global.common.ErrorCode;
@@ -25,6 +26,12 @@ public enum SwaggerResponseDescription {
             CommonErrorCode.INVALID_INPUT_VALUE,
             CommonErrorCode.TYPE_MISMATCH,
             CommonErrorCode.INVALID_JSON
+    ))),
+
+    NO_AUTHORIZATION(new LinkedHashSet<>(Set.of(
+            UserErrorCode.USER_NOT_FOUND,
+            UserErrorCode.USER_NOT_AUTHENTICATED,
+            UserErrorCode.USER_NOT_AUTHORIZED
     ))),
 
     // 공연 추가 API
@@ -124,6 +131,34 @@ public enum SwaggerResponseDescription {
             NoticeErrorCode.DELETE_NOTICE_FAIL,
             UserErrorCode.USER_NOT_FOUND,
             NoticeErrorCode.NOTICE_DELETE_FORBIDDEN
+    ))),
+
+    // 무대 혼잡도 입력
+    FAIL_TO_INPUT_CONGESTION(new LinkedHashSet<>(Set.of(
+            StageErrorCode.STAGE_NOT_FOUND,
+            StageErrorCode.DAILY_INPUT_CLOSED,
+            StageErrorCode.ALREADY_REPORTED_RECENTLY,
+            StageErrorCode.NO_SCHEDULE_TODAY,
+            UserErrorCode.USER_NOT_FOUND,
+            UserErrorCode.USER_NOT_AUTHENTICATED
+    ))),
+
+    // 마이 페이지 조회
+    FAIL_GET_MY_PAGE(new LinkedHashSet<>(Set.of(
+            UserErrorCode.USER_NOT_FOUND,
+            UserErrorCode.USER_NOT_AUTHENTICATED
+    ))),
+
+    // 저장한 공지 조회
+    FAIL_GET_BOOKMARK_NOTICE(new LinkedHashSet<>(Set.of(
+            UserErrorCode.USER_NOT_FOUND,
+            UserErrorCode.USER_NOT_AUTHENTICATED,
+            NoticeErrorCode.NOTICE_NOT_FOUND
+    ))),
+
+    // 공연 별 혼잡도 조회
+    FAIL_TO_GET_CONGESTION(new LinkedHashSet<>(Set.of(
+            FestivalErrorCode.FESTIVAL_NOT_FOUND
     )));
 
     private final Set<ErrorCode> errorCodeList;
