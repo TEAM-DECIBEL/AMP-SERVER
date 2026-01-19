@@ -67,7 +67,7 @@ public class FCMService {
         return "category-" + categoryId;
     }
 
-    public void sendCategoryTopicAlarm(Long categoryId, String title, String noticeBody, String timeData) throws FirebaseMessagingException {
+    public void sendCategoryTopicAlarm(Long categoryId, String title, String noticeBody, String timeData) {
         String topic = "category-" + categoryId;
         try {
             Message message = Message.builder()
