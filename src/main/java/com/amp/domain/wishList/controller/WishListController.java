@@ -11,6 +11,7 @@ import com.amp.global.response.success.BaseResponse;
 import com.amp.global.security.CustomUserPrincipal;
 import com.amp.global.swagger.SwaggerResponseDescription;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/users/me/festivals")
+@Tag(name = "User API")
 @RequiredArgsConstructor
 public class WishListController {
 

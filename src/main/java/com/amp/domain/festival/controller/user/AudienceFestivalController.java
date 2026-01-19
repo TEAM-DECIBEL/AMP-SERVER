@@ -4,6 +4,7 @@ import com.amp.domain.festival.service.user.AudienceFestivalService;
 import com.amp.domain.wishList.dto.response.WishListPageResponse;
 import com.amp.global.common.SuccessStatus;
 import com.amp.global.response.success.BaseResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/users/festivals")
+@Tag(name = "User API")
 @RequiredArgsConstructor
 public class AudienceFestivalController {
     private final AudienceFestivalService usersFestivalService;
