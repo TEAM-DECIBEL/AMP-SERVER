@@ -53,7 +53,10 @@ public class CongestionReportService {
 
         String userReportKey = USER_REPORT_KEY + user.getId() + ":" + stageId;
 
-        if (Boolean.TRUE.equals(redisTemplate.hasKey(userReportKey))) {
+        Boolean acquired = redisTemplate.opsForValue()
+                .setIfAbsent(userReportKey, "1", Duration.ofMinutes(15));
+
+        if (Boolean.FALSE.equals(acquired)) {
             throw new CustomException(StageErrorCode.ALREADY_REPORTED_RECENTLY);
         }
 
@@ -65,7 +68,6 @@ public class CongestionReportService {
 
         redisTemplate.opsForList().rightPush(stageReportKey, reportData);
         redisTemplate.expire(stageReportKey, 1, TimeUnit.HOURS);
-        redisTemplate.opsForValue().set(userReportKey, "1", Duration.ofMinutes(15));
 
         log.info("혼잡도 입력 완료 (Redis 저장): userId={}, stageId={}, level={}",
                 user.getId(), stageId, level);
