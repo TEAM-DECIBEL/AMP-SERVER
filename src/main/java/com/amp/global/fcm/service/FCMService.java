@@ -1,0 +1,84 @@
+package com.amp.global.fcm.service;
+
+import com.amp.global.exception.CustomException;
+import com.amp.global.fcm.exception.FCMErrorCode;
+import com.amp.global.security.service.AuthService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.FirebaseMessagingException;
+import com.google.firebase.messaging.Message;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class FCMService {
+
+    private final ObjectMapper objectMapper;
+    private final AuthService authService;
+
+    @Value("${fcm.key.path}")
+    private String serviceAccountJson;
+    @Value("${fcm.api.url}")
+    private String fcmApiUrl;
+
+    public void subscribeCategory(Long categoryId, String token) {
+        try {
+            FirebaseMessaging.getInstance()
+                    .subscribeToTopic(List.of(token), topic(categoryId));
+        } catch (FirebaseMessagingException e) {
+            throw new CustomException(FCMErrorCode.FAIL_TO_SEND_PUSH_ALARM);
+        }
+    }
+
+    public void unsubscribeCategory(Long categoryId, String token) {
+        try {
+            FirebaseMessaging.getInstance()
+                    .unsubscribeFromTopic(List.of(token), topic(categoryId));
+        } catch (FirebaseMessagingException e) {
+            throw new CustomException(FCMErrorCode.FAIL_TO_SEND_PUSH_ALARM);
+        }
+    }
+
+  /*  public void sendCategoryNotice(Long categoryId, String title, String body) {
+        try {
+            Message message = Message.builder()
+                    .setTopic(topic(categoryId))
+                    .setNotification(
+                            Notification.builder()
+                                    .setTitle(title)
+                                    .setBody(body)
+                                    .build()
+                    )
+                    .build();
+
+            FirebaseMessaging.getInstance().send(message);
+        } catch (FirebaseMessagingException e) {
+            throw new IllegalArgumentException(FCMErrorCode.FAIL_TO_SEND_PUSH_ALARM.getMsg());
+        }
+    }*/
+
+    private String topic(Long categoryId) {
+        return "category-" + categoryId;
+    }
+
+    public void sendCategoryTopicAlarm(Long categoryId, String title, String noticeBody, String timeData) {
+        String topic = "category-" + categoryId;
+        try {
+            Message message = Message.builder()
+                    .setTopic(topic)
+                    .putData("title", title)
+                    .putData("message", noticeBody)
+                    .putData("time", timeData)
+                    .build();
+            FirebaseMessaging.getInstance().send(message);
+        } catch (FirebaseMessagingException e) {
+            throw new CustomException(FCMErrorCode.FAIL_TO_SEND_PUSH_ALARM);
+        }
+    }
+}

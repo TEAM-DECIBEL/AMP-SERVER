@@ -59,7 +59,11 @@ public enum SuccessStatus implements SuccessCode {
     // CONGESTION
     CONGESTION_INPUT_SUCCESS(HttpStatus.OK, "CON", "001", "혼잡도 선택이 완료되었습니다."),
     CONGESTION_GET_SUCCESS(HttpStatus.OK, "CON", "002", "혼잡도 조회가 완료되었습니다."),
-    CONGESTION_LIST_EMPTY(HttpStatus.OK, "CON", "003", "혼잡도 조회할 무대(부스)가 없습니다.");
+    CONGESTION_LIST_EMPTY(HttpStatus.OK, "CON", "003", "혼잡도 조회할 무대(부스)가 없습니다."),
+
+    // FCM
+    SUBSCRIBE_SUCCESS(HttpStatus.OK, "FCM", "001", "카테고리 알림 구독이 완료되었습니다."),
+    UNSUBSCRIBE_SUCCESS(HttpStatus.OK, "FCM", "002", "카테고리 알림 구독 취소가 성공적으로 완료되었습니다.");
 
     private final HttpStatus httpStatus;
     private final String domain;
