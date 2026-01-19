@@ -23,4 +23,5 @@ public enum OrganizerErrorCode implements ErrorCode {
     public String getCode() {
         return domain + "_" + httpStatus.value() + "_" + numbering;
     }
+
 }
