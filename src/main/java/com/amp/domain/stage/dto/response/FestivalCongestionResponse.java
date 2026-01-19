@@ -14,12 +14,11 @@ public record FestivalCongestionResponse(
 ) {
     public static FestivalCongestionResponse of(
             boolean isInputAvailable,
-            List<StageCongestionSummary> stages,
-            Page<?> page
+            Page<StageCongestionSummary> page
     ) {
         return FestivalCongestionResponse.builder()
                 .isInputAvailable(isInputAvailable)
-                .stages(stages)
+                .stages(page.getContent())
                 .pagination(PaginationResponse.from(page))
                 .build();
     }
