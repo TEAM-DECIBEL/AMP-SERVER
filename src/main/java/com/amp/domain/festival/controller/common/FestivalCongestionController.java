@@ -4,6 +4,7 @@ import com.amp.domain.stage.dto.response.FestivalCongestionResponse;
 import com.amp.domain.stage.service.CongestionQueryService;
 import com.amp.global.common.SuccessStatus;
 import com.amp.global.response.success.BaseResponse;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,7 @@ public class FestivalCongestionController {
 
     private final CongestionQueryService congestionQueryService;
 
+    @Operation(summary = "공연 별 전체 혼잡도 조회")
     @GetMapping("/{festivalId}/congestion")
     public ResponseEntity<BaseResponse<FestivalCongestionResponse>> getFestivalCongestion(@PathVariable Long festivalId,
                                                                                           Pageable pageable) {
