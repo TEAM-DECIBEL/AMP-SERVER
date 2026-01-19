@@ -5,12 +5,12 @@ import org.springframework.data.domain.Page;
 
 import java.util.List;
 
-public record MyWishListPageResponse(
-        List<MyWishListResponse> festivals,
+public record MyUpcomingPageResponse(
+        List<WishListHistoryResponse> festivals,
         PaginationResponse pagination
 ) {
-    public static MyWishListPageResponse of(Page<MyWishListResponse> page) {
-        return new MyWishListPageResponse(
+    public static MyUpcomingPageResponse of(Page<WishListHistoryResponse> page) {
+        return new MyUpcomingPageResponse(
                 page.getContent(),
                 PaginationResponse.from(page)
         );

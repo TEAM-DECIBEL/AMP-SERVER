@@ -5,7 +5,7 @@ import com.amp.domain.festival.entity.FestivalStatus;
 import com.amp.domain.festival.entity.UserFestival;
 import com.amp.domain.festival.util.FestivalUtils;
 
-public record MyWishListResponse(
+public record MyUpcomingResponse(
         Long festivalId,
         String title,
         String mainImageUrl,
@@ -14,9 +14,9 @@ public record MyWishListResponse(
         boolean wishList,
         Long dDay
 ) {
-    public static MyWishListResponse from(UserFestival userFestival) {
+    public static MyUpcomingResponse from(UserFestival userFestival) {
         Festival festival = userFestival.getFestival();
-        return new MyWishListResponse(
+        return new MyUpcomingResponse(
                 festival.getId(),
                 festival.getTitle(),
                 festival.getMainImageUrl(),

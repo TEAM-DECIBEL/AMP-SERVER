@@ -1,9 +1,9 @@
-package com.amp.domain.wishList.dto.response;
+package com.amp.domain.festival.dto.response;
 
 import com.amp.domain.festival.entity.Festival;
 import com.amp.domain.festival.util.FestivalUtils;
 
-public record WishListSummaryResponse(
+public record AudienceFestivalSummaryResponse(
         Long festivalId,
         String title,
         String mainImageUrl,
@@ -11,8 +11,8 @@ public record WishListSummaryResponse(
         boolean wishList,
         long dDay
 ) {
-    public static WishListSummaryResponse from(Festival festival, boolean isWishList) {
-        return new WishListSummaryResponse(
+    public static AudienceFestivalSummaryResponse from(Festival festival, boolean isWishList) {
+        return new AudienceFestivalSummaryResponse(
                 festival.getId(),
                 festival.getTitle(),
                 festival.getMainImageUrl(),
