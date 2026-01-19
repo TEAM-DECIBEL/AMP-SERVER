@@ -22,12 +22,11 @@ public interface OrganizerRepository extends JpaRepository<Organizer, Long> {
     void softDeleteByFestivalId(@Param("festivalId") Long festivalId);
 
     @Query("SELECT COUNT(f) FROM Organizer o " +
-            "JOIN o.festival f " +
-            "WHERE o.user.id = :userId " +  // user_id로 변경
+            "LEFT JOIN o.festival f " +
+            "WHERE o.user.id = :userId " +
             "AND f.status = :status " +
-            "AND f.deletedAt IS NULL " +
-            "AND o.deletedAt IS NULL")  // Organizer soft delete도 체크
-    Integer countFestivalsByUserIdAndStatus(
+            "AND f.id IS NOT NULL")
+    Long countFestivalsByUserIdAndStatus(
             @Param("userId") Long userId,
             @Param("status") FestivalStatus status
     );

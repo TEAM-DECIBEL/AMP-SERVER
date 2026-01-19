@@ -13,9 +13,9 @@ public record OrganizerMypageResponse(
         String profileImageUrl,
 
         @Schema(description = "진행 중인 공연 수", example = "3")
-        Integer ongoingFestivalCount,
+        Long ongoingFestivalCount,
 
         @Schema(description = "진행 예정 공연 수", example = "1")
-        Integer upcomingFestivalCount
+        Long upcomingFestivalCount
 ) {
 }

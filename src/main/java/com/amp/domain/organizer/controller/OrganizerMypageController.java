@@ -14,9 +14,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "Organizer Mypage", description = "주최사 마이페이지 API")
+@Tag(name = "Organizer")
 @RestController
-@RequestMapping("/api/organizer/v1/mypage")
+@RequestMapping("/api/v1/organizer/mypage")
 @RequiredArgsConstructor
 public class OrganizerMypageController {
 
