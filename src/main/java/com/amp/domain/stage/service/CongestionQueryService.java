@@ -38,28 +38,41 @@ public class CongestionQueryService {
     private final FestivalRepository festivalRepository;
 
     public FestivalCongestionResponse getFestivalCongestion(Long festivalId, Pageable pageable) {
-        if (!festivalRepository.existsById(festivalId)) {
-            throw new CustomException(FestivalErrorCode.FESTIVAL_NOT_FOUND);
-        }
+        validateFestivalExists(festivalId);
 
         boolean isInputAvailable = checkInputStatus(festivalId);
         Page<Stage> stagePage = stageRepository.findByFestivalId(festivalId, pageable);
 
-        List<Long> stageIds = stagePage.getContent().stream()
-                .map(Stage::getId)
-                .toList();
-
-        Map<Long, StageCongestion> latestCongestionMap = stageIds.isEmpty()
-                ? Map.of()
-                : stageCongestionRepository.findLatestByStageIds(stageIds)
-                .stream()
-                .collect(Collectors.toMap(sc -> sc.getStage().getId(), sc -> sc));
+        Map<Long, StageCongestion> latestCongestionMap = fetchLatestCongestion(stagePage.getContent());
 
         List<StageCongestionSummary> summaries = stagePage.getContent().stream()
-                .map(stage -> mapToSummary(stage, latestCongestionMap.get(stage.getId()), isInputAvailable))
+                .map(stage -> mapToSummary(stage,
+                        latestCongestionMap.get(stage.getId()), isInputAvailable))
                 .toList();
 
         return FestivalCongestionResponse.of(isInputAvailable, summaries, stagePage);
+    }
+
+    private Map<Long, StageCongestion> fetchLatestCongestion(List<Stage> stages) {
+        if (stages.isEmpty()) {
+            return Map.of();
+        }
+
+        List<Long> stageIds = stages.stream()
+                .map(Stage::getId)
+                .toList();
+
+        return stageCongestionRepository.findLatestByStageIds(stageIds).stream()
+                .collect(Collectors.toMap(
+                        sc -> sc.getStage().getId(),
+                        sc -> sc
+                ));
+    }
+
+    private void validateFestivalExists(Long festivalId) {
+        if (!festivalRepository.existsById(festivalId)) {
+            throw new CustomException(FestivalErrorCode.FESTIVAL_NOT_FOUND);
+        }
     }
 
     private StageCongestionSummary mapToSummary(Stage stage, StageCongestion congestion, boolean isInputAvailable) {
