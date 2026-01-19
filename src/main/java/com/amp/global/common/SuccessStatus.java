@@ -57,7 +57,7 @@ public enum SuccessStatus implements SuccessCode {
 
     // FCM
     SUBSCRIBE_SUCCESS(HttpStatus.OK, "FCM", "001", "카테고리 알림 구독이 완료되었습니다."),
-    UNSUBSTRIBE_SUCCESS(HttpStatus.OK, "FCM", "002", "카테고리 알림 구독 취소가 성공적으로 완료되었습니다.");
+    UNSUBSCRIBE_SUCCESS(HttpStatus.OK, "FCM", "002", "카테고리 알림 구독 취소가 성공적으로 완료되었습니다.");
 
     private final HttpStatus httpStatus;
     private final String domain;
