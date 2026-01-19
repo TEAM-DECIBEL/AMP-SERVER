@@ -71,8 +71,8 @@ public class WishListController {
                 .body(BaseResponse.ok(status.getMsg(), response));
     }
 
-    @GetMapping("/my")
-    @Operation(summary = "나의 관람 예정 공연 리스트 조회")
+    @GetMapping()
+    @Operation(summary = "홈 화면 관람 예정 공연 리스트 조회")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_GET_WISHLISTS)
     public ResponseEntity<BaseResponse<MyWishListPageResponse>> getMyWishListResponse(
             @Parameter(description = "페이지 번호 (0부터 시작)")
