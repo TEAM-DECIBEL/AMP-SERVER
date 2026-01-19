@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/test")
-public class TestController {
+public class AopTestController {
 
     @GetMapping("/success")
     public String success() {
