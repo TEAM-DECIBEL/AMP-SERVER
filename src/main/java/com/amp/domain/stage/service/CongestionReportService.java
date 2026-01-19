@@ -91,11 +91,6 @@ public class CongestionReportService {
                     stage.getId(), now, enableInputTime);
             throw new CustomException(StageErrorCode.TOO_EARLY_TO_REPORT);
         }
-        if (now.isAfter(enableEndTime)) {
-            log.warn("입력 불가 (오늘 입력 종료): stageId={}, now={}, enableEnd={}",
-                    stage.getId(), now, enableEndTime);
-            throw new CustomException(StageErrorCode.DAILY_INPUT_CLOSED);
-        }
 
         log.debug("입력 가능 시간 확인 완료: stageId={}, date={}, enableTime={} ~ {}",
                 stage.getId(), today, enableInputTime.toLocalTime(), enableEndTime.toLocalTime());
