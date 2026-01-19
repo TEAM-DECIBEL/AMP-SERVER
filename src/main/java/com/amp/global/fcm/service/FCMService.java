@@ -45,7 +45,7 @@ public class FCMService {
         }
     }
 
-    public void sendCategoryNotice(Long categoryId, String title, String body) {
+  /*  public void sendCategoryNotice(Long categoryId, String title, String body) {
         try {
             Message message = Message.builder()
                     .setTopic(topic(categoryId))
@@ -61,7 +61,7 @@ public class FCMService {
         } catch (FirebaseMessagingException e) {
             throw new IllegalArgumentException(FCMErrorCode.FAIL_TO_SEND_PUSH_ALARM.getMsg());
         }
-    }
+    }*/
 
     private String topic(Long categoryId) {
         return "category-" + categoryId;
