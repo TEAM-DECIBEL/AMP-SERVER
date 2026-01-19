@@ -20,6 +20,15 @@ public class NotificationController {
     ) throws FirebaseMessagingException {
         categorySubscribeService.subscribe(categoryId, request.fcmToken());
     }
+
+    @DeleteMapping("/{categoryId}/subscribe")
+    public void unsubscribeCategory(
+            @PathVariable Long categoryId,
+            @RequestBody FcmTopicSubscribeRequest request
+    ) throws FirebaseMessagingException {
+        categorySubscribeService.unsubscribe(categoryId, request.fcmToken());
+    }
+
 }
 
 
