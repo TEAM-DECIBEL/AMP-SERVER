@@ -24,7 +24,7 @@ public class FestivalNoticeController {
 
     private final FestivalNoticeService festivalNoticeService;
 
-    @Operation(summary = "축제별 공지 리스트 조회")
+    @Operation(summary = "공연별 공지 리스트 조회")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_GET_NOTICE_LIST)
     @GetMapping("/{festivalId}/notices")
     public ResponseEntity<BaseResponse<NoticeListResponse>> getFestivalNotices(

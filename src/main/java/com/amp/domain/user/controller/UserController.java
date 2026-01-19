@@ -4,9 +4,11 @@ import com.amp.domain.user.dto.response.MyPageResponse;
 import com.amp.domain.user.dto.response.SavedNoticesResponse;
 import com.amp.domain.user.service.UserNoticesService;
 import com.amp.domain.user.service.UserService;
+import com.amp.global.annotation.ApiErrorCodes;
 import com.amp.global.common.SuccessStatus;
 import com.amp.global.response.success.BaseResponse;
 import com.amp.global.security.CustomUserPrincipal;
+import com.amp.global.swagger.SwaggerResponseDescription;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -30,6 +32,7 @@ public class UserController {
     private final UserNoticesService userNoticesService;
 
     @GetMapping("/me")
+    @ApiErrorCodes(SwaggerResponseDescription.FAIL_GET_MY_PAGE)
     @Operation(summary = "마이페이지 조회", description = "현재 로그인한 사용자의 프로필 정보를 조회합니다.")
     public ResponseEntity<BaseResponse<MyPageResponse>> getMyPage(
             @AuthenticationPrincipal CustomUserPrincipal principal) {
@@ -41,6 +44,7 @@ public class UserController {
     }
 
     @GetMapping("/me/saved-notices")
+    @ApiErrorCodes(SwaggerResponseDescription.FAIL_GET_BOOKMARK_NOTICE)
     @Operation(summary = "저장한 공지 조회", description = "사용자가 저장한 공지사항 목록을 조회합니다.")
     public ResponseEntity<BaseResponse<SavedNoticesResponse>> getSavedNotices(
             @AuthenticationPrincipal CustomUserPrincipal principal,
