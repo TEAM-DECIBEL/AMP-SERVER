@@ -6,10 +6,10 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum CongestionLevel {
-    NONE("입력값이 없습니다.", 0),
     SMOOTH("여유", 1),
     NORMAL("보통", 2),
-    CROWDED("혼잡", 3);
+    CROWDED("혼잡", 3),
+    NONE("입력값이 없습니다.", 0);
 
     private final String description;
     private final int score;
