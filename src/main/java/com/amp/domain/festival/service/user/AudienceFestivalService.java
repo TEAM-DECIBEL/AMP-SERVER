@@ -3,8 +3,8 @@ package com.amp.domain.festival.service.user;
 import com.amp.domain.festival.entity.Festival;
 import com.amp.domain.festival.repository.FestivalRepository;
 import com.amp.domain.user.entity.User;
-import com.amp.domain.wishList.dto.response.WishListSummaryResponse;
-import com.amp.domain.wishList.dto.response.WishListPageResponse;
+import com.amp.domain.festival.dto.response.AudienceFestivalSummaryResponse;
+import com.amp.domain.festival.dto.response.AudienceFestivalPageResponse;
 import com.amp.domain.wishList.repository.UserFestivalRepository;
 import com.amp.global.security.service.AuthService;
 import lombok.RequiredArgsConstructor;
@@ -27,19 +27,19 @@ public class AudienceFestivalService {
 
 
     @Transactional(readOnly = true)
-    public WishListPageResponse getAllFestivalLists(Pageable pageable) {
+    public AudienceFestivalPageResponse getAllFestivals(Pageable pageable) {
         User user = authService.getCurrentUserOrNull();
-        Page<Festival> festivalPage = festivalRepository.findAll(pageable);
+        Page<Festival> festivalPage = festivalRepository.findActiveFestivals(pageable);
 
         Set<Long> wishlistIds = (user != null)
                 ? userFestivalRepository.findAllFestivalIdsByUserId(user.getId())
                 : Collections.emptySet();
 
-        Page<WishListSummaryResponse> festivalList = festivalPage.map(f ->
-                WishListSummaryResponse.from(f, wishlistIds.contains(f.getId()))
+        Page<AudienceFestivalSummaryResponse> festivalList = festivalPage.map(f ->
+                AudienceFestivalSummaryResponse.from(f, wishlistIds.contains(f.getId()))
         );
 
-        return WishListPageResponse.of(festivalList);
+        return AudienceFestivalPageResponse.of(festivalList);
     }
 
 }
