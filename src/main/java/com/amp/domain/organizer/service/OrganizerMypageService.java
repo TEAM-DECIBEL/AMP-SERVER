@@ -32,14 +32,14 @@ public class OrganizerMypageService {
                 .orElseThrow(() -> new CustomException(OrganizerErrorCode.ORGANIZER_NOT_FOUND));
 
         // 진행 중인 공연 수 조회
-        Integer ongoingCount = organizerRepository.countFestivalsByOrganizerIdAndStatus(
-                organizer.getId(),
+        Integer ongoingCount = organizerRepository.countFestivalsByUserIdAndStatus(
+                userId,
                 FestivalStatus.ONGOING
         );
 
         // 진행 예정 공연 수 조회
-        Integer upcomingCount = organizerRepository.countFestivalsByOrganizerIdAndStatus(
-                organizer.getId(),
+        Integer upcomingCount = organizerRepository.countFestivalsByUserIdAndStatus(
+                userId,
                 FestivalStatus.UPCOMING
         );
 
