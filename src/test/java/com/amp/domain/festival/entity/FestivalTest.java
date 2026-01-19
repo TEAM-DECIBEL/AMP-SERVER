@@ -2,12 +2,16 @@ package com.amp.domain.festival.entity;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 class FestivalTest {
+
+    private static final Logger log = LoggerFactory.getLogger(FestivalTest.class);
 
     @Test
     @DisplayName("공연 시작 전이면 UPCOMING 상태여야 한다")
@@ -16,6 +20,9 @@ class FestivalTest {
                 .startDate(LocalDate.of(2026, 1, 20))
                 .endDate(LocalDate.of(2026, 1, 22))
                 .build();
+
+        log.info("Festival값 뽑아보기 {},{},{},{}" ,festival.getId(),festival.getStatus(),festival.getStartDate(),festival.getEndDate());
+
 
         // festival.updateStatus(LocalDate.of(2026, 1, 15));
 
