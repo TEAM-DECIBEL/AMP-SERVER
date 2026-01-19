@@ -1,7 +1,6 @@
 package com.amp.domain.wishList.dto.response;
 
 import com.amp.domain.festival.entity.Festival;
-import com.amp.domain.festival.entity.FestivalStatus;
 import com.amp.domain.festival.entity.UserFestival;
 import com.amp.domain.festival.util.FestivalUtils;
 import com.amp.domain.wishList.util.WishListUtils;
