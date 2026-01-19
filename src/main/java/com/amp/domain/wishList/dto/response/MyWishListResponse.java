@@ -11,17 +11,19 @@ public record MyWishListResponse(
         String mainImageUrl,
         String period,
         String status,
-        boolean wishList
+        boolean wishList,
+        Long dDay
 ) {
-    public static MyWishListResponse from(UserFestival uf) {
-        Festival f = uf.getFestival();
+    public static MyWishListResponse from(UserFestival userFestival) {
+        Festival festival = userFestival.getFestival();
         return new MyWishListResponse(
-                f.getId(),
-                f.getTitle(),
-                f.getMainImageUrl(),
-                FestivalUtils.formatPeriod(f.getStartDate(), f.getEndDate()),
-                convertToUserStatus(f.getStatus()),
-                uf.getWishList()
+                festival.getId(),
+                festival.getTitle(),
+                festival.getMainImageUrl(),
+                FestivalUtils.formatPeriod(festival.getStartDate(), festival.getEndDate()),
+                convertToUserStatus(festival.getStatus()),
+                userFestival.getWishList(),
+                FestivalUtils.calculateDDay(festival.getStartDate(), festival.getEndDate())
         );
     }
 

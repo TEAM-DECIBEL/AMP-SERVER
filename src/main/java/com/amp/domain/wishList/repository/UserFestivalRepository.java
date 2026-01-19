@@ -43,6 +43,7 @@ public interface UserFestivalRepository extends JpaRepository<UserFestival, Long
             "WHERE uf.user.id = :userId " +
             "AND uf.wishList = true " +
             "AND f.deletedAt IS NULL " +
+            "AND f.endDate >= CURRENT_DATE " +
             "ORDER BY f.startDate ASC, f.startTime ASC, f.title ASC")
     Page<UserFestival> findAllByUserIdAndWishListTrue(Long userId, Pageable pageable);
 }
