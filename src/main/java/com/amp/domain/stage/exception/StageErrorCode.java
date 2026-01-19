@@ -15,12 +15,13 @@ public enum StageErrorCode implements ErrorCode {
     TOO_EARLY_TO_REPORT(HttpStatus.BAD_REQUEST, "STA", "003", "공연 시작 8시간 전부터 입력 가능합니다."),
     DAILY_INPUT_CLOSED(HttpStatus.BAD_REQUEST, "STA", "004", "입력 가능한 시간이 지났습니다."),
     NO_SCHEDULE_TODAY(HttpStatus.BAD_REQUEST, "STA", "005", "오늘은 등록된 무대/부스 일정이 없습니다."),
-    INVALID_CONGESTION_LEVEL(HttpStatus.BAD_REQUEST, "STA", "006", "CONGESTION / NORMAL / SMOOTH 값 중에만 입력 가능합니다."),
+    INVALID_CONGESTION_LEVEL(HttpStatus.BAD_REQUEST, "STA", "006", "CROWDED / NORMAL / SMOOTH 값 중에만 입력 가능합니다."),
 
     // 404 NOT FOUND
     STAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "STA", "001", "무대를 찾을 수 없습니다."),
     CONGESTION_NOT_FOUND(HttpStatus.NOT_FOUND, "STA", "002", "혼잡도 정보를 찾을 수 없습니다."),
     NO_SCHEDULE_FOUND(HttpStatus.NOT_FOUND, "STA", "003", "등록된 무대 정보를 찾을 수 없습니다.");
+
     private final HttpStatus httpStatus;
     private final String domain;
     private final String numbering;
