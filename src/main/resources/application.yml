@@ -1,69 +1,43 @@
 spring:
   profiles:
     include: secret
-    active: local
+    active: test
 
-  security:
-    oauth2:
-      client:
-        registration:
-          google:
-            # client-id와 client-secret은 application-secret.yml에서 가져와야함
-            scope:
-              - email
-              - profile
-            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
-        provider:
-          google:
-            authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
-            token-uri: https://oauth2.googleapis.com/token
-            user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
-            user-name-attribute: sub
-  cloud:
-    aws:
-      s3:
-        bucket: ${S3_BUCKET_NAME}
-        base-url: https://%s.s3.%s.amazonaws.com/
-        region: ap-northeast-2
-      credentials:
-        access-key: ${S3_ACCESS_KEY}
-        secret-key: ${S3_SECRET_KEY}
-      region:
-        static: ap-northeast-2
-      stack:
-        auto: false
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/amp_test?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    username: root
+    password: z1227530!
+
   jpa:
-    database-platform: org.hibernate.dialect.MySQLDialect
+    hibernate:
+      ddl-auto: create-drop  # 테스트 후 자동으로 테이블 삭제
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
 
-# jwt.secret은 application-secret.yml에서 가져옴
+  sql:
+    init:
+      mode: never
+
+# JWT 테스트용 설정
 jwt:
-  expiration: 86400000  # 24시간 (밀리초)
-  refresh-expiration: 604800000  # 7일
+  secret: test-secret-key-for-testing-purposes-only-32-characters-long
+  expiration: 86400000
+  refresh-expiration: 604800000
 
-# 앱 설정
+# OAuth2 테스트용 설정 (필요시)
 app:
   oauth2:
     redirect-uri: http://localhost:3000/oauth2/redirect
     onboarding-uri: http://localhost:3000/onboarding
     failure-redirect-uri: http://localhost:3000/login
-  cors:
-    allowed-origins: http://localhost:3000,http://localhost:5173
-    allowed-methods: GET,POST,PUT,DELETE,OPTIONS
-    allowed-headers: "*"
-    allow-credentials: true
 
-server:
-  port: 8080
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health
-
-fcm:
-  key:
-    path: firebase/amp-firebase-adminsdk.json
-    scope: https://www.googleapis.com/auth/cloud-platform
-  api:
-    url: https://fcm.googleapis.com/v1/projects/{fcm-project-id}/messages:send
+logging:
+  level:
+    com.amp: DEBUG
+    org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
