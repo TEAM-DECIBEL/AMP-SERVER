@@ -33,7 +33,10 @@ public interface UserFestivalRepository extends JpaRepository<UserFestival, Long
             @Param("today") LocalDate today
     );
 
-    @Query("SELECT uf.festival.id FROM UserFestival uf WHERE uf.user.id = :userId AND uf.wishList = true")
+    @Query("SELECT uf.festival.id " +
+            "FROM UserFestival uf " +
+            "WHERE uf.user.id = :userId " +
+            "AND uf.wishList = true")
     Set<Long> findAllFestivalIdsByUserId(@Param("userId") Long userId);
 
     Optional<UserFestival> findByUserAndFestival(User user, Festival festival);
@@ -46,4 +49,10 @@ public interface UserFestivalRepository extends JpaRepository<UserFestival, Long
             "AND f.endDate >= CURRENT_DATE " +
             "ORDER BY f.startDate ASC, f.startTime ASC, f.title ASC")
     Page<UserFestival> findAllByUserIdAndWishListTrue(Long userId, Pageable pageable);
+
+    @Query("SELECT uf FROM UserFestival uf JOIN FETCH uf.festival f " +
+            "WHERE uf.user.id = :userId AND uf.wishList = true " +
+            "AND f.deletedAt IS NULL " +
+            "ORDER BY f.endDate DESC , f.startTime DESC , f.title ASC")
+    Page<UserFestival> findAllWishListHistory(@Param("userId") Long userId, Pageable pageable);
 }

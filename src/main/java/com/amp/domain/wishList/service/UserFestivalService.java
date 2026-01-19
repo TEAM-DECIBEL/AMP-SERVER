@@ -67,12 +67,20 @@ public class UserFestivalService {
     }
 
     @Transactional(readOnly = true)
-    public MyWishListPageResponse getMyWishList(Pageable pageable) {
+    public MyUpcomingPageResponse getMyWishList(Pageable pageable) {
         User user = authService.getCurrentUser();
 
         Page<UserFestival> userFestivals = userFestivalRepository.findAllByUserIdAndWishListTrue(user.getId(), pageable);
-        Page<MyWishListResponse> responsePage = userFestivals.map(MyWishListResponse::from);
+        Page<WishListHistoryResponse> responsePage = userFestivals.map(WishListHistoryResponse::from);
 
-        return MyWishListPageResponse.of(responsePage);
+        return MyUpcomingPageResponse.of(responsePage);
+    }
+
+    public WishListHistoryPageResponse geHistoryWishList(Pageable pageable) {
+        User user = authService.getCurrentUser();
+
+        Page<UserFestival> userFestivals = userFestivalRepository.findAllWishListHistory(user.getId(), pageable);
+        Page<WishListHistoryResponse> historyPage = userFestivals.map(WishListHistoryResponse::from);
+        return WishListHistoryPageResponse.of(historyPage);
     }
 }
