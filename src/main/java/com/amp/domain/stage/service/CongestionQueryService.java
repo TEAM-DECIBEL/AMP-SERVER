@@ -67,7 +67,7 @@ public class CongestionQueryService {
                 .stageId(stage.getId())
                 .title(stage.getTitle())
                 .location(stage.getLocation())
-                .congestionLevel(isNone ? CongestionLevel.NONE.name() : congestion.getCongestionLevel().name())
+                .congestionLevel(isNone ? CongestionLevel.NONE : congestion.getCongestionLevel())
                 .build();
     }
 
