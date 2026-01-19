@@ -6,6 +6,7 @@ import com.amp.domain.festival.service.organizer.OrganizerFestivalService;
 import com.amp.global.common.SuccessStatus;
 import com.amp.global.response.success.BaseResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/organizer/me/festivals")
+@Tag(name = "Organizer API")
 @RequiredArgsConstructor
 public class OrganizerFestivalController {
 

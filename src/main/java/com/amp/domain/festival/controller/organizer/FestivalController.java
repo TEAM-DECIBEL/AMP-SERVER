@@ -11,6 +11,7 @@ import com.amp.global.common.SuccessStatus;
 import com.amp.global.response.success.BaseResponse;
 import com.amp.global.swagger.SwaggerResponseDescription;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/organizer/festivals")
+@Tag(name = "Organizer API")
 @RequiredArgsConstructor
 public class FestivalController {
 
