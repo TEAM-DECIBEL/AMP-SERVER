@@ -10,20 +10,21 @@ import java.util.Optional;
 
 public interface StageCongestionRepository extends JpaRepository<StageCongestion, Long> {
 
-    @Query(value = """
-                SELECT sc.* FROM stage_congestion sc
-                WHERE sc.congestion_id IN (
-                SELECT MAX(congestion_id) 
-                FROM stage_congestion 
-                WHERE stage_id IN :stageIds 
-                GROUP BY stage_id
+    @Query("""
+                SELECT sc FROM StageCongestion sc 
+                WHERE sc.id IN (
+                    SELECT MAX(sc2.id) 
+                    FROM StageCongestion sc2 
+                    WHERE sc2.stage.id IN :stageIds 
+                    GROUP BY sc2.stage.id
                 )
-            """, nativeQuery = true)
+            """)
     List<StageCongestion> findLatestByStageIds(@Param("stageIds") List<Long> stageIds);
 
-    @Query("SELECT sc FROM StageCongestion sc " +
+    @Query("SELECT sc " +
+            "FROM StageCongestion sc " +
             "WHERE sc.stage.id = :stageId " +
-            "ORDER BY sc.measuredAt DESC LIMIT 1")
+            "ORDER BY sc.measuredAt DESC")
     Optional<StageCongestion> findLatestByStageId(@Param("stageId") Long stageId);
 
 }
