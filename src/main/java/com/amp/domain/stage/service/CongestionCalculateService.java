@@ -26,14 +26,13 @@ public class CongestionCalculateService {
     private final StageRepository stageRepository;
 
     @Transactional
-    public void calculateAndSave(Long stageId) {
+    public StageCongestion calculateAndSave(Long stageId) {
         Stage stage = stageRepository.findById(stageId).orElseThrow();
         LocalDateTime now = LocalDateTime.now();
         List<UserCongestionReport> reports = userCongestionReportRepository.findRecentReports(stageId, now.minusHours(1));
 
         if (reports.isEmpty()) {
-            saveDefault(stage, now);
-            return;
+            return saveDefault(stage, now);
         }
 
         double totalWeight = 0.0;
@@ -47,7 +46,7 @@ public class CongestionCalculateService {
 
         double finalScore = weightedSum / totalWeight;
 
-        stageCongestionRepository.save(StageCongestion.builder()
+        return stageCongestionRepository.save(StageCongestion.builder()
                 .stage(stage)
                 .congestionLevel(CongestionLevel.fromScore(finalScore))
                 .currentCount(reports.size())
@@ -63,8 +62,14 @@ public class CongestionCalculateService {
         return 0.25;
     }
 
-    private void saveDefault(Stage stage, LocalDateTime now) {
-        stageCongestionRepository.save(StageCongestion.builder()
-                .stage(stage).congestionLevel(CongestionLevel.NONE).currentCount(0).measuredAt(now).build());
+    private StageCongestion saveDefault(Stage stage, LocalDateTime now) {
+        StageCongestion congestion = StageCongestion.builder()
+                .stage(stage)
+                .congestionLevel(CongestionLevel.NONE)
+                .currentCount(0)
+                .measuredAt(now)
+                .build();
+
+        return stageCongestionRepository.save(congestion);
     }
 }
