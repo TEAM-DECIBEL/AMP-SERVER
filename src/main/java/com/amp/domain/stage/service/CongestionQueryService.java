@@ -49,7 +49,9 @@ public class CongestionQueryService {
                 .map(Stage::getId)
                 .toList();
 
-        Map<Long, StageCongestion> latestCongestionMap = stageCongestionRepository.findLatestByStageIds(stageIds)
+        Map<Long, StageCongestion> latestCongestionMap = stageIds.isEmpty()
+                ? Map.of()
+                : stageCongestionRepository.findLatestByStageIds(stageIds)
                 .stream()
                 .collect(Collectors.toMap(sc -> sc.getStage().getId(), sc -> sc));
 
