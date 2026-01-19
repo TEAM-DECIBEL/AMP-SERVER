@@ -21,9 +21,10 @@ public interface StageCongestionRepository extends JpaRepository<StageCongestion
             """)
     List<StageCongestion> findLatestByStageIds(@Param("stageIds") List<Long> stageIds);
 
-    @Query("SELECT sc FROM StageCongestion sc " +
+    @Query("SELECT sc " +
+            "FROM StageCongestion sc " +
             "WHERE sc.stage.id = :stageId " +
-            "ORDER BY sc.measuredAt DESC LIMIT 1")
+            "ORDER BY sc.measuredAt DESC")
     Optional<StageCongestion> findLatestByStageId(@Param("stageId") Long stageId);
 
 }
