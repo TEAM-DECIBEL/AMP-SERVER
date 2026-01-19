@@ -80,8 +80,7 @@ public class SecurityConfig {
 
                         // 공개 엔드포인트
                         .requestMatchers(
-                                "/api/v1/users/me/festivals",
-                                "/api/v1/festivals", // 비로그인 유저도 접속 가능
+                                "/api/v1/users/festivals",
                                 "/api/auth/**",
                                 "/api/public/**",
                                 "/api/auth/logout",
