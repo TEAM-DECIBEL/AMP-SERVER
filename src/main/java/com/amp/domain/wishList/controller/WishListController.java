@@ -73,7 +73,7 @@ public class WishListController {
     @GetMapping()
     @Operation(summary = "홈 화면 관람 예정 공연 리스트 조회")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_GET_WISHLISTS)
-    public ResponseEntity<BaseResponse<PageResponse<MyUpcomingResponse>>> getMyWishListResponse(
+    public ResponseEntity<BaseResponse<PageResponse<MyUpcomingResponse>>> getMyWishList(
             @Parameter(description = "페이지 번호 (0부터 시작)")
             @RequestParam(defaultValue = "0") @Min(0) int page,
 
@@ -95,7 +95,7 @@ public class WishListController {
     @GetMapping("/all")
     @Operation(summary = "마이 페이지 내 관람 공연 조회")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_GET_WISHLISTS)
-    public ResponseEntity<BaseResponse<PageResponse<WishListHistoryResponse>>> getMyAllWishListsResponse(
+    public ResponseEntity<BaseResponse<PageResponse<WishListHistoryResponse>>> getHistoryWishLists(
             @Parameter(description = "페이지 번호 (0부터 시작)")
             @RequestParam(defaultValue = "0") @Min(0) int page,
 
