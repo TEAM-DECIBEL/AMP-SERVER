@@ -11,4 +11,5 @@ public class WishListUtils {
             case COMPLETED -> "관람 완료";
             default -> status.getKoreanName();
         };
-    }}
+    }
+}
