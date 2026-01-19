@@ -27,7 +27,6 @@ public class CongestionScheduler {
     private final UserCongestionReportRepository userReportRepository;
 
     @Scheduled(cron = "0 0/15 * * * *")
-    @Transactional
     public void processCongestion() {
         List<FestivalStatus> targetStatuses = List.of(FestivalStatus.ONGOING, FestivalStatus.UPCOMING);
         List<Long> stageIds = stageRepository.findAllActiveIds(targetStatuses);
