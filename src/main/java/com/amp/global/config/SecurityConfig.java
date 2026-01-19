@@ -75,12 +75,12 @@ public class SecurityConfig {
 
                         .requestMatchers(
                                 "/api/v1/notices/*",    // 게시글 상세 조회 비회원 환경에서 허용
-                                "/api/common/v1/festivals/*/notices"  // 페스티벌 내 공지 목록 조회
+                                "/api/v1/common/festivals/*/notices"  // 페스티벌 내 공지 목록 조회
                         ).permitAll()
 
                         // 공개 엔드포인트
                         .requestMatchers(
-                                "/api/v1/users/festivals",
+                                "/api/v1/users/festivals", // 전체 공연 목록 조회
                                 "/api/auth/**",
                                 "/api/public/**",
                                 "/api/auth/logout",
