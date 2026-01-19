@@ -2,6 +2,7 @@ package com.amp.domain.auth.controller;
 
 import com.amp.global.common.SuccessStatus;
 import com.amp.global.response.success.BaseResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RestController
 @RequestMapping("/api/auth")
+@Tag(name = "Auth API")
 public class LogoutController {
 
     @PostMapping("/logout")

@@ -7,6 +7,7 @@ import com.amp.global.common.SuccessStatus;
 import com.amp.global.response.success.BaseResponse;
 import com.amp.global.swagger.SwaggerResponseDescription;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -14,14 +15,16 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/common/v1/festivals")
+@RequestMapping("/api/v1/common/festivals")
+@Tag(name = "User API")
+@Tag(name = "Organizer API")
 @RequiredArgsConstructor
 @Validated
 public class FestivalNoticeController {
 
     private final FestivalNoticeService festivalNoticeService;
 
-    @Operation(summary = "축제별 공지 리스트 조회")
+    @Operation(summary = "공연별 공지 리스트 조회")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_GET_NOTICE_LIST)
     @GetMapping("/{festivalId}/notices")
     public ResponseEntity<BaseResponse<NoticeListResponse>> getFestivalNotices(
