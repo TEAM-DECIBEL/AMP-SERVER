@@ -12,7 +12,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -47,5 +49,28 @@ class NotificationServiceTest {
                 contains("[공지사항]"),
                 any()
         );
+    }
+
+
+    @Test
+    @DisplayName("FCM 전송 실패 시 예외가 발생한다")
+    void sendNewNoticeNotification_fail_whenFCMError() {
+        // given
+        NoticeCreatedEvent event = new NoticeCreatedEvent(
+                1L,
+                "공지사항",
+                "축제명",
+                10L,
+                "제목",
+                LocalDateTime.now()
+        );
+
+        doThrow(new RuntimeException("FCM error"))
+                .when(fcmService)
+                .sendCategoryTopicAlarm(anyLong(), anyString(), anyString(), anyString());
+
+        // when & then
+        assertThrows(RuntimeException.class,
+                () -> notificationService.sendNewNoticeNotification(event));
     }
 }
