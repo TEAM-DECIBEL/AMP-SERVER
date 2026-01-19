@@ -1,8 +1,9 @@
 package com.amp.domain.festival.controller.user;
 
+import com.amp.domain.festival.dto.response.AudienceFestivalSummaryResponse;
 import com.amp.domain.festival.service.user.AudienceFestivalService;
-import com.amp.domain.wishList.dto.response.WishListPageResponse;
 import com.amp.global.common.SuccessStatus;
+import com.amp.global.common.dto.PageResponse;
 import com.amp.global.response.success.BaseResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -25,11 +26,11 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "User API")
 @RequiredArgsConstructor
 public class AudienceFestivalController {
-    private final AudienceFestivalService usersFestivalService;
+    private final AudienceFestivalService audienceFestivalService;
 
     @GetMapping
     @Operation(summary = "전체 공연 목록 조회")
-    public ResponseEntity<BaseResponse<WishListPageResponse>> getAllFestivalLists(
+    public ResponseEntity<BaseResponse<PageResponse<AudienceFestivalSummaryResponse>>> getAllFestivals(
             @Parameter(description = "페이지 번호 (0부터 시작)")
             @RequestParam(defaultValue = "0") @Min(0) int page,
 
@@ -37,9 +38,9 @@ public class AudienceFestivalController {
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size
     ) {
         Pageable pageable = PageRequest.of(page, size);
-        WishListPageResponse response = usersFestivalService.getAllFestivalLists(pageable);
+        PageResponse<AudienceFestivalSummaryResponse> response = audienceFestivalService.getAllFestivals(pageable);
 
-        SuccessStatus status = response.isEmpty()
+        SuccessStatus status = response.content().isEmpty()
                 ? SuccessStatus.FESTIVAL_LIST_EMPTY
                 : SuccessStatus.FESTIVAL_LIST_FOUND;
 
