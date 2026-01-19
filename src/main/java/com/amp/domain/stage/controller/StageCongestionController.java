@@ -6,10 +6,13 @@ import com.amp.global.common.SuccessStatus;
 import com.amp.global.response.success.BaseResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+@Validated
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/users/stages/{stageId}/congestion")
@@ -19,8 +22,8 @@ public class StageCongestionController {
 
     @PostMapping
     @Operation(summary = "현장 혼잡도 입력")
-    public ResponseEntity<BaseResponse<Void>> repostCongestion(
-            @PathVariable Long stageId,
+    public ResponseEntity<BaseResponse<Void>> reportCongestion(
+            @PathVariable @Positive Long stageId,
             @RequestBody @Valid CongestionReportRequest request) {
 
         congestionReportService.reportCongestion(stageId, request.congestionLevel());
