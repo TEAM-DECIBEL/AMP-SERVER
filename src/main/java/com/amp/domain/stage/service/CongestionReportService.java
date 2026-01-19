@@ -38,6 +38,11 @@ public class CongestionReportService {
     private static final String STAGE_REPORTS_KEY = "stage:reports:";
 
     public void reportCongestion(Long stageId, CongestionLevel level) {
+
+        if (level == null || level == CongestionLevel.NONE) {
+            throw new CustomException(StageErrorCode.INVALID_CONGESTION_LEVEL);
+        }
+
         User user = authService.getCurrentUser();
         Stage stage = stageRepository.findById(stageId)
                 .orElseThrow(() -> new CustomException(StageErrorCode.STAGE_NOT_FOUND));
