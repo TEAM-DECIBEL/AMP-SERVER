@@ -4,6 +4,7 @@ import com.amp.domain.category.exception.FestivalCategoryErrorCode;
 import com.amp.domain.festival.exception.FestivalErrorCode;
 import com.amp.domain.notice.exception.BookmarkErrorCode;
 import com.amp.domain.notice.exception.NoticeErrorCode;
+import com.amp.domain.stage.exception.StageErrorCode;
 import com.amp.domain.user.exception.UserErrorCode;
 import com.amp.global.common.CommonErrorCode;
 import com.amp.global.common.ErrorCode;
