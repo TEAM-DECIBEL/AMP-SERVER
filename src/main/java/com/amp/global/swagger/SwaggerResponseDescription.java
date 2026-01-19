@@ -8,6 +8,7 @@ import com.amp.domain.stage.exception.StageErrorCode;
 import com.amp.domain.user.exception.UserErrorCode;
 import com.amp.global.common.CommonErrorCode;
 import com.amp.global.common.ErrorCode;
+import com.amp.global.fcm.exception.FCMErrorCode;
 import com.amp.global.s3.S3ErrorCode;
 import lombok.Getter;
 
@@ -131,6 +132,20 @@ public enum SwaggerResponseDescription {
             NoticeErrorCode.DELETE_NOTICE_FAIL,
             UserErrorCode.USER_NOT_FOUND,
             NoticeErrorCode.NOTICE_DELETE_FORBIDDEN
+    ))),
+
+    // 카테고리 구독 API
+    FAIL_TO_SUBSCRIBE(new LinkedHashSet<>(Set.of(
+            UserErrorCode.USER_NOT_FOUND,
+            FestivalCategoryErrorCode.NOTICE_CATEGORY_NOT_FOUND,
+            FCMErrorCode.ALREADY_SUBSCRIBED
+    ))),
+
+    //카테고리 구독 취소 API
+    FAIL_TO_UNSUBSCRIBE(new LinkedHashSet<>(Set.of(
+            UserErrorCode.USER_NOT_FOUND,
+            FestivalCategoryErrorCode.NOTICE_CATEGORY_NOT_FOUND,
+            FCMErrorCode.NOT_SUBSCRIBED_CATEGORY
     ))),
 
     // 무대 혼잡도 입력

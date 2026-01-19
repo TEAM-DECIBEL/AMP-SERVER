@@ -172,7 +172,7 @@ class NoticeUpdateServiceTest {
 
         NoticeUpdateRequest request =
                 new NoticeUpdateRequest(
-                         1L, "제목", 1L, null, "내용", false, null);
+                        1L, "제목", 1L, null, "내용", false, null);
 
         when(userRepository.findByEmail(organizer.getEmail()))
                 .thenReturn(Optional.of(organizer));
@@ -200,14 +200,14 @@ class NoticeUpdateServiceTest {
 
         NoticeUpdateRequest request =
                 new NoticeUpdateRequest(
-                1L,
-                "수정된 제목",
-                1L,
-                null,
-                "수정된 내용",
-                true,
-                "http://image.jpg"
-        );
+                        1L,
+                        "수정된 제목",
+                        1L,
+                        null,
+                        "수정된 내용",
+                        true,
+                        "http://image.jpg"
+                );
         when(userRepository.findByEmail(organizer.getEmail()))
                 .thenReturn(Optional.of(organizer));
         when(festivalRepository.findById(1L))
