@@ -54,7 +54,9 @@ public class User {
 
     // 온보딩 중 UserType 임시 설정
     public void updateUserType(UserType userType) {
-        if (this.userType != null) {
+        if (this.registrationStatus == RegistrationStatus.COMPLETED &&
+                this.userType != null &&
+                this.userType != userType) {
             throw new CustomException(USER_TYPE_UNCHANGEABLE);
         }
         this.userType = userType;
