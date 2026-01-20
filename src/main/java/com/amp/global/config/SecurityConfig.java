@@ -1,9 +1,6 @@
 package com.amp.global.config;
 
-import com.amp.global.security.CustomOAuth2AuthorizationRequestResolver;
-import com.amp.global.security.JwtAuthenticationFilter;
-import com.amp.global.security.OAuth2AuthenticationSuccessHandler;
-import com.amp.global.security.OnboardingCheckFilter;
+import com.amp.global.security.*;
 import com.amp.global.security.handler.CustomAccessDeniedHandler;
 import com.amp.global.security.handler.CustomAuthenticationEntryPoint;
 import com.amp.global.security.service.CustomOAuthUserService;
@@ -41,6 +38,9 @@ public class SecurityConfig {
     private final OnboardingCheckFilter onboardingCheckFilter;
     private final ClientRegistrationRepository clientRegistrationRepository;
 
+
+    private final HttpCookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository;
+
     @Value("${app.cors.allowed-origins:http://localhost:3000,http://localhost:5173,http://localhost:5174}")
     private String allowedOrigins;
 
@@ -50,37 +50,31 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                // CSRF 비활성화 (JWT 사용)
                 .csrf(csrf -> csrf.disable())
-
-                // CORS 설정
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
-                // 세션 관리 - STATELESS (JWT 사용)
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                // ✅ STATELESS 유지 (쿠키로 OAuth2 처리)
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
-                // 보안 헤더 설정
                 .headers(headers -> headers
                         .frameOptions(frame -> frame.deny())
                         .contentTypeOptions(contentType -> contentType.disable())
                 )
 
-                // 요청 권한 설정
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/v1/notices/*/bookmark"
-                        ).authenticated()   // 북마크 기능 비로그인 환경에서 비허용
+                        ).authenticated()
 
                         .requestMatchers(
-                                "/api/v1/notices/*",    // 게시글 상세 조회 비회원 환경에서 허용
-                                "/api/v1/common/festivals/*/notices"  // 페스티벌 내 공지 목록 조회
+                                "/api/v1/notices/*",
+                                "/api/v1/common/festivals/*/notices"
                         ).permitAll()
 
-                        // 공개 엔드포인트
                         .requestMatchers(
-                                "/api/v1/users/festivals", // 전체 공연 목록 조회
+                                "/api/v1/users/festivals",
                                 "/api/auth/**",
                                 "/api/public/**",
                                 "/api/auth/logout",
@@ -99,27 +93,21 @@ public class SecurityConfig {
                                 "/actuator/**"
                         ).permitAll()
 
-                        // 주최사 권한
                         .requestMatchers("/api/organizer/**").hasRole("ORGANIZER")
                         .requestMatchers("/api/auth/onboarding/**").authenticated()
-
-                        // 관객만 접근 가능
                         .requestMatchers("/api/v1/festivals/my").hasRole("AUDIENCE")
                         .requestMatchers("/api/v1/festivals/*/wishList").hasRole("AUDIENCE")
                         .requestMatchers("/api/v1/users/me/**").hasRole("AUDIENCE")
-
-                        // 관리자 권한
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
+
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(authenticationEntryPoint)
                         .accessDeniedHandler(accessDeniedHandler)
                 )
 
-                // OAuth2 로그인 설정
                 .oauth2Login(oauth2 -> oauth2
-                        // Custom Authorization Request Resolver 등록
                         .authorizationEndpoint(authorization ->
                                 authorization
                                         .baseUri("/oauth2/authorization")
@@ -128,6 +116,8 @@ public class SecurityConfig {
                                                         clientRegistrationRepository
                                                 )
                                         )
+                                        // ✅ 쿠키 기반 Repository 등록
+                                        .authorizationRequestRepository(cookieAuthorizationRequestRepository)
                         )
                         .redirectionEndpoint(redirection ->
                                 redirection.baseUri("/login/oauth2/code/*")
@@ -138,11 +128,20 @@ public class SecurityConfig {
                         .successHandler(oAuth2AuthenticationSuccessHandler)
                         .failureHandler((request, response, exception) -> {
                             log.error("OAuth2 login failed", exception);
+                            log.error("Request URI: {}", request.getRequestURI());
+                            log.error("Query String: {}", request.getQueryString());
+                            log.error("Exception type: {}", exception.getClass().getName());
+
+                            // ✅ 실패 시 쿠키 정리
+                            cookieAuthorizationRequestRepository
+                                    .removeAuthorizationRequestCookies(request, response);
+
                             String targetUrl = UriComponentsBuilder
                                     .fromUriString(failureRedirectUri)
                                     .queryParam("error", "oauth2_failed")
-                                    .queryParam("message", "로그인에 실패했습니다.")
+                                    .queryParam("message", exception.getMessage())
                                     .build().toUriString();
+
                             response.sendRedirect(targetUrl);
                         })
                 )
@@ -156,12 +155,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(
-                Arrays.stream(allowedOrigins.split(","))
-                        .map(String::trim)
-                        .filter(s -> !s.isBlank())
-                        .toList()
-        );
+        configuration.setAllowedOrigins(Arrays.asList(allowedOrigins.split(",")));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
@@ -176,5 +170,4 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
 }
