@@ -42,7 +42,7 @@ app:
     onboarding-uri: https://ampnotice.kr/onboarding
     failure-redirect-uri: https://ampnotice.kr/login
   cors:
-    allowed-origins: https://ampnotice.kr,http://ampnotice.kr
+    allowed-origins: https://ampnotice.kr,http://ampnotice.kr,https://www.ampnotice.kr
     allowed-methods: GET,POST,PUT,DELETE,OPTIONS
     allowed-headers: "*"
     allow-credentials: true
