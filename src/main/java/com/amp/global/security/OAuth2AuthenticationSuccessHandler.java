@@ -25,6 +25,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
+    private final HttpCookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository;
 
     @Value("${app.oauth2.redirect-uri.audience:http://localhost:5173/auth/callback}")
     private String audienceRedirectUri;
@@ -53,56 +54,65 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                         Authentication authentication) throws IOException {
+
+        log.info("=== OAuth2 인증 성공 ===");
+
+        // ✅ OAuth2 관련 쿠키 정리
+        cookieAuthorizationRequestRepository.removeAuthorizationRequestCookies(request, response);
+
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
         String email = oAuth2User.getAttribute("email");
 
+        log.info("OAuth2 User Email: {}", email);
+
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalStateException("User not found after OAuth2 login"));
+                .orElseThrow(() -> {
+                    log.error("User not found after OAuth2 login: {}", email);
+                    return new IllegalStateException("User not found after OAuth2 login");
+                });
+
+        log.info("User found - ID: {}, Email: {}, Status: {}",
+                user.getId(), user.getEmail(), user.getRegistrationStatus());
 
         // state에서 userType 추출
         String state = request.getParameter("state");
-        UserType userType = extractUserTypeFromState(state);
+        UserType requestedUserType = extractUserTypeFromState(state);
 
         // JWT 토큰 생성
         String token = jwtUtil.generateToken(email);
+        log.info("New JWT token generated");
 
         // 쿠키에 토큰 설정
         addTokenCookie(response, token);
 
-        String targetUrl;
+        String targetUrl = determineTargetUrl(user, requestedUserType);
 
-        // 온보딩이 필요한 경우
+        log.info("Final redirect URL: {}", targetUrl);
+        getRedirectStrategy().sendRedirect(request, response, targetUrl);
+    }
+
+    private String determineTargetUrl(User user, UserType requestedUserType) {
         if (user.getRegistrationStatus() == RegistrationStatus.PENDING) {
-            user.updateUserType(userType);
+            user.updateUserType(requestedUserType);
             userRepository.save(user);
 
-            // UserType에 따라 다른 온보딩 URL 선택
-            String baseOnboardingUri = (userType == UserType.ORGANIZER)
+            String baseOnboardingUri = (requestedUserType == UserType.ORGANIZER)
                     ? organizerOnboardingUri
                     : audienceOnboardingUri;
 
-            targetUrl = UriComponentsBuilder.fromUriString(baseOnboardingUri)
-                    .queryParam("userType", userType.name())
+            return UriComponentsBuilder.fromUriString(baseOnboardingUri)
+                    .queryParam("userType", requestedUserType.name())
                     .queryParam("status", "pending")
                     .build().toUriString();
-
-            log.info("Redirecting to onboarding ({}): {}", userType, targetUrl);
-        }
-        // 온보딩 완료된 경우
-        else {
-            // UserType에 따라 다른 메인 URL 선택
+        } else {
             String baseRedirectUri = (user.getUserType() == UserType.ORGANIZER)
                     ? organizerRedirectUri
                     : audienceRedirectUri;
 
-            targetUrl = UriComponentsBuilder.fromUriString(baseRedirectUri)
+            return UriComponentsBuilder.fromUriString(baseRedirectUri)
                     .queryParam("status", "completed")
                     .build().toUriString();
-
-            log.info("Redirecting to main app ({}): {}", user.getUserType(), targetUrl);
         }
-
-        getRedirectStrategy().sendRedirect(request, response, targetUrl);
     }
 
     private void addTokenCookie(HttpServletResponse response, String token) {
