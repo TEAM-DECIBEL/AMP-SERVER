@@ -67,8 +67,9 @@ public class Festival extends BaseTimeEntity {
     private LocalDateTime deletedAt;
 
     @Builder
-    public Festival(String title, String mainImageUrl, String location,
+    public Festival(Long id, String title, String mainImageUrl, String location,
                     LocalDate startDate, LocalDate endDate, LocalTime startTime, FestivalStatus status) {
+        this.id = id;
         this.title = title;
         this.mainImageUrl = mainImageUrl;
         this.location = location;
