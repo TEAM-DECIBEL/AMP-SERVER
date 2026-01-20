@@ -1,0 +1,186 @@
+package com.amp.global.swagger;
+
+import com.amp.domain.category.exception.FestivalCategoryErrorCode;
+import com.amp.domain.festival.exception.FestivalErrorCode;
+import com.amp.domain.notice.exception.BookmarkErrorCode;
+import com.amp.domain.notice.exception.NoticeErrorCode;
+import com.amp.domain.stage.exception.StageErrorCode;
+import com.amp.domain.user.exception.UserErrorCode;
+import com.amp.global.common.CommonErrorCode;
+import com.amp.global.common.ErrorCode;
+import com.amp.global.fcm.exception.FCMErrorCode;
+import com.amp.global.s3.S3ErrorCode;
+import lombok.Getter;
+
+import java.util.LinkedHashSet;
+import java.util.Set;
+
+@Getter
+public enum SwaggerResponseDescription {
+
+    /**
+     * [예시 1] 입력값 검증 실패
+     *
+     * @Valid 검증이나 타입 미스매치 시
+     */
+    BAD_REQUEST_EXAMPLE(new LinkedHashSet<>(Set.of(
+            CommonErrorCode.INVALID_INPUT_VALUE,
+            CommonErrorCode.TYPE_MISMATCH,
+            CommonErrorCode.INVALID_JSON
+    ))),
+
+    NO_AUTHORIZATION(new LinkedHashSet<>(Set.of(
+            UserErrorCode.USER_NOT_FOUND,
+            UserErrorCode.USER_NOT_AUTHENTICATED,
+            UserErrorCode.USER_NOT_AUTHORIZED
+    ))),
+
+    // 공연 추가 API
+    FAIL_TO_CREATE_FESTIVAL(new LinkedHashSet<>(Set.of(
+            FestivalErrorCode.INVALID_FESTIVAL_PERIOD,
+            FestivalErrorCode.FESTIVAL_CREATE_FAILED,
+            FestivalErrorCode.SCHEDULES_REQUIRED,
+            FestivalErrorCode.INVALID_STAGE_FORMAT,
+            FestivalErrorCode.INVALID_CATEGORY_FORMAT,
+            FestivalErrorCode.MISSING_MAIN_IMAGE,
+            FestivalErrorCode.INVALID_SCHEDULE_FORMAT
+    ))),
+
+    // 공지 상세 조회 API
+    FAIL_TO_GET_NOTICE_DETAIL(new LinkedHashSet<>(Set.of(
+            NoticeErrorCode.NOTICE_NOT_FOUND
+    ))),
+
+    // 공연 수정 API
+    FAIL_TO_UPDATE_FESTIVAL(new LinkedHashSet<>(Set.of(
+            FestivalErrorCode.INVALID_FESTIVAL_PERIOD,
+            FestivalErrorCode.SCHEDULES_REQUIRED,
+            FestivalErrorCode.INVALID_STAGE_FORMAT,
+            FestivalErrorCode.INVALID_CATEGORY_FORMAT,
+            FestivalErrorCode.INVALID_SCHEDULE_FORMAT,
+            FestivalErrorCode.FESTIVAL_NOT_FOUND
+    ))),
+
+    // 공연 상세 정보 조회 API
+    FAIL_TO_GET_FESTIVAL_DETAIL(new LinkedHashSet<>(Set.of(
+            FestivalErrorCode.FESTIVAL_NOT_FOUND
+    ))),
+
+    // 공연 삭제 API
+    FAIL_TO_DELETE_FESTIVAL(new LinkedHashSet<>(Set.of(
+            FestivalErrorCode.FESTIVAL_NOT_FOUND,
+            NoticeErrorCode.NOTICE_NOT_FOUND
+    ))),
+
+    // 공지 업데이트 API
+    FAIL_TO_UPDATE_NOTICE(new LinkedHashSet<>(Set.of(
+            UserErrorCode.USER_NOT_FOUND,
+            FestivalErrorCode.FESTIVAL_NOT_FOUND,
+            UserErrorCode.USER_NOT_AUTHENTICATED,
+            NoticeErrorCode.NOTICE_NOT_FOUND,
+            NoticeErrorCode.NOTICE_ALREADY_DELETED,
+            NoticeErrorCode.NOTICE_UPDATE_FORBIDDEN,
+            FestivalCategoryErrorCode.NOTICE_CATEGORY_NOT_FOUND,
+            NoticeErrorCode.UPDATE_NOTICE_FAILED,
+            S3ErrorCode.S3_DELETE_FAILED))),
+
+    // 페스티벌 별 공지 조회 API
+    FAIL_TO_GET_NOTICE_LIST(new LinkedHashSet<>(Set.of(
+            FestivalErrorCode.FESTIVAL_NOT_FOUND
+    ))),
+
+    // 공지 북마크 업데이트 API
+    FAIL_TO_UPDATE_BOOKMARK(new LinkedHashSet<>(Set.of(
+            NoticeErrorCode.NOTICE_NOT_FOUND,
+            BookmarkErrorCode.NOTICE_ALREADY_BOOKMARKED,
+            BookmarkErrorCode.SAVED_NOTICE_NOT_EXIST
+    ))),
+
+    // 공지 작성 API
+    FAIL_TO_CREATE_NOTICE(new LinkedHashSet<>(Set.of(
+            UserErrorCode.USER_NOT_FOUND,
+            FestivalErrorCode.FESTIVAL_NOT_FOUND,
+            UserErrorCode.USER_NOT_AUTHENTICATED,
+            FestivalCategoryErrorCode.NOTICE_CATEGORY_NOT_FOUND,
+            NoticeErrorCode.NOTICE_CREATE_FAIL,
+            S3ErrorCode.S3_UPLOAD_FAILED
+    ))),
+
+    // 관람 예정 공연 등록/해제 API
+    FAIL_TO_ADD_WISHLIST(new LinkedHashSet<>(Set.of(
+            UserErrorCode.USER_NOT_FOUND,
+            FestivalErrorCode.FESTIVAL_NOT_FOUND,
+            UserErrorCode.USER_NOT_AUTHENTICATED
+    ))),
+
+    // 관람 예정 공연 리스트 조회
+    FAIL_TO_GET_WISHLISTS(new LinkedHashSet<>(Set.of(
+            UserErrorCode.USER_NOT_FOUND,
+            UserErrorCode.USER_NOT_AUTHENTICATED
+    ))),
+
+    // 관람 예정 공연 중 가장 임박한 공연 조회 API
+    FAIL_TO_GET_RECENT_WISHLIST(new LinkedHashSet<>(Set.of(
+            UserErrorCode.USER_NOT_FOUND,
+            UserErrorCode.USER_NOT_AUTHENTICATED
+    ))),
+
+    // 공지 삭제 API
+    FAIL_TO_DELETE_NOTICE(new LinkedHashSet<>(Set.of(
+            NoticeErrorCode.NOTICE_NOT_FOUND,
+            NoticeErrorCode.NOTICE_ALREADY_DELETED,
+            NoticeErrorCode.DELETE_NOTICE_FAIL,
+            UserErrorCode.USER_NOT_FOUND,
+            NoticeErrorCode.NOTICE_DELETE_FORBIDDEN
+    ))),
+
+    // 카테고리 구독 API
+    FAIL_TO_SUBSCRIBE(new LinkedHashSet<>(Set.of(
+            UserErrorCode.USER_NOT_FOUND,
+            FestivalCategoryErrorCode.NOTICE_CATEGORY_NOT_FOUND,
+            FCMErrorCode.ALREADY_SUBSCRIBED
+    ))),
+
+    //카테고리 구독 취소 API
+    FAIL_TO_UNSUBSCRIBE(new LinkedHashSet<>(Set.of(
+            UserErrorCode.USER_NOT_FOUND,
+            FestivalCategoryErrorCode.NOTICE_CATEGORY_NOT_FOUND,
+            FCMErrorCode.NOT_SUBSCRIBED_CATEGORY
+    ))),
+
+    // 무대 혼잡도 입력
+    FAIL_TO_INPUT_CONGESTION(new LinkedHashSet<>(Set.of(
+            StageErrorCode.STAGE_NOT_FOUND,
+            StageErrorCode.DAILY_INPUT_CLOSED,
+            StageErrorCode.ALREADY_REPORTED_RECENTLY,
+            StageErrorCode.NO_SCHEDULE_TODAY,
+            UserErrorCode.USER_NOT_FOUND,
+            UserErrorCode.USER_NOT_AUTHENTICATED
+    ))),
+
+    // 마이 페이지 조회
+    FAIL_GET_MY_PAGE(new LinkedHashSet<>(Set.of(
+            UserErrorCode.USER_NOT_FOUND,
+            UserErrorCode.USER_NOT_AUTHENTICATED
+    ))),
+
+    // 저장한 공지 조회
+    FAIL_GET_BOOKMARK_NOTICE(new LinkedHashSet<>(Set.of(
+            UserErrorCode.USER_NOT_FOUND,
+            UserErrorCode.USER_NOT_AUTHENTICATED,
+            NoticeErrorCode.NOTICE_NOT_FOUND
+    ))),
+
+    // 공연 별 혼잡도 조회
+    FAIL_TO_GET_CONGESTION(new LinkedHashSet<>(Set.of(
+            FestivalErrorCode.FESTIVAL_NOT_FOUND
+    )));
+
+    private final Set<ErrorCode> errorCodeList;
+
+    SwaggerResponseDescription(Set<ErrorCode> errorCodes) {
+        errorCodes.add(CommonErrorCode.INTERNAL_SERVER_ERROR);
+
+        this.errorCodeList = errorCodes;
+    }
+}

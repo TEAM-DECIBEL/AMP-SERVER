@@ -1,0 +1,86 @@
+package com.amp.global.s3;
+
+import com.amp.global.exception.CustomException;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Exception;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+import java.util.UUID;
+
+@Service
+@RequiredArgsConstructor
+public class S3Service {
+
+    private final S3Client s3Client;
+    private final S3Properties s3Properties;
+
+    public String upload(MultipartFile file, String dir) {
+        String contentType = file.getContentType();
+        if (contentType == null ||
+                !List.of("image/jpeg", "image/png", "image/webp").contains(contentType)) {
+            throw new CustomException(S3ErrorCode.INVALID_IMAGE_IMAGE);
+        }
+
+        String original = file.getOriginalFilename();
+        if (original == null) {
+            throw new CustomException(S3ErrorCode.FILE_NAME_NOT_FOUND);
+        }
+
+        String ext = StringUtils.getFilenameExtension(original);
+        if (ext == null ||
+                !List.of("jpg", "jpeg", "png", "webp").contains(ext.toLowerCase())) {
+            throw new CustomException(S3ErrorCode.INVALID_IMAGE_IMAGE);
+        }
+
+        if (dir.contains("..") || dir.contains("/") || dir.contains("\\")) {
+            throw new CustomException(S3ErrorCode.INVALID_DIRECTORY_ROUTE);
+        }
+
+        String key = dir + "/" + UUID.randomUUID() + "." + ext;
+
+        try (InputStream is = file.getInputStream()) {
+            PutObjectRequest req = PutObjectRequest.builder()
+                    .bucket(s3Properties.getBucket())
+                    .key(key)
+                    .contentType(file.getContentType())
+                    .build();
+
+            s3Client.putObject(req, RequestBody.fromInputStream(is, file.getSize()));
+        } catch (IOException | S3Exception e) {
+            throw new CustomException(S3ErrorCode.S3_UPLOAD_FAILED);
+        }
+
+        return key;
+    }
+
+    public void delete(String key) {
+        try {
+            DeleteObjectRequest req = DeleteObjectRequest.builder()
+                    .bucket(s3Properties.getBucket())
+                    .key(key)
+                    .build();
+            s3Client.deleteObject(req);
+        } catch (S3Exception e) {
+            throw new CustomException(S3ErrorCode.S3_DELETE_FAILED);
+        }
+    }
+
+    public String getPublicUrl(String key) {
+        return String.format(
+                s3Properties.getBaseUrl(),
+                s3Properties.getBucket(),
+                s3Properties.getRegion()
+        ) + key;
+    }
+}
+

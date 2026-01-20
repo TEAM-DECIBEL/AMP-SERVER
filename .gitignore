@@ -1,0 +1,55 @@
+HELP.md
+.gradle
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### VS Code ###
+.vscode/
+
+### env ###
+application-secret.yml
+application-local.yml
+.env
+.env.local
+
+### Firebase / FCM (서버측 로그 및 설정) ###
+# Firebase CLI 로그 및 디버그 파일
+firebase-debug.log
+firestore-debug.log
+
+### JSON (서버용 Admin SDK 인증키 등) ###
+# Firebase Admin SDK 서비스 계정 키 (절대 업로드 금지)
+amp-firebase-adminsdk.json
+firebase-config.json
+
+src/main/resources/firebase/*.json
