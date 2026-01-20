@@ -71,7 +71,7 @@ class OrganizerFestivalServiceTest {
 
         // then
         assertThat(result.content()).hasSize(1);
-        assertThat(result.content().get(0).title()).isEqualTo("테스트 공연");
+        assertThat(result.content().getFirst().title()).isEqualTo("테스트 공연");
         assertThat(result.content().size()).isEqualTo(1);
     }
 
@@ -94,7 +94,7 @@ class OrganizerFestivalServiceTest {
         OrganizerActiveFestivalPageResponse result = organizerFestivalService.getActiveFestivals(pageable);
 
         // then
-        assertThat(result.ongoingFestivals().size()).isEqualTo(1L); // 이제 1이 나옵니다!
-        assertThat(result.upcomingFestivals().size()).isEqualTo(0L); // 상태를 바꿨으니 예정 공연은 0이 됩니다.
+        assertThat(result.ongoingFestivals().size()).isEqualTo(1L);
+        assertThat(result.upcomingFestivals().size()).isEqualTo(0L);
     }
 }
