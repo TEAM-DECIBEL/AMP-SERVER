@@ -7,6 +7,7 @@ import org.mockito.MockedStatic;
 import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.mockStatic;
 
 class FestivalUtilsTest {
@@ -30,13 +31,15 @@ class FestivalUtilsTest {
     @DisplayName("오늘 날짜 기준 D-Day 계산 검증 (오늘: 2026-01-21)")
     void calculateDDayTest() {
         // LocalDate.now()를 2026-01-21로 고정
-        try (MockedStatic<LocalDate> mockedLocalDate = mockStatic(LocalDate.class)) {
-            mockedLocalDate.when(LocalDate::now).thenReturn(LocalDate.of(2026, 1, 21));
+        LocalDate mockToday = LocalDate.of(2026, 1, 21);
+
+        try (MockedStatic<LocalDate> mockedLocalDate = mockStatic(LocalDate.class, CALLS_REAL_METHODS)) {
+            mockedLocalDate.when(LocalDate::now).thenReturn(mockToday);
 
             // Case 1: 시작일이 오늘인 경우 (D-0이 나와야 함)
             Long dDayToday = FestivalUtils.calculateDDay(
                     LocalDate.of(2026, 1, 21),
-                    LocalDate.of(2026, 1, 23)
+                    LocalDate.of(2026, 1, 22)
             );
             assertThat(dDayToday).isEqualTo(0L);
 
@@ -49,7 +52,7 @@ class FestivalUtilsTest {
 
             // Case 3: 공연 기간 중인 경우 (D-0)
             Long dDayOngoing = FestivalUtils.calculateDDay(
-                    LocalDate.of(2026, 1, 20),
+                    LocalDate.of(2026, 1, 19),
                     LocalDate.of(2026, 1, 22)
             );
             assertThat(dDayOngoing).isEqualTo(0L);
