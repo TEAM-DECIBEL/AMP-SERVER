@@ -118,6 +118,7 @@ jobs:
               -e S3_ACCESS_KEY=${{ secrets.S3_ACCESS_KEY }} \
               -e S3_SECRET_KEY=${{ secrets.S3_SECRET_KEY }} \
               -e S3_REGION=${{ secrets.S3_REGION }} \
+              -e REDIS_HOST=172.17.0.1 \
               $IMAGE
 
             echo "❤️ 헬스체크 진행 중"
