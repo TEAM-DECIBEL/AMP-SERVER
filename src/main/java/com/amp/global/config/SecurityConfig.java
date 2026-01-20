@@ -59,8 +59,6 @@ public class SecurityConfig {
                 // 세션 관리 - STATELESS (JWT 사용)
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-                        // OAuth2 인증 후 세션 무효화 (JWT만 사용)
-                        .sessionFixation().newSession()
                 )
 
                 // 보안 헤더 설정
