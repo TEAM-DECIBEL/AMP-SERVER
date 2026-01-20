@@ -44,7 +44,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     @Value("${app.jwt.cookie-max-age:3600}") // 1시간 (초 단위)
     private int cookieMaxAge;
 
-    @Value("${app.jwt.cookie-domain:#{null}}")
+    @Value("${app.jwt.cookie-domain:localhost}")
     private String cookieDomain;
 
     @Value("${app.jwt.cookie-secure:true}")
