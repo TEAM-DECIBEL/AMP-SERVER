@@ -56,7 +56,6 @@ app:
     failure-redirect-uri: ${APP_OAUTH2_FAILURE_REDIRECT_URI:http://localhost:3000/login}
 
   cors:
-    # ✅ 공통은 로컬만 기본값으로 두고, prod에서 덮어쓴다
     allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173}
     allowed-methods: ${APP_CORS_ALLOWED_METHODS:GET,POST,PUT,DELETE,PATCH,OPTIONS}
     allowed-headers: ${APP_CORS_ALLOWED_HEADERS:*}
