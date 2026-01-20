@@ -12,7 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -25,7 +24,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.util.UriComponentsBuilder;
-
 
 import java.util.Arrays;
 
@@ -43,6 +41,9 @@ public class SecurityConfig {
     private final OnboardingCheckFilter onboardingCheckFilter;
     private final ClientRegistrationRepository clientRegistrationRepository;
 
+    @Value("${app.cors.allowed-origins:http://localhost:3000,http://localhost:5173}")
+    private String allowedOrigins;
+
     @Value("${app.oauth2.failure-redirect-uri:http://localhost:3000/login}")
     private String failureRedirectUri;
 
@@ -52,8 +53,8 @@ public class SecurityConfig {
                 // CSRF 비활성화 (JWT 사용)
                 .csrf(csrf -> csrf.disable())
 
-                // CORS 설정 - 가장 먼저 적용
-                .cors(Customizer.withDefaults())
+                // CORS 설정
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
                 // 세션 관리 - STATELESS (JWT 사용)
                 .sessionManagement(session ->
@@ -81,7 +82,6 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/v1/users/festivals", // 전체 공연 목록 조회
                                 "/api/auth/**",
-                                "/api/v1/auth/**",  // 추가: 커스텀 인증 엔드포인트
                                 "/api/public/**",
                                 "/api/auth/logout",
                                 "/oauth2/**",
@@ -156,17 +156,11 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-
-        configuration.setAllowedOriginPatterns(Arrays.asList(
-                "https://ampnotice.kr",
-                "http://ampnotice.kr",
-                "http://localhost:*" // 로컬 테스트용
-        ));
-
+        configuration.setAllowedOrigins(Arrays.asList(allowedOrigins.split(",")));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("*")); // 모든 헤더 허용
-        configuration.setExposedHeaders(Arrays.asList("Authorization"));
+        configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
@@ -177,4 +171,5 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
 }
