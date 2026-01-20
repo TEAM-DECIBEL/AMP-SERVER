@@ -24,8 +24,6 @@ public class AudienceFestivalService {
     private final UserFestivalRepository userFestivalRepository;
     private final FestivalRepository festivalRepository;
     private final AuthService authService;
-
-
     @Transactional(readOnly = true)
     public PageResponse<AudienceFestivalSummaryResponse> getAllFestivals(Pageable pageable) {
         User user = authService.getCurrentUserOrNull();
