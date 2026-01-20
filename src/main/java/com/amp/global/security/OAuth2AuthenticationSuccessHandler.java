@@ -4,6 +4,7 @@ import com.amp.domain.user.entity.RegistrationStatus;
 import com.amp.domain.user.entity.User;
 import com.amp.domain.user.entity.UserType;
 import com.amp.domain.user.repository.UserRepository;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +32,18 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     @Value("${app.oauth2.onboarding-uri}")
     private String onboardingUri;
 
+    @Value("${app.jwt.cookie-name:accessToken}")
+    private String cookieName;
+
+    @Value("${app.jwt.cookie-max-age:3600}") // 1시간 (초 단위)
+    private int cookieMaxAge;
+
+    @Value("${app.jwt.cookie-domain:#{null}}")
+    private String cookieDomain;
+
+    @Value("${app.jwt.cookie-secure:true}")
+    private boolean cookieSecure;
+
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                         Authentication authentication) throws IOException {
@@ -48,6 +61,12 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
         log.info("Extracted user type: {} from state for user: {}", userType, email);
 
+        // JWT 토큰 생성
+        String token = jwtUtil.generateToken(email);
+
+        // 쿠키에 토큰 설정
+        addTokenCookie(response, token);
+
         String targetUrl;
 
         // 온보딩이 필요한 경우
@@ -56,11 +75,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
             user.updateUserType(userType);
             userRepository.save(user);
 
-            // JWT 발급 (온보딩 진행을 위해)
-            String token = jwtUtil.generateToken(email);
-
             targetUrl = UriComponentsBuilder.fromUriString(onboardingUri)
-                    .queryParam("token", token)
                     .queryParam("userType", userType.name())
                     .queryParam("status", "pending")
                     .build().toUriString();
@@ -69,10 +84,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         }
         // 이미 온보딩 완료된 경우
         else {
-            String token = jwtUtil.generateToken(email);
-
             targetUrl = UriComponentsBuilder.fromUriString(redirectUri)
-                    .queryParam("token", token)
                     .queryParam("status", "completed")
                     .build().toUriString();
 
@@ -80,6 +92,24 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         }
 
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
+    }
+
+    private void addTokenCookie(HttpServletResponse response, String token) {
+        Cookie cookie = new Cookie(cookieName, token);
+        cookie.setHttpOnly(true); // XSS 공격 방지
+        cookie.setSecure(cookieSecure); // HTTPS에서만 전송 (프로덕션: true, 로컬: false)
+        cookie.setPath("/"); // 모든 경로에서 접근 가능
+        cookie.setMaxAge(cookieMaxAge); // 쿠키 유효기간
+
+        if (cookieDomain != null && !cookieDomain.isEmpty()) {
+            cookie.setDomain(cookieDomain); // 도메인 설정 (필요시)
+        }
+
+        // SameSite 설정 (CSRF 방지)
+        // Spring Boot 3.x 이상에서는 ResponseCookie 사용 권장
+        response.addCookie(cookie);
+
+        log.info("JWT token added to cookie: {}", cookieName);
     }
 
     private UserType extractUserTypeFromState(String state) {
