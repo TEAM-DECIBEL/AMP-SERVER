@@ -51,12 +51,17 @@ jwt:
 
 app:
   oauth2:
-    redirect-uri: ${APP_OAUTH2_REDIRECT_URI:http://localhost:3000/oauth2/redirect}
-    onboarding-uri: ${APP_OAUTH2_ONBOARDING_URI:http://localhost:3000/onboarding}
-    failure-redirect-uri: ${APP_OAUTH2_FAILURE_REDIRECT_URI:http://localhost:3000/login}
+    redirect-uri:
+      audience: ${APP_OAUTH2_REDIRECT_URI_AUDIENCE:http://localhost:5173/auth/callback}
+      organizer: ${APP_OAUTH2_REDIRECT_URI_ORGANIZER:http://localhost:5174/auth/callback}
+    onboarding-uri:
+      audience: ${APP_OAUTH2_ONBOARDING_URI_AUDIENCE:http://localhost:5173/onboarding}
+      organizer: ${APP_OAUTH2_ONBOARDING_URI_ORGANIZER:http://localhost:5174/onboarding}
+    failure-redirect-uri: ${APP_OAUTH2_FAILURE_REDIRECT_URI:http://localhost:5173/login}
 
   cors:
-    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173}
+    # ✅ 공통은 로컬만 기본값으로 두고, prod에서 덮어쓴다
+    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173,http://localhost:5174,http://localhost:8080}
     allowed-methods: ${APP_CORS_ALLOWED_METHODS:GET,POST,PUT,DELETE,PATCH,OPTIONS}
     allowed-headers: ${APP_CORS_ALLOWED_HEADERS:*}
     allow-credentials: ${APP_CORS_ALLOW_CREDENTIALS:true}
