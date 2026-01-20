@@ -1,0 +1,70 @@
+# 리뷰 언어 설정
+language: 'ko-KR'
+
+# 최신 기능 사용
+early_access: true
+
+# 톤 설정
+tone_instructions: |
+  근거와 이유가 논리적인 리뷰를 제시합니다.
+
+# 리뷰 설정
+reviews:
+  profile: 'assertive'
+  high_level_summary: true
+  review_status: true
+  changed_files_summary: true
+  collapse_walkthrough: true
+  abort_on_close: true
+
+  path_filters:
+    # 포함 경로
+    - 'src/**'                # 서버 코드
+    - '.github/**'            # GitHub Actions, 레포 설정
+    - '.coderabbit.yaml'      # CodeRabbit 설정 파일 자체
+    - 'Dockerfile'
+    - 'deploy*.sh'
+    - 'nginx/**'
+    - 'build.gradle'
+    - 'settings.gradle'
+
+    # 제외 경로
+    - '!build/**'             # 빌드 산출물
+    - '!out/**'               # IDE/컴파일 결과물
+    - '!.gradle/**'           # Gradle 캐시
+    - '!gradle/wrapper/**'    # Gradle Wrapper 자동 생성 파일
+    - '!gradlew'
+    - '!gradlew.bat'
+    - '!**/*.class'           # 컴파일된 클래스
+    - '!**/*.jar'             # JAR 파일
+
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - 'develop'
+      - 'main'
+    labels:
+      - '!wip'
+      - '!skip-review'
+      - '!no-review'
+
+  # 보조 도구 설정
+  tools:
+    gitleaks:
+      enabled: true            # 시크릿/토큰/민감 정보 유출 검사
+    yamllint:
+      enabled: true            # YAML 문법 오류 검사
+    actionlint:
+      enabled: true            # GitHub Actions 워크플로우 검증
+
+chat:
+  auto_reply: true             # CodeRabbit 자동 응답 활성화
+
+knowledge_base:
+  web_search:
+    enabled: true
+
+  code_guidelines:
+    enabled: true
+    filePatterns: []
