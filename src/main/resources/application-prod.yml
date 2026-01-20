@@ -33,12 +33,12 @@ spring:
 app:
   oauth2:
     redirect-uri:
-      audience: https://www.ampnotice.kr/auth/callback
-      organizer: https://organizer.ampnotice.kr/auth/callback
+      audience: ${APP_OAUTH2_REDIRECT_URI_AUDIENCE:http://localhost:5173/auth/callback}
+      organizer: ${APP_OAUTH2_REDIRECT_URI_ORGANIZER:http://localhost:5174/auth/callback}
     onboarding-uri:
-      audience: https://www.ampnotice.kr/onboarding
-      organizer: https://organizer.ampnotice.kr/onboarding
-    failure-redirect-uri: https://www.ampnotice.kr/login
+      audience: ${APP_OAUTH2_ONBOARDING_URI_AUDIENCE:http://localhost:5173/onboarding}
+      organizer: ${APP_OAUTH2_ONBOARDING_URI_ORGANIZER:http://localhost:5174/onboarding}
+    failure-redirect-uri: ${APP_OAUTH2_FAILURE_REDIRECT_URI:http://localhost:5173/login}
 
   cors:
     allowed-origins: https://www.ampnotice.kr,https://ampnotice.kr,http://www.ampnotice.kr,http://ampnotice.kr,http://localhost:5173,http://localhost:5174,      https://organizer.ampnotice.kr,http://organizer.ampnotice.kr
