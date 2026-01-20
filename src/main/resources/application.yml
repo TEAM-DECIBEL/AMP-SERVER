@@ -1,13 +1,15 @@
 spring:
   profiles:
+    active: ${SPRING_PROFILES_ACTIVE:local}
     include: secret
-    active: local
 
   security:
     oauth2:
       client:
         registration:
           google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
             # client-id와 client-secret은 application-secret.yml에서 가져와야함
             scope:
               - email
@@ -37,6 +39,7 @@ spring:
 
 # jwt.secret은 application-secret.yml에서 가져옴
 jwt:
+  secret: ${JWT_SECRET}
   expiration: 86400000  # 24시간 (밀리초)
   refresh-expiration: 604800000  # 7일
 
@@ -67,4 +70,4 @@ fcm:
     path: firebase/amp-firebase-adminsdk.json
     scope: https://www.googleapis.com/auth/cloud-platform
   api:
-    url: https://fcm.googleapis.com/v1/projects/{FCM_PROJECT_ID}/messages:send
+    url: https://fcm.googleapis.com/v1/projects/${FCM_PROJECT_ID}/messages:send
