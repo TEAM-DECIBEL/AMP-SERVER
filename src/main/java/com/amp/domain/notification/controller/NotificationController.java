@@ -6,11 +6,13 @@ import com.amp.global.annotation.ApiErrorCodes;
 import com.amp.global.swagger.SwaggerResponseDescription;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "User API")
 @RequestMapping("/api/v1/users/notifications")
 public class NotificationController {
 
