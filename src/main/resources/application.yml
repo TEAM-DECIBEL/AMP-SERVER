@@ -66,6 +66,7 @@ management:
 
 
 fcm:
+  config-64: ${FIRE_BASE_CONFIG_64:}
   key:
     path: firebase/amp-firebase-adminsdk.json
     scope: https://www.googleapis.com/auth/cloud-platform
