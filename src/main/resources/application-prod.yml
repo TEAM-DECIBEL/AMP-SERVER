@@ -32,12 +32,16 @@ spring:
 
 app:
   oauth2:
-    redirect-uri: http://localhost:5173/auth/callback
-    onboarding-uri: http://localhost:5173/onboarding
+    redirect-uri:
+      audience: https://www.ampnotice.kr/auth/callback
+      organizer: https://organizer.ampnotice.kr/auth/callback
+    onboarding-uri:
+      audience: https://www.ampnotice.kr/onboarding
+      organizer: https://organizer.ampnotice.kr/onboarding
     failure-redirect-uri: https://www.ampnotice.kr/login
 
   cors:
-    allowed-origins: https://www.ampnotice.kr,https://ampnotice.kr,http://www.ampnotice.kr,http://ampnotice.kr,http://localhost:5173,http://localhost:5174
+    allowed-origins: https://www.ampnotice.kr,https://ampnotice.kr,http://www.ampnotice.kr,http://ampnotice.kr,http://localhost:5173,http://localhost:5174,      https://organizer.ampnotice.kr,http://organizer.ampnotice.kr
     allowed-methods: GET,POST,PUT,DELETE,PATCH,OPTIONS
     allowed-headers: "*"
     allow-credentials: true
