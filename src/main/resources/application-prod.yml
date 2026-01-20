@@ -32,8 +32,8 @@ spring:
 
 app:
   oauth2:
-    redirect-uri: https://www.ampnotice.kr/oauth2/redirect
-    onboarding-uri: https://www.ampnotice.kr/onboarding
+    redirect-uri: http://localhost:5173/auth/callback
+    onboarding-uri: http://localhost:5173/onboarding
     failure-redirect-uri: https://www.ampnotice.kr/login
 
   cors:
