@@ -110,7 +110,7 @@ jobs:
               -e DB_USERNAME=${{ secrets.DB_USERNAME }} \
               -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
               -e JWT_SECRET=${{ secrets.JWT_SECRET }} \
-              -e FIREBASE_CONFIG_64=${{ secrets.FIRE_BASE_CONFIG_64 }} \
+              -e FIRE_BASE_CONFIG_64=${{ secrets.FIRE_BASE_CONFIG_64 }} \
               -e FCM_PROJECT_ID=${{ secrets.FCM_PROJECT_ID }} \
               -e GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }} \
               -e GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }} \
