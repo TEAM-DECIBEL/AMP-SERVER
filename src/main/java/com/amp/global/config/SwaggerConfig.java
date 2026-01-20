@@ -16,6 +16,7 @@ import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.servers.Server;
 import org.springdoc.core.customizers.OperationCustomizer;
 import org.springframework.beans.factory.annotation.Value;
@@ -66,7 +67,13 @@ public class SwaggerConfig {
                     .description("Prod Server"));
         }
 
-        return new OpenAPI().servers(servers);
+        SecurityRequirement securityRequirement =
+                new SecurityRequirement()
+                        .addList("Bearer Authentication");
+
+        return new OpenAPI()
+                .servers(servers)
+                .addSecurityItem(securityRequirement);
     }
 
     @Bean
