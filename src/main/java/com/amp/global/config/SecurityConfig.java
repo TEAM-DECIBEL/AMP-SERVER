@@ -20,12 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import java.util.Arrays;
 
 @Slf4j
 @Configuration
@@ -41,9 +36,6 @@ public class SecurityConfig {
     private final OnboardingCheckFilter onboardingCheckFilter;
     private final ClientRegistrationRepository clientRegistrationRepository;
 
-    @Value("${app.cors.allowed-origins:http://localhost:3000,http://localhost:5173}")
-    private String allowedOrigins;
-
     @Value("${app.oauth2.failure-redirect-uri:http://localhost:3000/login}")
     private String failureRedirectUri;
 
@@ -53,8 +45,7 @@ public class SecurityConfig {
                 // CSRF 비활성화 (JWT 사용)
                 .csrf(csrf -> csrf.disable())
 
-                // CORS 설정
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .cors(cors -> cors.disable())
 
                 // 세션 관리 - STATELESS (JWT 사용)
                 .sessionManagement(session ->
@@ -154,22 +145,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList(allowedOrigins.split(",")));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
-        configuration.setAllowCredentials(true);
-        configuration.setMaxAge(3600L);
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
-    }
-
-    @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
 }
