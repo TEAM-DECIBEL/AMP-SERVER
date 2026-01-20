@@ -41,10 +41,10 @@ public class SecurityConfig {
     private final OnboardingCheckFilter onboardingCheckFilter;
     private final ClientRegistrationRepository clientRegistrationRepository;
 
-    @Value("${app.cors.allowed-origins:http://localhost:3000,http://localhost:5173}")
+    @Value("${app.cors.allowed-origins:http://localhost:3000,http://localhost:5173,http://localhost:5174}")
     private String allowedOrigins;
 
-    @Value("${app.oauth2.failure-redirect-uri:http://localhost:3000/login}")
+    @Value("${app.oauth2.failure-redirect-uri:http://localhost:5173/login}")
     private String failureRedirectUri;
 
     @Bean
