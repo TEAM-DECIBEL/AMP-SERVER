@@ -42,6 +42,9 @@ spring:
     database-platform: org.hibernate.dialect.MySQLDialect
 
 jwt:
+  cookie-name: accessToken
+  cookie-max-age: 3600
+  cookie-secure: false // 이렇게 하면 HTTP에서도 쿠키 보낼 수 있는데 일단 그냥 해
   secret: ${JWT_SECRET:}
   expiration: 86400000
   refresh-expiration: 604800000
