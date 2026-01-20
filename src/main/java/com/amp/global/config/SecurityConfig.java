@@ -26,6 +26,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Arrays;
+import java.util.List;
 
 @Slf4j
 @Configuration
@@ -44,44 +45,40 @@ public class SecurityConfig {
     @Value("${app.cors.allowed-origins:http://localhost:3000,http://localhost:5173}")
     private String allowedOrigins;
 
+    @Value("${app.cors.allowed-methods:GET,POST,PUT,DELETE,PATCH,OPTIONS}")
+    private String allowedMethods;
+
+    @Value("${app.cors.allowed-headers:*}")
+    private String allowedHeaders;
+
+    @Value("${app.cors.allow-credentials:true}")
+    private boolean allowCredentials;
+
     @Value("${app.oauth2.failure-redirect-uri:http://localhost:3000/login}")
     private String failureRedirectUri;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                // CSRF 비활성화 (JWT 사용)
                 .csrf(csrf -> csrf.disable())
-
-                // CORS 설정
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-
-                // 세션 관리 - STATELESS (JWT 사용)
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
-
-                // 보안 헤더 설정
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .headers(headers -> headers
                         .frameOptions(frame -> frame.deny())
                         .contentTypeOptions(contentType -> contentType.disable())
                 )
-
-                // 요청 권한 설정
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/api/v1/notices/*/bookmark"
-                        ).authenticated()   // 북마크 기능 비로그인 환경에서 비허용
+                        .requestMatchers("/api/v1/notices/*/bookmark").authenticated()
 
                         .requestMatchers(
-                                "/api/v1/notices/*",    // 게시글 상세 조회 비회원 환경에서 허용
-                                "/api/v1/common/festivals/*/notices"  // 페스티벌 내 공지 목록 조회
+                                "/api/v1/notices/*",
+                                "/api/v1/common/festivals/*/notices"
                         ).permitAll()
 
-                        // 공개 엔드포인트
                         .requestMatchers(
-                                "/api/v1/users/festivals", // 전체 공연 목록 조회
+                                "/api/v1/users/festivals",
                                 "/api/auth/**",
+                                "/api/v1/auth/**",
                                 "/api/public/**",
                                 "/api/auth/logout",
                                 "/oauth2/**",
@@ -90,25 +87,20 @@ public class SecurityConfig {
                                 "/favicon.ico",
                                 "/h2-console/**",
                                 "/test-login.html",
-                                "/*.html",
-                                "/*.css",
-                                "/*.js",
+                                "/*.html", "/*.css", "/*.js",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/swagger-resources/**",
                                 "/actuator/**"
                         ).permitAll()
 
-                        // 주최사 권한
                         .requestMatchers("/api/organizer/**").hasRole("ORGANIZER")
                         .requestMatchers("/api/auth/onboarding/**").authenticated()
 
-                        // 관객만 접근 가능
                         .requestMatchers("/api/v1/festivals/my").hasRole("AUDIENCE")
                         .requestMatchers("/api/v1/festivals/*/wishList").hasRole("AUDIENCE")
                         .requestMatchers("/api/v1/users/me/**").hasRole("AUDIENCE")
 
-                        // 관리자 권한
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
@@ -116,25 +108,16 @@ public class SecurityConfig {
                         .authenticationEntryPoint(authenticationEntryPoint)
                         .accessDeniedHandler(accessDeniedHandler)
                 )
-
-                // OAuth2 로그인 설정
                 .oauth2Login(oauth2 -> oauth2
-                        // Custom Authorization Request Resolver 등록
                         .authorizationEndpoint(authorization ->
                                 authorization
                                         .baseUri("/oauth2/authorization")
                                         .authorizationRequestResolver(
-                                                new CustomOAuth2AuthorizationRequestResolver(
-                                                        clientRegistrationRepository
-                                                )
+                                                new CustomOAuth2AuthorizationRequestResolver(clientRegistrationRepository)
                                         )
                         )
-                        .redirectionEndpoint(redirection ->
-                                redirection.baseUri("/login/oauth2/code/*")
-                        )
-                        .userInfoEndpoint(userInfo ->
-                                userInfo.userService(customOAuthUserService)
-                        )
+                        .redirectionEndpoint(redirection -> redirection.baseUri("/login/oauth2/code/*"))
+                        .userInfoEndpoint(userInfo -> userInfo.userService(customOAuthUserService))
                         .successHandler(oAuth2AuthenticationSuccessHandler)
                         .failureHandler((request, response, exception) -> {
                             log.error("OAuth2 login failed", exception);
@@ -146,7 +129,6 @@ public class SecurityConfig {
                             response.sendRedirect(targetUrl);
                         })
                 )
-
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterAfter(onboardingCheckFilter, JwtAuthenticationFilter.class);
 
@@ -156,10 +138,33 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList(allowedOrigins.split(",")));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
-        configuration.setAllowCredentials(true);
+
+        List<String> origins = Arrays.stream(allowedOrigins.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isBlank())
+                .toList();
+
+        List<String> methods = Arrays.stream(allowedMethods.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isBlank())
+                .toList();
+
+        // "*"면 그대로 넣고, 아니면 콤마 분리
+        List<String> headers = "*".equals(allowedHeaders.trim())
+                ? List.of("*")
+                : Arrays.stream(allowedHeaders.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isBlank())
+                .toList();
+
+        configuration.setAllowedOrigins(origins);
+        configuration.setAllowedMethods(methods);
+        configuration.setAllowedHeaders(headers);
+
+        // JWT를 Authorization 헤더로 내려주는 케이스면 노출 필요
+        configuration.setExposedHeaders(List.of("Authorization"));
+
+        configuration.setAllowCredentials(allowCredentials);
         configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -171,5 +176,4 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
 }

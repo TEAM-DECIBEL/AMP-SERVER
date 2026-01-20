@@ -2,6 +2,7 @@ spring:
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:local}
     include: secret
+
   data:
     redis:
       host: ${REDIS_HOST:localhost}
@@ -12,12 +13,9 @@ spring:
       client:
         registration:
           google:
-            client-id: ${GOOGLE_CLIENT_ID}
-            client-secret: ${GOOGLE_CLIENT_SECRET}
-            # client-id와 client-secret은 application-secret.yml에서 가져와야함
-            scope:
-              - email
-              - profile
+            client-id: ${GOOGLE_CLIENT_ID:}
+            client-secret: ${GOOGLE_CLIENT_SECRET:}
+            scope: [email, profile]
             redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
         provider:
           google:
@@ -25,39 +23,41 @@ spring:
             token-uri: https://oauth2.googleapis.com/token
             user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
             user-name-attribute: sub
+
   cloud:
     aws:
       s3:
-        bucket: ${S3_BUCKET_NAME}
+        bucket: ${S3_BUCKET_NAME:}
         base-url: https://%s.s3.%s.amazonaws.com/
         region: ap-northeast-2
       credentials:
-        access-key: ${S3_ACCESS_KEY}
-        secret-key: ${S3_SECRET_KEY}
+        access-key: ${S3_ACCESS_KEY:}
+        secret-key: ${S3_SECRET_KEY:}
       region:
         static: ap-northeast-2
       stack:
         auto: false
+
   jpa:
     database-platform: org.hibernate.dialect.MySQLDialect
 
-# jwt.secret은 application-secret.yml에서 가져옴
 jwt:
-  secret: ${JWT_SECRET}
-  expiration: 86400000  # 24시간 (밀리초)
-  refresh-expiration: 604800000  # 7일
+  secret: ${JWT_SECRET:}
+  expiration: 86400000
+  refresh-expiration: 604800000
 
-# 앱 설정
 app:
   oauth2:
-    redirect-uri: http://localhost:3000/oauth2/redirect
-    onboarding-uri: http://localhost:3000/onboarding
-    failure-redirect-uri: http://localhost:3000/login
+    redirect-uri: ${APP_OAUTH2_REDIRECT_URI:http://localhost:3000/oauth2/redirect}
+    onboarding-uri: ${APP_OAUTH2_ONBOARDING_URI:http://localhost:3000/onboarding}
+    failure-redirect-uri: ${APP_OAUTH2_FAILURE_REDIRECT_URI:http://localhost:3000/login}
+
   cors:
-    allowed-origins: http://localhost:3000,http://localhost:5173
-    allowed-methods: GET,POST,PUT,DELETE,OPTIONS
-    allowed-headers: "*"
-    allow-credentials: true
+    # ✅ 공통은 로컬만 기본값으로 두고, prod에서 덮어쓴다
+    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173}
+    allowed-methods: ${APP_CORS_ALLOWED_METHODS:GET,POST,PUT,DELETE,PATCH,OPTIONS}
+    allowed-headers: ${APP_CORS_ALLOWED_HEADERS:*}
+    allow-credentials: ${APP_CORS_ALLOW_CREDENTIALS:true}
 
 server:
   port: 8080
@@ -67,7 +67,6 @@ management:
     web:
       exposure:
         include: health
-
 
 fcm:
   config-64: ${FIRE_BASE_CONFIG_64:}
