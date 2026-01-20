@@ -20,13 +20,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.util.UriComponentsBuilder;
 
+
 import java.util.Arrays;
-import java.util.List;
 
 @Slf4j
 @Configuration
@@ -41,9 +38,6 @@ public class SecurityConfig {
     private final CustomAccessDeniedHandler accessDeniedHandler;
     private final OnboardingCheckFilter onboardingCheckFilter;
     private final ClientRegistrationRepository clientRegistrationRepository;
-
-    @Value("${app.cors.allowed-origins:http://localhost:3000,http://localhost:5173}")
-    private String allowedOrigins;
 
     @Value("${app.oauth2.failure-redirect-uri:http://localhost:3000/login}")
     private String failureRedirectUri;
@@ -179,5 +173,4 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
 }
