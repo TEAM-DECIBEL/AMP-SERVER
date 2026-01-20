@@ -26,11 +26,17 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
 
-    @Value("${app.oauth2.redirect-uri}")
-    private String redirectUri;
+    @Value("${app.oauth2.redirect-uri.audience:http://localhost:5173/auth/callback}")
+    private String audienceRedirectUri;
 
-    @Value("${app.oauth2.onboarding-uri}")
-    private String onboardingUri;
+    @Value("${app.oauth2.redirect-uri.organizer:http://localhost:5174/auth/callback}")
+    private String organizerRedirectUri;
+
+    @Value("${app.oauth2.onboarding-uri.audience:http://localhost:5173/onboarding}")
+    private String audienceOnboardingUri;
+
+    @Value("${app.oauth2.onboarding-uri.organizer:http://localhost:5174/onboarding}")
+    private String organizerOnboardingUri;
 
     @Value("${app.jwt.cookie-name:accessToken}")
     private String cookieName;
@@ -50,16 +56,12 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
         String email = oAuth2User.getAttribute("email");
 
-        log.info("OAuth2 login success for user: {}", email);
-
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalStateException("User not found after OAuth2 login"));
 
-        // state 파라미터에서 userType 추출
+        // state에서 userType 추출
         String state = request.getParameter("state");
         UserType userType = extractUserTypeFromState(state);
-
-        log.info("Extracted user type: {} from state for user: {}", userType, email);
 
         // JWT 토큰 생성
         String token = jwtUtil.generateToken(email);
@@ -71,24 +73,33 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
         // 온보딩이 필요한 경우
         if (user.getRegistrationStatus() == RegistrationStatus.PENDING) {
-            // UserType 임시 설정
             user.updateUserType(userType);
             userRepository.save(user);
 
-            targetUrl = UriComponentsBuilder.fromUriString(onboardingUri)
+            // UserType에 따라 다른 온보딩 URL 선택
+            String baseOnboardingUri = (userType == UserType.ORGANIZER)
+                    ? organizerOnboardingUri
+                    : audienceOnboardingUri;
+
+            targetUrl = UriComponentsBuilder.fromUriString(baseOnboardingUri)
                     .queryParam("userType", userType.name())
                     .queryParam("status", "pending")
                     .build().toUriString();
 
-            log.info("Redirecting to onboarding: {}", targetUrl);
+            log.info("Redirecting to onboarding ({}): {}", userType, targetUrl);
         }
-        // 이미 온보딩 완료된 경우
+        // 온보딩 완료된 경우
         else {
-            targetUrl = UriComponentsBuilder.fromUriString(redirectUri)
+            // UserType에 따라 다른 메인 URL 선택
+            String baseRedirectUri = (user.getUserType() == UserType.ORGANIZER)
+                    ? organizerRedirectUri
+                    : audienceRedirectUri;
+
+            targetUrl = UriComponentsBuilder.fromUriString(baseRedirectUri)
                     .queryParam("status", "completed")
                     .build().toUriString();
 
-            log.info("Redirecting to main app: {}", targetUrl);
+            log.info("Redirecting to main app ({}): {}", user.getUserType(), targetUrl);
         }
 
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
