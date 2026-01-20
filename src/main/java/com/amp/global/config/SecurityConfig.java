@@ -22,6 +22,9 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.util.UriComponentsBuilder;
 
+
+import java.util.Arrays;
+
 @Slf4j
 @Configuration
 @EnableWebSecurity
@@ -45,7 +48,8 @@ public class SecurityConfig {
                 // CSRF 비활성화 (JWT 사용)
                 .csrf(csrf -> csrf.disable())
 
-                .cors(cors -> cors.disable())
+                // CORS 설정 - 가장 먼저 적용
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
                 // 세션 관리 - STATELESS (JWT 사용)
                 .sessionManagement(session ->
@@ -73,6 +77,7 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/v1/users/festivals", // 전체 공연 목록 조회
                                 "/api/auth/**",
+                                "/api/v1/auth/**",  // 추가: 커스텀 인증 엔드포인트
                                 "/api/public/**",
                                 "/api/auth/logout",
                                 "/oauth2/**",
@@ -142,6 +147,26 @@ public class SecurityConfig {
                 .addFilterAfter(onboardingCheckFilter, JwtAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+
+        configuration.setAllowedOriginPatterns(Arrays.asList(
+                "https://ampnotice.kr",
+                "http://ampnotice.kr",
+                "http://localhost:*" // 로컬 테스트용
+        ));
+
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("*")); // 모든 헤더 허용
+        configuration.setExposedHeaders(Arrays.asList("Authorization"));
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 
     @Bean
