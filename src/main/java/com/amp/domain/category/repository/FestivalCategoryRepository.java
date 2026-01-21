@@ -6,9 +6,17 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Optional;
+
 public interface FestivalCategoryRepository extends JpaRepository<FestivalCategory, Long> {
     @Modifying(clearAutomatically = true)
     @Query("UPDATE FestivalCategory c SET c.deletedAt = CURRENT_TIMESTAMP WHERE c.festival.id = :festivalId AND c.deletedAt IS NULL")
     void softDeleteByFestivalId(@Param("festivalId") Long festivalId);
+
+    @Query("SELECT fc FROM FestivalCategory fc " +
+            "WHERE fc.category.id = :categoryId " +
+            "AND fc.festival.id = :festivalId")
+    Optional<FestivalCategory> findByMapping(@Param("categoryId") Long categoryId,
+                                             @Param("festivalId") Long festivalId);
 
 }
