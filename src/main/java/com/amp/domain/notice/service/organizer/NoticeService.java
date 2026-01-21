@@ -8,7 +8,7 @@ import com.amp.domain.festival.exception.FestivalErrorCode;
 import com.amp.domain.festival.repository.FestivalRepository;
 import com.amp.domain.notice.dto.request.NoticeCreateRequest;
 import com.amp.domain.notice.dto.response.Author;
-import com.amp.domain.notice.dto.response.CategoryData;
+import com.amp.global.common.dto.CategoryData;
 import com.amp.domain.notice.dto.response.NoticeCreateResponse;
 import com.amp.domain.notice.dto.response.NoticeDetailResponse;
 import com.amp.domain.notice.entity.Notice;

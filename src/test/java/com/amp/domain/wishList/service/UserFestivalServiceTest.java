@@ -3,7 +3,7 @@ package com.amp.domain.wishList.service;
 import com.amp.domain.festival.entity.Festival;
 import com.amp.domain.festival.entity.FestivalStatus;
 import com.amp.domain.wishList.dto.response.RecentWishListResponse;
-import com.amp.domain.wishList.repository.UserFestivalRepository;
+import com.amp.domain.wishList.repository.WishListRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,10 +25,10 @@ import static org.mockito.BDDMockito.*;
 class UserFestivalServiceTest {
 
     @Mock
-    private UserFestivalRepository userFestivalRepository;
+    private WishListRepository userFestivalRepository;
 
     @InjectMocks
-    private UserFestivalService userFestivalService;
+    private WishListService userFestivalService;
 
     @Test
     @DisplayName("최근 공연 조회 성공 - 공연이 1개 있는 경우")

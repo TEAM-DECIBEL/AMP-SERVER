@@ -2,7 +2,7 @@ package com.amp.domain.festival.dto.response;
 
 import com.amp.domain.festival.entity.Festival;
 import com.amp.domain.festival.entity.FestivalStatus;
-import com.amp.global.common.dto.PaginationResponse;
+import com.amp.global.common.dto.response.PaginationResponse;
 import org.springframework.data.domain.Page;
 
 import java.util.List;

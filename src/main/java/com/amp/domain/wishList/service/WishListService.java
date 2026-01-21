@@ -11,8 +11,8 @@ import com.amp.domain.festival.repository.FestivalRepository;
 import com.amp.domain.user.entity.User;
 import com.amp.domain.wishList.dto.response.RecentWishListResponse;
 import com.amp.domain.wishList.dto.response.UpdateWishListResponse;
-import com.amp.domain.wishList.repository.UserFestivalRepository;
-import com.amp.global.common.dto.PageResponse;
+import com.amp.domain.wishList.repository.WishListRepository;
+import com.amp.global.common.dto.response.PageResponse;
 import com.amp.global.exception.CustomException;
 import com.amp.global.security.service.AuthService;
 import lombok.RequiredArgsConstructor;
@@ -28,15 +28,15 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class UserFestivalService {
+public class WishListService {
 
-    private final UserFestivalRepository userFestivalRepository;
+    private final WishListRepository wishListRepository;
     private final FestivalRepository festivalRepository;
     private final AuthService authService;
 
     public Optional<RecentWishListResponse> getRecentFestival(Long userId) {
         LocalDate today = LocalDate.now();
-        List<Festival> festivals = userFestivalRepository.findUpcomingWishlistFestivals(userId, today);
+        List<Festival> festivals = wishListRepository.findUpcomingWishlistFestivals(userId, today);
 
         return festivals.stream()
                 .findFirst()
@@ -55,13 +55,13 @@ public class UserFestivalService {
                 .orElseThrow(() -> new CustomException(FestivalErrorCode.FESTIVAL_NOT_FOUND));
 
 
-        UserFestival userFestival = userFestivalRepository.findByUserAndFestival(user, festival)
+        UserFestival userFestival = wishListRepository.findByUserAndFestival(user, festival)
                 .orElseGet(() -> UserFestival.builder()
                         .user(user)
                         .festival(festival)
                         .build());
 
-        userFestivalRepository.save(userFestival);
+        wishListRepository.save(userFestival);
         userFestival.updateWishList(request.wishList());
 
         return new UpdateWishListResponse(festival.getId(), userFestival.getWishList());
@@ -71,7 +71,7 @@ public class UserFestivalService {
     public PageResponse<MyUpcomingResponse> getMyWishList(Pageable pageable) {
         User user = authService.getCurrentUser();
 
-        Page<UserFestival> userFestivals = userFestivalRepository.findAllByUserIdAndWishListTrue(user.getId(), pageable);
+        Page<UserFestival> userFestivals = wishListRepository.findAllByUserIdAndWishListTrue(user.getId(), pageable);
         Page<MyUpcomingResponse> responsePage = userFestivals.map(MyUpcomingResponse::of);
 
         return PageResponse.of(responsePage);
@@ -80,7 +80,7 @@ public class UserFestivalService {
     public PageResponse<WishListHistoryResponse> getHistoryWishList(Pageable pageable) {
         User user = authService.getCurrentUser();
 
-        Page<UserFestival> userFestivals = userFestivalRepository.findAllWishListHistory(user.getId(), pageable);
+        Page<UserFestival> userFestivals = wishListRepository.findAllWishListHistory(user.getId(), pageable);
         Page<WishListHistoryResponse> historyPage = userFestivals.map(WishListHistoryResponse::from);
         return PageResponse.of(historyPage);
     }
