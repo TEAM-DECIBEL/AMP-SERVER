@@ -18,11 +18,11 @@ public class OnboardingRequest {
 
     // 관객: 닉네임, 주최자: 닉네임
     @NotBlank(message = "닉네임을 입력해주세요.")
-    @Size(min = 2, max = 20, message = "닉네임은 2-20자 사이여야 합니다.")
+    @Size(min = 2, max = 12, message = "닉네임은 2-12자 사이여야 합니다.")
     private String nickname;
 
     // 주최자 전용 필드
-    @Size(min = 2, max = 50, message = "주최사명은 2-50자 사이여야 합니다.")
+    @Size(min = 2, max = 12, message = "주최사명은 2-12자 사이여야 합니다.")
     private String organizerName;
 
     // 주최자 전용 - 연락처 정보 (선택사항)

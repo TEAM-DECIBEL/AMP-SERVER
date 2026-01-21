@@ -27,10 +27,10 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     private final UserRepository userRepository;
     private final HttpCookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository;
 
-    @Value("${app.oauth2.redirect-uri.audience:http://localhost:5173/auth/callback}")
+    @Value("${app.oauth2.redirect-uri.audience:http://localhost:5173/callback}")
     private String audienceRedirectUri;
 
-    @Value("${app.oauth2.redirect-uri.organizer:http://localhost:5174/auth/callback}")
+    @Value("${app.oauth2.redirect-uri.organizer:http://localhost:5174/callback}")
     private String organizerRedirectUri;
 
     @Value("${app.oauth2.onboarding-uri.audience:http://localhost:5173/onboarding}")
@@ -38,6 +38,12 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
     @Value("${app.oauth2.onboarding-uri.organizer:http://localhost:5174/onboarding}")
     private String organizerOnboardingUri;
+
+    @Value("${app.oauth2.home-uri.audience:http://localhost:5173/root}")
+    private String audienceHomeUri;
+
+    @Value("${app.oauth2.home-uri.organizer:http://localhost:5174/root}")
+    private String organizerHomeUri;
 
     @Value("${app.jwt.cookie-name:accessToken}")
     private String cookieName;
@@ -93,6 +99,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
     private String determineTargetUrl(User user, UserType requestedUserType) {
         if (user.getRegistrationStatus() == RegistrationStatus.PENDING) {
+            // 온보딩 필요 - userType 업데이트 후 온보딩 페이지로
             user.updateUserType(requestedUserType);
             userRepository.save(user);
 
@@ -105,13 +112,10 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
                     .queryParam("status", "pending")
                     .build().toUriString();
         } else {
-            String baseRedirectUri = (user.getUserType() == UserType.ORGANIZER)
-                    ? organizerRedirectUri
-                    : audienceRedirectUri;
-
-            return UriComponentsBuilder.fromUriString(baseRedirectUri)
-                    .queryParam("status", "completed")
-                    .build().toUriString();
+            // 온보딩 완료 - 홈 화면으로 (쿼리 파라미터 없이)
+            return (user.getUserType() == UserType.ORGANIZER)
+                    ? organizerHomeUri
+                    : audienceHomeUri;
         }
     }
 
