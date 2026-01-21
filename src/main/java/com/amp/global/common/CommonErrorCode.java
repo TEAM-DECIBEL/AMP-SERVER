@@ -12,7 +12,6 @@ public enum CommonErrorCode implements ErrorCode {
     TYPE_MISMATCH(HttpStatus.BAD_REQUEST, "COM", "002", "입력값의 타입이 일치하지 않습니다."),
     MISSING_PARAMETER(HttpStatus.BAD_REQUEST, "COM", "003", "필수 파라미터가 누락되었습니다."),
     INVALID_JSON(HttpStatus.BAD_REQUEST, "COM", "004", "JSON 파싱 중 오류가 발생했습니다."),
-    EXCEED_MAXIMUM_SIZE(HttpStatus.BAD_REQUEST, "COM", "005", "업로드 가능한 이미지 크기 (10MB)를 초과했습니다."),
 
     // 401 Unauthorized
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "COM", "001", "인증이 필요합니다."),
@@ -29,6 +28,10 @@ public enum CommonErrorCode implements ErrorCode {
 
     // 405 Method Not Allowed
     METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, "COM", "001", "지원하지 않는 HTTP 메소드입니다."),
+
+    // 413 Payload Too Large
+    EXCEED_MAXIMUM_SIZE(HttpStatus.PAYLOAD_TOO_LARGE, "COM", "001", "업로드 가능한 이미지 크기 (10MB)를 초과했습니다."),
+
     // 500 Internal Server Error
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "COM", "001", "서버 내부 오류가 발생했습니다.");
 
