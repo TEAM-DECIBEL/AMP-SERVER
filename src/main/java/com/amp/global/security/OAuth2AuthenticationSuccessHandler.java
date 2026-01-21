@@ -128,8 +128,8 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
             log.info("Updated user type to {} for pending user: {}", requestedUserType, user.getEmail());
 
             String callbackUri = (requestedUserType == UserType.ORGANIZER)
-                    ? "http://localhost:5174/callback/onboarding"
-                    : "http://localhost:5173/callback/onboarding";
+                    ? "http://localhost:5174/callback"
+                    : "http://localhost:5173/callback";
 
             return UriComponentsBuilder.fromUriString(callbackUri)
                     .queryParam("token", token)
@@ -139,8 +139,8 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
             log.info("User registration completed, redirecting to home: {}", user.getEmail());
 
             String callbackUri = (user.getUserType() == UserType.ORGANIZER)
-                    ? "http://localhost:5174/callback/root"
-                    : "http://localhost:5173/callback/root";
+                    ? "http://localhost:5174"
+                    : "http://localhost:5173";
 
             return UriComponentsBuilder.fromUriString(callbackUri)
                     .queryParam("token", token)
