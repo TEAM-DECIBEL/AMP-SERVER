@@ -11,7 +11,7 @@ import com.amp.domain.festival.repository.FestivalRepository;
 import com.amp.domain.user.entity.User;
 import com.amp.domain.wishList.dto.response.RecentWishListResponse;
 import com.amp.domain.wishList.dto.response.UpdateWishListResponse;
-import com.amp.domain.wishList.repository.UserFestivalRepository;
+import com.amp.domain.wishList.repository.WishListRepository;
 import com.amp.global.common.dto.PageResponse;
 import com.amp.global.exception.CustomException;
 import com.amp.global.security.service.AuthService;
@@ -30,7 +30,7 @@ import java.util.Optional;
 @Transactional(readOnly = true)
 public class UserFestivalService {
 
-    private final UserFestivalRepository userFestivalRepository;
+    private final WishListRepository userFestivalRepository;
     private final FestivalRepository festivalRepository;
     private final AuthService authService;
 
