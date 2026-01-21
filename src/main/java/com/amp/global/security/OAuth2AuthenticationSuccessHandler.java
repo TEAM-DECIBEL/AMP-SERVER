@@ -122,27 +122,27 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
     private String determineTargetUrl(User user, UserType requestedUserType, String token) {
         if (user.getRegistrationStatus() == RegistrationStatus.PENDING) {
-            // 온보딩 필요
+            // 온보딩 필요 -
             user.updateUserType(requestedUserType);
             userRepository.save(user);
             log.info("Updated user type to {} for pending user: {}", requestedUserType, user.getEmail());
 
-            String onboardingUri = (requestedUserType == UserType.ORGANIZER)
-                    ? organizerOnboardingUri
-                    : audienceOnboardingUri;
+            String callbackUri = (requestedUserType == UserType.ORGANIZER)
+                    ? "http://localhost:5174/callback/onboarding"
+                    : "http://localhost:5173/callback/onboarding";
 
-            return UriComponentsBuilder.fromUriString(onboardingUri)
+            return UriComponentsBuilder.fromUriString(callbackUri)
                     .queryParam("token", token)
                     .build().toUriString();
         } else {
-            // 온보딩 완료
+            // 온보딩 완료 -
             log.info("User registration completed, redirecting to home: {}", user.getEmail());
 
-            String homeUri = (user.getUserType() == UserType.ORGANIZER)
-                    ? organizerHomeUri
-                    : audienceHomeUri;
+            String callbackUri = (user.getUserType() == UserType.ORGANIZER)
+                    ? "http://localhost:5174/callback/root"
+                    : "http://localhost:5173/callback/root";
 
-            return UriComponentsBuilder.fromUriString(homeUri)
+            return UriComponentsBuilder.fromUriString(callbackUri)
                     .queryParam("token", token)
                     .build().toUriString();
         }
