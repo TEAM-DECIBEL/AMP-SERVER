@@ -49,6 +49,7 @@ public class UserNoticesService {
         return SavedNoticesResponse.SavedAnnouncementDto.builder()
                 .savedNoticeId(bookmark.getId())
                 .noticeId(bookmark.getNotice().getId())
+                .content(bookmark.getNotice().getContent())
                 .festivalTitle(bookmark.getNotice().getFestival().getTitle())
                 .categoryName(bookmark.getNotice().getFestivalCategory().getCategory().getCategoryName())
                 .title(bookmark.getNotice().getTitle())
