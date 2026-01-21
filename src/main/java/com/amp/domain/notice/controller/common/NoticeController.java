@@ -36,18 +36,4 @@ public class NoticeController {
                 .body(BaseResponse.ok(SuccessStatus.NOTICE_DETAIL_GET_SUCCESS.getMsg(), response));
     }
 
-    @Operation(summary = "공지 삭제")
-    @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_DELETE_NOTICE)
-    @DeleteMapping("/{noticeId}")
-    public ResponseEntity<BaseResponse<Void>> deleteNotice(
-            @PathVariable("noticeId") @Positive Long noticeId
-    ) {
-        noticeService.deleteNotice(noticeId);
-
-        return ResponseEntity
-                .status(SuccessStatus.NOTICE_DELETE_SUCCESS.getHttpStatus())
-                .body(BaseResponse
-                        .ok(SuccessStatus.NOTICE_DELETE_SUCCESS.getMsg(), null));
-    }
-
 }
