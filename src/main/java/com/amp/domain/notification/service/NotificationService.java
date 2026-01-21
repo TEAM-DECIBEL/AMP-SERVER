@@ -97,7 +97,7 @@ public class NotificationService {
         Notification notification = notificationRepository.findById(notificationId)
                 .orElseThrow(() -> new NotificationException(NotificationErrorCode.NOTIFICATION_NOT_FOUND));
 
-        if (!notification.getUser().equals(user)) {
+        if (!notification.getUser().getId().equals(user.getId())) {
             throw new NotificationException(NotificationErrorCode.NOTIFICATION_FORBIDDEN);
         }
 
