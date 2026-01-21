@@ -106,7 +106,7 @@ public class NoticeService {
                             festivalCategory.getId(),
                             festivalCategory.getCategory().getCategoryName(),
                             notice.getFestival().getTitle(),
-                            notice.getId(),
+                            notice,
                             notice.getTitle(),
                             notice.getCreatedAt()
                     )
