@@ -11,13 +11,6 @@ spring:
       hibernate:
         format_sql: false
 
-  # ✅ 이 부분 완전히 제거 (application.yml의 기본값 사용)
-  # security:
-  #   oauth2:
-  #     client:
-  #       registration:
-  #         google:
-
   cloud:
     aws:
       s3:
@@ -42,6 +35,9 @@ app:
     onboarding-uri:
       audience: http://localhost:5173/onboarding
       organizer: http://localhost:5174/onboarding
+    callback-uri:
+      audience: ${AUDIENCE_CALLBACK_URI:http://localhost:5173/callback}
+      organizer: ${ORGANIZER_CALLBACK_URI:http://localhost:5174/callback}
     failure-redirect-uri: http://localhost:5173/login
 
   cors:
