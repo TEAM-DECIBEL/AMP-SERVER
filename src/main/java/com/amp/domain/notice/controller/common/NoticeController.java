@@ -36,7 +36,6 @@ public class NoticeController {
                 .body(BaseResponse.ok(SuccessStatus.NOTICE_DETAIL_GET_SUCCESS.getMsg(), response));
     }
 
-    // 공지 삭제 API
     @Operation(summary = "공지 삭제")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_DELETE_NOTICE)
     @DeleteMapping("/{noticeId}")
