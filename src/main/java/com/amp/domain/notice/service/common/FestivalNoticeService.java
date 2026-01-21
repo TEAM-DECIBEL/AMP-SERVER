@@ -46,15 +46,16 @@ public class FestivalNoticeService {
 
     private final AuthService authService;
 
-    public NoticeListResponse getFestivalNoticeList(Long festivalId, int page, int size) {
+    public NoticeListResponse getFestivalNoticeList(Long festivalId, Long categoryId, int page, int size) {
 
         Festival festival = festivalRepository.findById(festivalId)
                 .orElseThrow(() -> new NoticeException(FestivalErrorCode.FESTIVAL_NOT_FOUND));
 
+        Long filterCategoryId = (categoryId == null || categoryId == 0) ? null : categoryId;
+
         Pageable pageable = PageRequest.of(page, size);
 
-        Page<Notice> noticePage = noticeRepository.findAllByFestival(festival, pageable);
-
+        Page<Notice> noticePage = noticeRepository.findNoticesByFilter(festival, filterCategoryId, pageable);
         Set<Long> savedNoticeIds = getSavedNoticeIds(noticePage.getContent());
 
         List<FestivalNoticeListResponse> announcements = noticePage.getContent().stream().map(notice -> {
@@ -72,7 +73,6 @@ public class FestivalNoticeService {
         }).collect(Collectors.toList());
 
         PaginationResponse pagination = PaginationResponse.from(noticePage);
-
 
         return new NoticeListResponse(announcements, pagination);
     }
