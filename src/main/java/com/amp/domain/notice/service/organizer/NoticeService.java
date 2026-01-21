@@ -72,7 +72,7 @@ public class NoticeService {
         }
 
         FestivalCategory festivalCategory = festivalCategoryRepository
-                .findById(request.categoryId())
+                .findByMapping(request.categoryId(), festivalId)
                 .orElseThrow(() -> new NoticeException(FestivalCategoryErrorCode.NOTICE_CATEGORY_NOT_FOUND));
 
         if (!festivalCategory.getFestival().getId().equals(festival.getId())) {
