@@ -1,4 +1,4 @@
-package com.amp.global.common.dto;
+package com.amp.global.common.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.domain.Page;
