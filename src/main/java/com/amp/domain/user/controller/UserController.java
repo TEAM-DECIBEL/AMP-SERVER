@@ -45,7 +45,7 @@ public class UserController {
                 .body(BaseResponse.of(SuccessStatus.USER_PROFILE_RETRIEVED, response));
     }
 
-    @GetMapping("/me/saved-notices")
+    @GetMapping("/me/bookmark")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_GET_BOOKMARK_NOTICE)
     @Operation(summary = "저장한 공지 조회", description = "사용자가 저장한 공지사항 목록을 조회합니다.")
     public ResponseEntity<BaseResponse<SavedNoticesResponse>> getSavedNotices(
