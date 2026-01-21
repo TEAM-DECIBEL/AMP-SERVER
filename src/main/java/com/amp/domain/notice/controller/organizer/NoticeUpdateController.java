@@ -1,6 +1,7 @@
 package com.amp.domain.notice.controller.organizer;
 
 import com.amp.domain.notice.dto.request.NoticeUpdateRequest;
+import com.amp.domain.notice.service.organizer.NoticeService;
 import com.amp.domain.notice.service.organizer.NoticeUpdateService;
 import com.amp.global.annotation.ApiErrorCodes;
 import com.amp.global.common.SuccessStatus;
@@ -20,7 +21,9 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Organizer API")
 @RequiredArgsConstructor
 public class NoticeUpdateController {
+
     private final NoticeUpdateService noticeUpdateService;
+    private final NoticeService noticeService;
 
     // 공지 수정/상단고정 수정
     @Operation(summary = "공지 수정/상단고정")
@@ -36,6 +39,20 @@ public class NoticeUpdateController {
         return ResponseEntity
                 .status(SuccessStatus.UPDATE_NOTICE_SUCCESS.getHttpStatus())
                 .body(BaseResponse.create(SuccessStatus.UPDATE_NOTICE_SUCCESS.getMsg(), null));
+    }
+
+    @Operation(summary = "공지 삭제")
+    @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_DELETE_NOTICE)
+    @DeleteMapping("/{noticeId}")
+    public ResponseEntity<BaseResponse<Void>> deleteNotice(
+            @PathVariable("noticeId") @Positive Long noticeId
+    ) {
+        noticeService.deleteNotice(noticeId);
+
+        return ResponseEntity
+                .status(SuccessStatus.NOTICE_DELETE_SUCCESS.getHttpStatus())
+                .body(BaseResponse
+                        .ok(SuccessStatus.NOTICE_DELETE_SUCCESS.getMsg(), null));
     }
 
 }
