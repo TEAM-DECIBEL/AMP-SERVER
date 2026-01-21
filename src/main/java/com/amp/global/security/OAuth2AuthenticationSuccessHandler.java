@@ -4,12 +4,12 @@ import com.amp.domain.user.entity.RegistrationStatus;
 import com.amp.domain.user.entity.User;
 import com.amp.domain.user.entity.UserType;
 import com.amp.domain.user.repository.UserRepository;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
+import java.time.Duration;
 
 @Slf4j
 @Component
@@ -26,12 +27,6 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
     private final HttpCookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository;
-
-    @Value("${app.oauth2.redirect-uri.audience:http://localhost:5173/callback}")
-    private String audienceRedirectUri;
-
-    @Value("${app.oauth2.redirect-uri.organizer:http://localhost:5174/callback}")
-    private String organizerRedirectUri;
 
     @Value("${app.oauth2.onboarding-uri.audience:http://localhost:5173/onboarding}")
     private String audienceOnboardingUri;
@@ -54,8 +49,11 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     @Value("${app.jwt.cookie-domain:localhost}")
     private String cookieDomain;
 
-    @Value("${app.jwt.cookie-secure:true}")
+    @Value("${app.jwt.cookie-secure:false}")
     private boolean cookieSecure;
+
+    @Value("${app.jwt.cookie-same-site:Lax}")
+    private String cookieSameSite;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
@@ -77,8 +75,8 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
                     return new IllegalStateException("User not found after OAuth2 login");
                 });
 
-        log.info("User found - ID: {}, Email: {}, Status: {}",
-                user.getId(), user.getEmail(), user.getRegistrationStatus());
+        log.info("User found - ID: {}, Email: {}, Status: {}, UserType: {}",
+                user.getId(), user.getEmail(), user.getRegistrationStatus(), user.getUserType());
 
         // state에서 userType 추출
         String state = request.getParameter("state");
@@ -88,53 +86,69 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         String token = jwtUtil.generateToken(email);
         log.info("New JWT token generated");
 
-        // 쿠키에 토큰 설정
+        // 쿠키에 토큰 설정 시도 (cross-domain에서는 작동 안 함)
         addTokenCookie(response, token);
 
-        String targetUrl = determineTargetUrl(user, requestedUserType);
+        log.info("Response committed after cookie: {}", response.isCommitted());
+
+        String targetUrl = determineTargetUrl(user, requestedUserType, token);
 
         log.info("Final redirect URL: {}", targetUrl);
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
     }
 
-    private String determineTargetUrl(User user, UserType requestedUserType) {
-        if (user.getRegistrationStatus() == RegistrationStatus.PENDING) {
-            // 온보딩 필요 - userType 업데이트 후 온보딩 페이지로
-            user.updateUserType(requestedUserType);
-            userRepository.save(user);
+    private void addTokenCookie(HttpServletResponse response, String token) {
+        ResponseCookie.ResponseCookieBuilder cookieBuilder = ResponseCookie.from(cookieName, token)
+                .httpOnly(true)
+                .secure(cookieSecure)
+                .path("/")
+                .maxAge(Duration.ofSeconds(cookieMaxAge))
+                .sameSite(cookieSameSite);
 
-            String baseOnboardingUri = (requestedUserType == UserType.ORGANIZER)
-                    ? organizerOnboardingUri
-                    : audienceOnboardingUri;
-
-            return UriComponentsBuilder.fromUriString(baseOnboardingUri)
-                    .queryParam("userType", requestedUserType.name())
-                    .queryParam("status", "pending")
-                    .build().toUriString();
+        if (cookieDomain != null && !cookieDomain.trim().isEmpty()) {
+            cookieBuilder.domain(cookieDomain);
+            log.info("Setting cookie domain: {}", cookieDomain);
         } else {
-            // 온보딩 완료 - 홈 화면으로 (쿼리 파라미터 없이)
-            return (user.getUserType() == UserType.ORGANIZER)
-                    ? organizerHomeUri
-                    : audienceHomeUri;
+            log.info("Cookie domain not set (will use current domain)");
         }
+
+        ResponseCookie cookie = cookieBuilder.build();
+        response.addHeader("Set-Cookie", cookie.toString());
+
+        log.info("JWT token added to cookie - name: {}, secure: {}, sameSite: {}, maxAge: {}s, domain: {}",
+                cookieName, cookieSecure, cookieSameSite, cookieMaxAge,
+                cookieDomain != null && !cookieDomain.trim().isEmpty() ? cookieDomain : "current domain");
     }
 
-    private void addTokenCookie(HttpServletResponse response, String token) {
-        Cookie cookie = new Cookie(cookieName, token);
-        cookie.setHttpOnly(true); // XSS 공격 방지
-        cookie.setSecure(cookieSecure); // HTTPS에서만 전송 (프로덕션: true, 로컬: false)
-        cookie.setPath("/"); // 모든 경로에서 접근 가능
-        cookie.setMaxAge(cookieMaxAge); // 쿠키 유효기간
+    private String determineTargetUrl(User user, UserType requestedUserType, String token) {
+        if (user.getRegistrationStatus() == RegistrationStatus.PENDING) {
+            // 온보딩 필요
+            user.updateUserType(requestedUserType);
+            userRepository.save(user);
+            log.info("Updated user type to {} for pending user: {}", requestedUserType, user.getEmail());
 
-        if (cookieDomain != null && !cookieDomain.isEmpty()) {
-            cookie.setDomain(cookieDomain); // 도메인 설정 (필요시)
+            String callbackUri = (requestedUserType == UserType.ORGANIZER)
+                    ? "http://localhost:5174/callback"
+                    : "http://localhost:5173/callback";
+
+            // callback으로 보내고, redirect 정보 포함
+            return UriComponentsBuilder.fromUriString(callbackUri)
+                    .queryParam("token", token)
+                    .queryParam("redirect", "onboarding")
+                    .build().toUriString();
+        } else {
+            // 온보딩 완료
+            log.info("User registration completed, redirecting to home: {}", user.getEmail());
+
+            String callbackUri = (user.getUserType() == UserType.ORGANIZER)
+                    ? "http://localhost:5174/callback"
+                    : "http://localhost:5173/callback";
+
+            return UriComponentsBuilder.fromUriString(callbackUri)
+                    .queryParam("token", token)
+                    .queryParam("redirect", "root")
+                    .build().toUriString();
         }
-
-        // SameSite 설정 (CSRF 방지)
-        // Spring Boot 3.x 이상에서는 ResponseCookie 사용 권장
-        response.addCookie(cookie);
-
-        log.info("JWT token added to cookie: {}", cookieName);
     }
 
     private UserType extractUserTypeFromState(String state) {
@@ -148,7 +162,9 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
                 String[] parts = state.split("\\|userType=");
                 if (parts.length == 2) {
                     String userTypeStr = parts[1];
-                    return UserType.valueOf(userTypeStr);
+                    UserType userType = UserType.valueOf(userTypeStr);
+                    log.info("Extracted userType from state: {}", userType);
+                    return userType;
                 }
             }
         } catch (IllegalArgumentException e) {
