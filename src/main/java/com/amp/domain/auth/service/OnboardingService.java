@@ -94,7 +94,6 @@ public class OnboardingService {
         // Note: Festival은 나중에 연결하거나, 초기값 null로 설정
         Organizer organizer = Organizer.builder()
                 .user(user)
-                .festival(null) // 추후 페스티벌 등록 시 연결
                 .organizerName(request.getOrganizerName())
                 .contactEmail(request.getContactEmail())
                 .contactPhone(request.getContactPhone())
