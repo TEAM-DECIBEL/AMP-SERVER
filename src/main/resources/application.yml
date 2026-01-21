@@ -4,6 +4,10 @@ spring:
     include: secret
   jackson:
     time-zone: Asia/Seoul
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
 
 
   data:
@@ -47,7 +51,7 @@ spring:
 jwt:
   cookie-name: accessToken
   cookie-max-age: 3600
-  cookie-secure: false // 이렇게 하면 HTTP에서도 쿠키 보낼 수 있는데 일단 그냥 해
+  cookie-secure: false
   secret: ${JWT_SECRET:}
   expiration: 86400000
   refresh-expiration: 604800000
@@ -63,7 +67,6 @@ app:
     failure-redirect-uri: ${APP_OAUTH2_FAILURE_REDIRECT_URI:http://localhost:5173/login}
 
   cors:
-    # ✅ 공통은 로컬만 기본값으로 두고, prod에서 덮어쓴다
     allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173,http://localhost:5174,http://localhost:8080}
     allowed-methods: ${APP_CORS_ALLOWED_METHODS:GET,POST,PUT,DELETE,PATCH,OPTIONS}
     allowed-headers: ${APP_CORS_ALLOWED_HEADERS:*}
