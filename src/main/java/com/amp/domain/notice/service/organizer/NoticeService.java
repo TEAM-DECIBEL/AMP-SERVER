@@ -67,9 +67,7 @@ public class NoticeService {
         Festival festival = festivalRepository.findById(festivalId)
                 .orElseThrow(() -> new CustomException(FestivalErrorCode.FESTIVAL_NOT_FOUND));
 
-        if (!organizerRepository.existsByFestivalAndUser(festival, user)) {
-            throw new CustomException(UserErrorCode.USER_NOT_AUTHORIZED);
-        }
+        validateOrganizer(festival, user);
 
         FestivalCategory festivalCategory = festivalCategoryRepository
                 .findByMapping(request.categoryId(), festivalId)
@@ -224,5 +222,11 @@ public class NoticeService {
         }
 
         notice.delete();
+    }
+
+    private void validateOrganizer(Festival festival, User user) {
+        if (!festival.getOrganizer().getUser().getId().equals(user.getId())) {
+            throw new CustomException(UserErrorCode.USER_NOT_AUTHORIZED);
+        }
     }
 }
