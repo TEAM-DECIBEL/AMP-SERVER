@@ -42,4 +42,13 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
             "AND f.deletedAt IS NULL " +
             "ORDER BY f.startDate ASC, f.startTime ASC, f.title ASC")
     Page<Festival> findActiveFestivals(Pageable pageable);
+
+    @Query("""
+    SELECT COUNT(f)
+    FROM Festival f
+    WHERE f.organizer.user.id = :userId
+    AND f.status = :status
+    AND f.deletedAt IS NULL """)
+    Long countFestivalsByUserIdAndStatus(@Param("userId") Long userId,
+                                         @Param("status") FestivalStatus status);
 }

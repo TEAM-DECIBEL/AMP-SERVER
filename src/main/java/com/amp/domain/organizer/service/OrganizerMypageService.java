@@ -1,6 +1,7 @@
 package com.amp.domain.organizer.service;
 
 import com.amp.domain.festival.entity.FestivalStatus;
+import com.amp.domain.festival.repository.FestivalRepository;
 import com.amp.domain.organizer.dto.response.OrganizerMypageResponse;
 import com.amp.domain.organizer.entity.Organizer;
 import com.amp.domain.organizer.exception.OrganizerErrorCode;
@@ -20,6 +21,7 @@ public class OrganizerMypageService {
 
     private final UserRepository userRepository;
     private final OrganizerRepository organizerRepository;
+    private final FestivalRepository festivalRepository;
 
 
     public OrganizerMypageResponse getOrganizerMypage(Long userId) {
@@ -32,13 +34,13 @@ public class OrganizerMypageService {
                 .orElseThrow(() -> new CustomException(OrganizerErrorCode.ORGANIZER_NOT_FOUND));
 
         // 진행 중인 공연 수 조회
-        Long ongoingCount = organizerRepository.countFestivalsByUserIdAndStatus(
+        Long ongoingCount = festivalRepository.countFestivalsByUserIdAndStatus(
                 userId,
                 FestivalStatus.ONGOING
         );
 
         // 진행 예정 공연 수 조회
-        Long upcomingCount = organizerRepository.countFestivalsByUserIdAndStatus(
+        Long upcomingCount = festivalRepository.countFestivalsByUserIdAndStatus(
                 userId,
                 FestivalStatus.UPCOMING
         );
