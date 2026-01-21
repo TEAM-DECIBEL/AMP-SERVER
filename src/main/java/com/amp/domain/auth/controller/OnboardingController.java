@@ -14,7 +14,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/auth/onboarding")
+@RequestMapping("/api/v1/auth/onboarding")
 @Tag(name = "Auth API")
 @RequiredArgsConstructor
 @Slf4j
