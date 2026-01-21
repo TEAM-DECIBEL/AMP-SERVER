@@ -81,7 +81,7 @@ public class OnboardingService {
         log.info("Completing organizer onboarding for user: {}", user.getEmail());
 
         if (organizerRepository.existsByUser(user)) {
-            throw new CustomException(OrganizerErrorCode.)
+            throw new CustomException(OrganizerErrorCode.ORGANIZER_ALREADY_EXISTS);
         }
 
         // 주최사명 필수 체크
