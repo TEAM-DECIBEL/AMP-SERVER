@@ -1,6 +1,6 @@
 package com.amp.domain.stage.dto.response;
 
-import com.amp.global.common.dto.PaginationResponse;
+import com.amp.global.common.dto.response.PaginationResponse;
 import lombok.Builder;
 import org.springframework.data.domain.Page;
 

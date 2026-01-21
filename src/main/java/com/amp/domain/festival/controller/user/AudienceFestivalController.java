@@ -3,7 +3,7 @@ package com.amp.domain.festival.controller.user;
 import com.amp.domain.festival.dto.response.AudienceFestivalSummaryResponse;
 import com.amp.domain.festival.service.user.AudienceFestivalService;
 import com.amp.global.common.SuccessStatus;
-import com.amp.global.common.dto.PageResponse;
+import com.amp.global.common.dto.response.PageResponse;
 import com.amp.global.response.success.BaseResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
