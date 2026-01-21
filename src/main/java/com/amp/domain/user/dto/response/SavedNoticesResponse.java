@@ -1,6 +1,6 @@
 package com.amp.domain.user.dto.response;
 
-import com.amp.global.common.dto.PaginationResponse;
+import com.amp.global.common.dto.response.PaginationResponse;
 import lombok.Builder;
 import lombok.Getter;
 
