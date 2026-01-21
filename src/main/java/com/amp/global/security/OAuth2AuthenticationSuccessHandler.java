@@ -127,26 +127,23 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
             userRepository.save(user);
             log.info("Updated user type to {} for pending user: {}", requestedUserType, user.getEmail());
 
-            String callbackUri = (requestedUserType == UserType.ORGANIZER)
-                    ? "http://localhost:5174/callback"
-                    : "http://localhost:5173/callback";
+            String onboardingUri = (requestedUserType == UserType.ORGANIZER)
+                    ? organizerOnboardingUri
+                    : audienceOnboardingUri;
 
-            // callback으로 보내고, redirect 정보 포함
-            return UriComponentsBuilder.fromUriString(callbackUri)
+            return UriComponentsBuilder.fromUriString(onboardingUri)
                     .queryParam("token", token)
-                    .queryParam("redirect", "onboarding")
                     .build().toUriString();
         } else {
             // 온보딩 완료
             log.info("User registration completed, redirecting to home: {}", user.getEmail());
 
-            String callbackUri = (user.getUserType() == UserType.ORGANIZER)
-                    ? "http://localhost:5174/callback"
-                    : "http://localhost:5173/callback";
+            String homeUri = (user.getUserType() == UserType.ORGANIZER)
+                    ? organizerHomeUri
+                    : audienceHomeUri;
 
-            return UriComponentsBuilder.fromUriString(callbackUri)
+            return UriComponentsBuilder.fromUriString(homeUri)
                     .queryParam("token", token)
-                    .queryParam("redirect", "root")
                     .build().toUriString();
         }
     }
