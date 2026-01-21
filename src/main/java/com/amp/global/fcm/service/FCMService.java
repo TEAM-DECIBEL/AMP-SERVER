@@ -45,7 +45,7 @@ public class FCMService {
         }
     }
 
-    public void sendCategoryTopicAlarm(Long categoryId, String title, String noticeBody, String timeData) {
+    public void sendCategoryTopicAlarm(Long categoryId, String title, String noticeBody, String timeData, Long noticeId, Long festivalId) {
         String topic = topic(categoryId);
         try {
             Message message = Message.builder()
@@ -53,6 +53,8 @@ public class FCMService {
                     .putData("title", title)
                     .putData("message", noticeBody)
                     .putData("time", timeData)
+                    .putData("noticeId", noticeId.toString())
+                    .putData("festivalId", festivalId.toString())
                     .build();
             FirebaseMessaging.getInstance().send(message);
             log.info("FCM 메시지 전송 성공: {}", topic);

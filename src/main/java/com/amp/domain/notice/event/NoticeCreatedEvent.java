@@ -14,6 +14,7 @@ public class NoticeCreatedEvent {
 
     private final String festivalName;
     private final Long noticeId;
+    private final Long festivalId;
     private final String title;
     private final LocalDateTime createdAt;
 }

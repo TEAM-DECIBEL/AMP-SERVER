@@ -18,12 +18,16 @@ public class NotificationService {
         String title = event.getCategoryName()+" 공지가 업로드 되었어요!";
         String noticeBody = "["+event.getCategoryName()+"]" +event.getTitle();
         String timeData = TimeFormatter.formatTimeAgo(event.getCreatedAt());
+        Long noticeId = event.getNoticeId();
+        Long festivalId = event.getFestivalId();
 
         fcmService.sendCategoryTopicAlarm(
                 event.getCategoryId(),
                 title,
                 noticeBody,
-                timeData
+                timeData,
+                noticeId,
+                festivalId
         );
     }
 }
