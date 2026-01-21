@@ -28,7 +28,7 @@ class UserFestivalServiceTest {
     private WishListRepository userFestivalRepository;
 
     @InjectMocks
-    private UserFestivalService userFestivalService;
+    private WishListService userFestivalService;
 
     @Test
     @DisplayName("최근 공연 조회 성공 - 공연이 1개 있는 경우")

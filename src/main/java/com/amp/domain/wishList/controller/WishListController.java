@@ -2,7 +2,7 @@ package com.amp.domain.wishList.controller;
 
 import com.amp.domain.wishList.dto.response.*;
 import com.amp.domain.wishList.dto.request.WishListRequest;
-import com.amp.domain.wishList.service.UserFestivalService;
+import com.amp.domain.wishList.service.WishListService;
 import com.amp.global.annotation.ApiErrorCodes;
 import com.amp.global.common.SuccessStatus;
 import com.amp.global.common.dto.PageResponse;
@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class WishListController {
 
-    private final UserFestivalService userFestivalService;
+    private final WishListService userFestivalService;
 
     @GetMapping("/recent")
     @Operation(summary = "관람 예정 공연 중 가장 임박한 공연 조회")
