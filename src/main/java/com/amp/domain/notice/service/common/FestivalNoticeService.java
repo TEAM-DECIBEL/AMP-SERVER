@@ -12,7 +12,7 @@ import com.amp.domain.notice.repository.NoticeRepository;
 import com.amp.domain.user.entity.User;
 import com.amp.domain.user.exception.UserErrorCode;
 import com.amp.domain.user.repository.UserRepository;
-import com.amp.global.common.dto.PaginationResponse;
+import com.amp.global.common.dto.response.PaginationResponse;
 import com.amp.global.exception.CustomException;
 import com.amp.global.security.service.AuthService;
 import lombok.AllArgsConstructor;
@@ -51,7 +51,7 @@ public class FestivalNoticeService {
         Festival festival = festivalRepository.findById(festivalId)
                 .orElseThrow(() -> new NoticeException(FestivalErrorCode.FESTIVAL_NOT_FOUND));
 
-        Long filterCategoryId = (categoryId == null || categoryId == 0) ? null : categoryId;
+        Long filterCategoryId = (categoryId == null || categoryId == 0L) ? null : categoryId;
 
         Pageable pageable = PageRequest.of(page, size);
 

@@ -5,7 +5,7 @@ import com.amp.domain.festival.repository.FestivalRepository;
 import com.amp.domain.user.entity.User;
 import com.amp.domain.festival.dto.response.AudienceFestivalSummaryResponse;
 import com.amp.domain.wishList.repository.WishListRepository;
-import com.amp.global.common.dto.PageResponse;
+import com.amp.global.common.dto.response.PageResponse;
 import com.amp.global.security.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

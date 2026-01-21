@@ -3,7 +3,7 @@ package com.amp.domain.festival.dto.response;
 import com.amp.domain.category.entity.FestivalCategory;
 import com.amp.domain.festival.entity.Festival;
 import com.amp.domain.festival.util.FestivalUtils;
-import com.amp.domain.notice.dto.response.CategoryData;
+import com.amp.global.common.dto.CategoryData;
 
 import java.util.List;
 
@@ -15,8 +15,7 @@ public record FestivalInfoResponse(
         Boolean isWishlist,
         Long dday,
         List<CategoryData> activeCategories) {
-    public static FestivalInfoResponse from(Festival festival, Boolean
-            isWishlist) {
+    public static FestivalInfoResponse from(Festival festival, Boolean isWishlist) {
         return new FestivalInfoResponse(
                 festival.getId(),
                 festival.getTitle(),
