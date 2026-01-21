@@ -84,12 +84,6 @@ public class OnboardingService {
             throw new OnboardingException(OnboardingErrorCode.ORGANIZER_NAME_REQUIRED);
         }
 
-        // 닉네임 중복 체크
-        validateNicknameUniqueness(request.getNickname());
-
-        // User 업데이트
-        user.completeOrganizerOnboarding(request.getNickname());
-        userRepository.save(user);
 
         // Organizer 엔티티 생성
         // Note: Festival은 나중에 연결하거나, 초기값 null로 설정
