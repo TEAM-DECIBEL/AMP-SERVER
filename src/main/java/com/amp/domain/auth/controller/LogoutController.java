@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/v1/auth")
 @Tag(name = "Auth API")
 public class LogoutController {
 
