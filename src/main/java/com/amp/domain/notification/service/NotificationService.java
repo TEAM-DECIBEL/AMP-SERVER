@@ -26,5 +26,29 @@ public class NotificationService {
                 timeData
         );
     }
+
+    @Transactional
+    public NotificationListResponse getMyNotifications() {
+
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        String email = authentication.getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
+
+        return new NotificationListResponse(notificationRepository.findByUserOrderByCreatedAtDesc(user)
+                .stream()
+                .map(n -> new NotificationResponse(
+                        n.getId(),
+                        n.getTitle(),
+                        n.getMessage(),
+                        n.getIsRead(),
+                        n.getNotice().getId(),
+                        TimeFormatter.formatTimeAgo(n.getCreatedAt())
+                ))
+                .toList());
+    }
+
 }
 
