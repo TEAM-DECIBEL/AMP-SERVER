@@ -29,7 +29,7 @@ public class FestivalInfoService {
 
         User user = authService.getCurrentUserOrNull();
 
-        Boolean isWishlist = false;
+        Boolean isWishlist;
 
         if (user == null) {
             // 비로그인 유저

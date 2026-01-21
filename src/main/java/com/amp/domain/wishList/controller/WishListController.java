@@ -5,7 +5,7 @@ import com.amp.domain.wishList.dto.request.WishListRequest;
 import com.amp.domain.wishList.service.WishListService;
 import com.amp.global.annotation.ApiErrorCodes;
 import com.amp.global.common.SuccessStatus;
-import com.amp.global.common.dto.PageResponse;
+import com.amp.global.common.dto.response.PageResponse;
 import com.amp.global.response.success.BaseResponse;
 import com.amp.global.security.CustomUserPrincipal;
 import com.amp.global.swagger.SwaggerResponseDescription;

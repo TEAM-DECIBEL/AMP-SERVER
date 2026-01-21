@@ -5,7 +5,7 @@ import com.amp.domain.festival.dto.response.OrganizerFestivalListResponse;
 import com.amp.domain.festival.service.organizer.OrganizerFestivalService;
 import com.amp.global.annotation.ApiErrorCodes;
 import com.amp.global.common.SuccessStatus;
-import com.amp.global.common.dto.PageResponse;
+import com.amp.global.common.dto.response.PageResponse;
 import com.amp.global.response.success.BaseResponse;
 import com.amp.global.swagger.SwaggerResponseDescription;
 import io.swagger.v3.oas.annotations.Operation;
