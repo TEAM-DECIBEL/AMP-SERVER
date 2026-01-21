@@ -26,8 +26,9 @@ public class OnboardingCheckFilter extends OncePerRequestFilter {
     private final UserRepository userRepository;
 
     private static final List<String> SKIP_PATHS = Arrays.asList(
-            "/api/auth/onboarding",
-            "/api/auth/login",
+            "/api/v1/auth/onboarding",
+            "/api/v1/auth/login",
+            "/api/*",
             "/oauth2",
             "/login",
             "/h2-console"

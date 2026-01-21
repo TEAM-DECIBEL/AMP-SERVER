@@ -46,18 +46,26 @@ public class CustomOAuth2AuthorizationRequestResolver implements OAuth2Authoriza
         String userType = request.getParameter("userType");
 
         if (userType == null || !isValidUserType(userType)) {
-            // Referer에서 추출 시도
-            String referer = request.getHeader("Referer");
-            if (referer != null) {
-                if (referer.contains("/organizer")) {
-                    userType = "ORGANIZER";
+            String serverName = request.getServerName();
+            log.info("Detecting userType from domain: {}", serverName);
+
+            if (serverName.equals("www.ampnotice-host.kr") || serverName.equals("ampnotice-host.kr")) {
+                userType = "ORGANIZER";
+                log.info("Domain matched organizer: {} -> userType: ORGANIZER", serverName);
+            } else {
+                // Referer에서 추출 시도
+                String referer = request.getHeader("Referer");
+                if (referer != null) {
+                    if (referer.contains("/organizer")) {
+                        userType = "ORGANIZER";
+                    } else {
+                        userType = "AUDIENCE";
+                    }
                 } else {
+                    // 기본값: 관객
+                    log.warn("userType parameter is missing. Defaulting to 'AUDIENCE'");
                     userType = "AUDIENCE";
                 }
-            } else {
-                // 기본값: 관객
-                log.warn("userType parameter is missing. Defaulting to 'AUDIENCE'");
-                userType = "AUDIENCE";
             }
         }
 
@@ -81,5 +89,4 @@ public class CustomOAuth2AuthorizationRequestResolver implements OAuth2Authoriza
             return false;
         }
     }
-
 }

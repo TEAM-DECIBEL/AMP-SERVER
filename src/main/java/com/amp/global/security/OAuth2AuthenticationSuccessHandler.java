@@ -4,12 +4,12 @@ import com.amp.domain.user.entity.RegistrationStatus;
 import com.amp.domain.user.entity.User;
 import com.amp.domain.user.entity.UserType;
 import com.amp.domain.user.repository.UserRepository;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
+import java.time.Duration;
 
 @Slf4j
 @Component
@@ -25,18 +26,19 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
-
-    @Value("${app.oauth2.redirect-uri.audience:http://localhost:5173/auth/callback}")
-    private String audienceRedirectUri;
-
-    @Value("${app.oauth2.redirect-uri.organizer:http://localhost:5174/auth/callback}")
-    private String organizerRedirectUri;
+    private final HttpCookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository;
 
     @Value("${app.oauth2.onboarding-uri.audience:http://localhost:5173/onboarding}")
     private String audienceOnboardingUri;
 
     @Value("${app.oauth2.onboarding-uri.organizer:http://localhost:5174/onboarding}")
     private String organizerOnboardingUri;
+
+    @Value("${app.oauth2.home-uri.audience:http://localhost:5173/root}")
+    private String audienceHomeUri;
+
+    @Value("${app.oauth2.home-uri.organizer:http://localhost:5174/root}")
+    private String organizerHomeUri;
 
     @Value("${app.jwt.cookie-name:accessToken}")
     private String cookieName;
@@ -47,80 +49,105 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     @Value("${app.jwt.cookie-domain:localhost}")
     private String cookieDomain;
 
-    @Value("${app.jwt.cookie-secure:true}")
+    @Value("${app.jwt.cookie-secure:false}")
     private boolean cookieSecure;
+
+    @Value("${app.jwt.cookie-same-site:Lax}")
+    private String cookieSameSite;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                         Authentication authentication) throws IOException {
+
+        log.info("=== OAuth2 인증 성공 ===");
+
+        // ✅ OAuth2 관련 쿠키 정리
+        cookieAuthorizationRequestRepository.removeAuthorizationRequestCookies(request, response);
+
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
         String email = oAuth2User.getAttribute("email");
 
+        log.info("OAuth2 User Email: {}", email);
+
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalStateException("User not found after OAuth2 login"));
+                .orElseThrow(() -> {
+                    log.error("User not found after OAuth2 login: {}", email);
+                    return new IllegalStateException("User not found after OAuth2 login");
+                });
+
+        log.info("User found - ID: {}, Email: {}, Status: {}, UserType: {}",
+                user.getId(), user.getEmail(), user.getRegistrationStatus(), user.getUserType());
 
         // state에서 userType 추출
         String state = request.getParameter("state");
-        UserType userType = extractUserTypeFromState(state);
+        UserType requestedUserType = extractUserTypeFromState(state);
 
         // JWT 토큰 생성
         String token = jwtUtil.generateToken(email);
+        log.info("New JWT token generated");
 
-        // 쿠키에 토큰 설정
+        // 쿠키에 토큰 설정 시도 (cross-domain에서는 작동 안 함)
         addTokenCookie(response, token);
 
-        String targetUrl;
+        log.info("Response committed after cookie: {}", response.isCommitted());
 
-        // 온보딩이 필요한 경우
-        if (user.getRegistrationStatus() == RegistrationStatus.PENDING) {
-            user.updateUserType(userType);
-            userRepository.save(user);
+        String targetUrl = determineTargetUrl(user, requestedUserType, token);
 
-            // UserType에 따라 다른 온보딩 URL 선택
-            String baseOnboardingUri = (userType == UserType.ORGANIZER)
-                    ? organizerOnboardingUri
-                    : audienceOnboardingUri;
-
-            targetUrl = UriComponentsBuilder.fromUriString(baseOnboardingUri)
-                    .queryParam("userType", userType.name())
-                    .queryParam("status", "pending")
-                    .build().toUriString();
-
-            log.info("Redirecting to onboarding ({}): {}", userType, targetUrl);
-        }
-        // 온보딩 완료된 경우
-        else {
-            // UserType에 따라 다른 메인 URL 선택
-            String baseRedirectUri = (user.getUserType() == UserType.ORGANIZER)
-                    ? organizerRedirectUri
-                    : audienceRedirectUri;
-
-            targetUrl = UriComponentsBuilder.fromUriString(baseRedirectUri)
-                    .queryParam("status", "completed")
-                    .build().toUriString();
-
-            log.info("Redirecting to main app ({}): {}", user.getUserType(), targetUrl);
-        }
-
+        log.info("Final redirect URL: {}", targetUrl);
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
     }
 
     private void addTokenCookie(HttpServletResponse response, String token) {
-        Cookie cookie = new Cookie(cookieName, token);
-        cookie.setHttpOnly(true); // XSS 공격 방지
-        cookie.setSecure(cookieSecure); // HTTPS에서만 전송 (프로덕션: true, 로컬: false)
-        cookie.setPath("/"); // 모든 경로에서 접근 가능
-        cookie.setMaxAge(cookieMaxAge); // 쿠키 유효기간
+        ResponseCookie.ResponseCookieBuilder cookieBuilder = ResponseCookie.from(cookieName, token)
+                .httpOnly(true)
+                .secure(cookieSecure)
+                .path("/")
+                .maxAge(Duration.ofSeconds(cookieMaxAge))
+                .sameSite(cookieSameSite);
 
-        if (cookieDomain != null && !cookieDomain.isEmpty()) {
-            cookie.setDomain(cookieDomain); // 도메인 설정 (필요시)
+        if (cookieDomain != null && !cookieDomain.trim().isEmpty()) {
+            cookieBuilder.domain(cookieDomain);
+            log.info("Setting cookie domain: {}", cookieDomain);
+        } else {
+            log.info("Cookie domain not set (will use current domain)");
         }
 
-        // SameSite 설정 (CSRF 방지)
-        // Spring Boot 3.x 이상에서는 ResponseCookie 사용 권장
-        response.addCookie(cookie);
+        ResponseCookie cookie = cookieBuilder.build();
+        response.addHeader("Set-Cookie", cookie.toString());
 
-        log.info("JWT token added to cookie: {}", cookieName);
+        log.info("JWT token added to cookie - name: {}, secure: {}, sameSite: {}, maxAge: {}s, domain: {}",
+                cookieName, cookieSecure, cookieSameSite, cookieMaxAge,
+                cookieDomain != null && !cookieDomain.trim().isEmpty() ? cookieDomain : "current domain");
+    }
+
+    private String determineTargetUrl(User user, UserType requestedUserType, String token) {
+        if (user.getRegistrationStatus() == RegistrationStatus.PENDING) {
+            // 온보딩 필요
+            user.updateUserType(requestedUserType);
+            userRepository.save(user);
+            log.info("Updated user type to {} for pending user: {}", requestedUserType, user.getEmail());
+
+            String callbackUri = (requestedUserType == UserType.ORGANIZER)
+                    ? "http://localhost:5174/callback"
+                    : "http://localhost:5173/callback";
+
+            return UriComponentsBuilder.fromUriString(callbackUri)
+                    .queryParam("token", token)
+                    .queryParam("status", "PENDING")
+                    .build().toUriString();
+        } else {
+            // 온보딩 완료
+            log.info("User registration completed, redirecting to home: {}", user.getEmail());
+
+            String callbackUri = (user.getUserType() == UserType.ORGANIZER)
+                    ? "http://localhost:5174/callback"
+                    : "http://localhost:5173/callback";
+
+            return UriComponentsBuilder.fromUriString(callbackUri)
+                    .queryParam("token", token)
+                    .queryParam("status", "COMPLETED")
+                    .build().toUriString();
+        }
     }
 
     private UserType extractUserTypeFromState(String state) {
@@ -134,7 +161,9 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
                 String[] parts = state.split("\\|userType=");
                 if (parts.length == 2) {
                     String userTypeStr = parts[1];
-                    return UserType.valueOf(userTypeStr);
+                    UserType userType = UserType.valueOf(userTypeStr);
+                    log.info("Extracted userType from state: {}", userType);
+                    return userType;
                 }
             }
         } catch (IllegalArgumentException e) {

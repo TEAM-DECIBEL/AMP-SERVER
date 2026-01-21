@@ -6,6 +6,7 @@ import com.amp.domain.auth.dto.OnboardingStatusResponse;
 import com.amp.domain.auth.exception.OnboardingErrorCode;
 import com.amp.domain.auth.exception.OnboardingException;
 import com.amp.domain.organizer.entity.Organizer;
+import com.amp.domain.organizer.exception.OrganizerErrorCode;
 import com.amp.domain.organizer.repository.OrganizerRepository;
 import com.amp.domain.user.entity.RegistrationStatus;
 import com.amp.domain.user.entity.User;
@@ -79,17 +80,15 @@ public class OnboardingService {
     private void completeOrganizerOnboarding(User user, OnboardingRequest request) {
         log.info("Completing organizer onboarding for user: {}", user.getEmail());
 
+        if (organizerRepository.existsByUser(user)) {
+            throw new CustomException(OrganizerErrorCode.ORGANIZER_ALREADY_EXISTS);
+        }
+
         // 주최사명 필수 체크
         if (request.getOrganizerName() == null || request.getOrganizerName().isBlank()) {
             throw new OnboardingException(OnboardingErrorCode.ORGANIZER_NAME_REQUIRED);
         }
 
-        // 닉네임 중복 체크
-        validateNicknameUniqueness(request.getNickname());
-
-        // User 업데이트
-        user.completeOrganizerOnboarding(request.getNickname());
-        userRepository.save(user);
 
         // Organizer 엔티티 생성
         // Note: Festival은 나중에 연결하거나, 초기값 null로 설정
