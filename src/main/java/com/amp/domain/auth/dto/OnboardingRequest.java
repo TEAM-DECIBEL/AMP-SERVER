@@ -16,8 +16,7 @@ public class OnboardingRequest {
     @NotNull(message = "사용자 타입을 선택해주세요.")
     private UserType userType;
 
-    // 관객: 닉네임, 주최자: 닉네임
-    @NotBlank(message = "닉네임을 입력해주세요.")
+    // 관객: 닉네임
     @Size(min = 2, max = 12, message = "닉네임은 2-12자 사이여야 합니다.")
     private String nickname;
 
