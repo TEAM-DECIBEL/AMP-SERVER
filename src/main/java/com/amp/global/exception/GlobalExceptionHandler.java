@@ -10,10 +10,12 @@ import org.springframework.beans.TypeMismatchException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @Slf4j
 @RestControllerAdvice
@@ -75,5 +77,21 @@ public class GlobalExceptionHandler {
         log.error("[ERROR - MethodArgumentNotValidException] {}", ex.getMessage());
         return ResponseEntity.status(CommonErrorCode.INVALID_INPUT_VALUE.getHttpStatus())
                 .body(BaseErrorResponse.of(CommonErrorCode.INVALID_INPUT_VALUE));
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<BaseErrorResponse> handleHttpRequestMethodNotSupported(HttpRequestMethodNotSupportedException ex) {
+        log.error("[ERROR - HttpRequestMethodNotSupportedException] {}", ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.METHOD_NOT_ALLOWED)
+                .body(BaseErrorResponse.of(CommonErrorCode.METHOD_NOT_ALLOWED));
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<BaseErrorResponse> handleNoResourceFoundException(NoResourceFoundException ex) {
+        log.error("[ERROR - NoResourceFoundException] {}", ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(BaseErrorResponse.of(CommonErrorCode.NOT_FOUND));
     }
 }
