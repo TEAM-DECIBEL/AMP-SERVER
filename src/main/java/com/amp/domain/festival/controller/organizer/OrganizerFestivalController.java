@@ -33,7 +33,7 @@ public class OrganizerFestivalController {
 
     private final OrganizerFestivalService organizerFestivalService;
 
-    @Operation(summary = "진행한 모든 공연 조회", description = "주최사가 등록한 모든 공연 중 삭제된 것을 제외하고 전부 조회")
+    @Operation(summary = "주최사 마이페이지 진행한 모든 공연 조회", description = "주최사가 등록한 모든 공연 중 삭제된 것을 제외하고 전부 조회")
     @ApiErrorCodes(SwaggerResponseDescription.NO_AUTHORIZATION)
     @GetMapping("/all")
     public ResponseEntity<BaseResponse<PageResponse<OrganizerFestivalListResponse>>> getMyFestivals(
@@ -49,7 +49,7 @@ public class OrganizerFestivalController {
                 .body(BaseResponse.create(SuccessStatus.GET_MY_ALL_FESTIVALS.getMsg(), response));
     }
 
-    @Operation(summary = "진행중, 진행 예정 공연 조회", description = "주최사가 등록한 모든 공연 중 진행 중이거나 예정인 공연 조회")
+    @Operation(summary = "주최사 홈 화면 진행중, 진행 예정 공연 조회", description = "주최사가 등록한 모든 공연 중 진행 중이거나 예정인 공연 조회")
     @ApiErrorCodes(SwaggerResponseDescription.NO_AUTHORIZATION)
     @GetMapping("/active")
     public ResponseEntity<BaseResponse<OrganizerActiveFestivalPageResponse>> getActiveFestivals(
