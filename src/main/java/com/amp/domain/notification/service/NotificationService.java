@@ -33,12 +33,26 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
 
+    @Transactional
     public void sendNewNoticeNotification(NoticeCreatedEvent event) throws FirebaseMessagingException {
 
-        String title = event.getCategoryName()+" 공지가 업로드 되었어요!";
-        String noticeBody = "["+event.getCategoryName()+"]" +event.getTitle();
+        List<Alarm> alarms =
+                alarmRepository.findAllByFestivalCategoryIdAndIsActiveTrue(event.getCategoryId());
+
+        String title = event.getCategoryName() + " 공지가 업로드 되었어요!";
+        String noticeBody = "[" + event.getCategoryName() + "]" + event.getTitle();
         String timeData = TimeFormatter.formatTimeAgo(event.getCreatedAt());
 
+        for (Alarm alarm : alarms) {
+            Notification notification = Notification.builder()
+                    .user(alarm.getUser())
+                    .notice(event.getNotice())
+                    .title(title)
+                    .message(noticeBody)
+                    .build();
+
+            notificationRepository.save(notification);
+        }
         fcmService.sendCategoryTopicAlarm(
                 event.getCategoryId(),
                 title,
