@@ -122,7 +122,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
     private String determineTargetUrl(User user, UserType requestedUserType, String token) {
         if (user.getRegistrationStatus() == RegistrationStatus.PENDING) {
-            // 온보딩 필요 -
+            // 온보딩 필요
             user.updateUserType(requestedUserType);
             userRepository.save(user);
             log.info("Updated user type to {} for pending user: {}", requestedUserType, user.getEmail());
@@ -133,17 +133,19 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
             return UriComponentsBuilder.fromUriString(callbackUri)
                     .queryParam("token", token)
+                    .queryParam("status", "PENDING")
                     .build().toUriString();
         } else {
-            // 온보딩 완료 -
+            // 온보딩 완료
             log.info("User registration completed, redirecting to home: {}", user.getEmail());
 
             String callbackUri = (user.getUserType() == UserType.ORGANIZER)
-                    ? "http://localhost:5174"
-                    : "http://localhost:5173";
+                    ? "http://localhost:5174/callback"
+                    : "http://localhost:5173/callback";
 
             return UriComponentsBuilder.fromUriString(callbackUri)
                     .queryParam("token", token)
+                    .queryParam("status", "COMPLETED")
                     .build().toUriString();
         }
     }
