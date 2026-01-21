@@ -3,7 +3,7 @@ package com.amp.domain.user.service;
 import com.amp.domain.notice.entity.Bookmark;
 import com.amp.domain.notice.repository.BookmarkRepository;
 import com.amp.domain.user.dto.response.SavedNoticesResponse;
-import com.amp.global.common.dto.PaginationResponse;
+import com.amp.global.common.dto.response.PaginationResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;

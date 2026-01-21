@@ -1,5 +1,7 @@
 package com.amp.domain.notice.dto.response;
 
+import com.amp.global.common.dto.CategoryData;
+
 public record NoticeDetailResponse(
         Long noticeId,
         Long festivalId,

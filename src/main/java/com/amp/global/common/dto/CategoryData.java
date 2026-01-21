@@ -1,4 +1,4 @@
-package com.amp.domain.notice.dto.response;
+package com.amp.global.common.dto;
 
 import lombok.Builder;
 import lombok.Getter;
