@@ -12,7 +12,10 @@ public enum OrganizerErrorCode implements ErrorCode {
     ORGANIZER_NOT_FOUND(HttpStatus.NOT_FOUND, "ORG", "001", "주최사 정보를 찾을 수 없습니다."),
 
     // 403 Forbidden
-    ORGANIZER_NOT_AUTHORIZED(HttpStatus.FORBIDDEN, "ORG", "001", "주최사 권한이 없습니다.");
+    ORGANIZER_NOT_AUTHORIZED(HttpStatus.FORBIDDEN, "ORG", "001", "주최사 권한이 없습니다."),
+
+    // 409 Conflict
+    ORGANIZER_ALREADY_EXISTS(HttpStatus.CONFLICT, "ORG","001","이미 해당 유저의 주최사가 존재합니다.");
 
     private final HttpStatus httpStatus;
     private final String domain;
