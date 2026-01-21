@@ -6,8 +6,8 @@ import com.amp.domain.festival.entity.FestivalStatus;
 import com.amp.domain.festival.repository.FestivalRepository;
 import com.amp.domain.festival.service.organizer.OrganizerFestivalService;
 import com.amp.domain.user.entity.User;
-import com.amp.domain.wishList.repository.UserFestivalRepository;
-import com.amp.global.common.dto.PageResponse;
+import com.amp.domain.wishList.repository.WishListRepository;
+import com.amp.global.common.dto.response.PageResponse;
 import com.amp.global.security.service.AuthService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -42,7 +42,7 @@ class AudienceFestivalServiceTest {
     private FestivalRepository festivalRepository;
 
     @Mock
-    private UserFestivalRepository userFestivalRepository;
+    private WishListRepository wishListRepository;
 
     @Mock
     private AuthService authService;
@@ -83,7 +83,7 @@ class AudienceFestivalServiceTest {
 
         given(authService.getCurrentUserOrNull()).willReturn(user);
         given(festivalRepository.findActiveFestivals(any(Pageable.class))).willReturn(festivalPage);
-        given(userFestivalRepository.findAllFestivalIdsByUserId(user.getId())).willReturn(Set.of(100L));
+        given(wishListRepository.findAllFestivalIdsByUserId(user.getId())).willReturn(Set.of(100L));
 
         // when
         PageResponse<AudienceFestivalSummaryResponse> response = audienceFestivalService.getAllFestivals(pageable);
@@ -91,7 +91,7 @@ class AudienceFestivalServiceTest {
         // then
         assertThat(response.content()).hasSize(1);
         assertThat(response.content().getFirst().wishList()).isTrue();
-        verify(userFestivalRepository).findAllFestivalIdsByUserId(user.getId());
+        verify(wishListRepository).findAllFestivalIdsByUserId(user.getId());
     }
 
     @Test
@@ -118,6 +118,6 @@ class AudienceFestivalServiceTest {
         // then
         assertThat(response.content()).hasSize(1);
         assertThat(response.content().get(0).wishList()).isFalse();
-        verify(userFestivalRepository, never()).findAllFestivalIdsByUserId(any());
+        verify(wishListRepository, never()).findAllFestivalIdsByUserId(any());
     }
 }

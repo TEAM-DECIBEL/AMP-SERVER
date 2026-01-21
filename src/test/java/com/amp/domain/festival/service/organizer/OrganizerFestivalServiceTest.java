@@ -6,7 +6,7 @@ import com.amp.domain.festival.entity.Festival;
 import com.amp.domain.festival.entity.FestivalStatus;
 import com.amp.domain.festival.repository.FestivalRepository;
 import com.amp.domain.user.entity.User;
-import com.amp.global.common.dto.PageResponse;
+import com.amp.global.common.dto.response.PageResponse;
 import com.amp.global.security.service.AuthService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
