@@ -1,7 +1,6 @@
 package com.amp.domain.organizer.repository;
 
 import com.amp.domain.festival.entity.Festival;
-import com.amp.domain.festival.entity.FestivalStatus;
 import com.amp.domain.organizer.entity.Organizer;
 import com.amp.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -23,13 +22,4 @@ public interface OrganizerRepository extends JpaRepository<Organizer, Long> {
     @Query("UPDATE Organizer o SET o.deletedAt = CURRENT_TIMESTAMP WHERE o.festival.id = :festivalId AND o.deletedAt IS NULL")
     void softDeleteByFestivalId(@Param("festivalId") Long festivalId);
 
-    @Query("SELECT COUNT(f) FROM Organizer o " +
-            "LEFT JOIN o.festival f " +
-            "WHERE o.user.id = :userId " +
-            "AND f.status = :status " +
-            "AND f.id IS NOT NULL")
-    Long countFestivalsByUserIdAndStatus(
-            @Param("userId") Long userId,
-            @Param("status") FestivalStatus status
-    );
 }
