@@ -5,12 +5,14 @@ import com.amp.domain.festival.entity.FestivalStatus;
 import com.amp.domain.festival.util.FestivalUtils;
 
 public record OrganizerFestivalListResponse(
+        String imageUrl,
         String title,
         String period,
         String status
 ) {
     public static OrganizerFestivalListResponse from(Festival festival) {
         return new OrganizerFestivalListResponse(
+                festival.getMainImageUrl(),
                 festival.getTitle(),
                 FestivalUtils.formatPeriod(festival.getStartDate(), festival.getEndDate()),
                 convertToKorean(festival.getStatus())
