@@ -24,8 +24,8 @@ public class Organizer extends BaseTimeEntity {
     @Column(name = "organizer_id")
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -58,5 +58,4 @@ public class Organizer extends BaseTimeEntity {
         this.contactPhone = contactPhone;
         this.description = description;
     }
-
 }
