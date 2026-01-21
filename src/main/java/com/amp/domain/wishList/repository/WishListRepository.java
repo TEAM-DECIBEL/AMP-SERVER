@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-public interface UserFestivalRepository extends JpaRepository<UserFestival, Long> {
+public interface WishListRepository extends JpaRepository<UserFestival, Long> {
 
     @Query("""
             SELECT uf.festival 
