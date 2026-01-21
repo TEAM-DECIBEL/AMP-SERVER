@@ -13,6 +13,8 @@ import java.util.Optional;
 
 public interface OrganizerRepository extends JpaRepository<Organizer, Long> {
 
+    Boolean existsByUser(User user);
+
     Optional<Organizer> findByUserId(Long userId);
 
     boolean existsByFestivalAndUser(Festival festival, User user);
