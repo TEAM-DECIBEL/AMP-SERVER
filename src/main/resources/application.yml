@@ -2,6 +2,9 @@ spring:
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:local}
     include: secret
+  jackson:
+    time-zone: Asia/Seoul
+
 
   data:
     redis:
@@ -15,7 +18,7 @@ spring:
           google:
             client-id: ${GOOGLE_CLIENT_ID:}
             client-secret: ${GOOGLE_CLIENT_SECRET:}
-            scope: [email, profile]
+            scope: [ email, profile ]
             redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
         provider:
           google:
