@@ -17,6 +17,7 @@ public class CategorySubscribeEventListener {
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handle(CategorySubscribeEvent event) {
+        log.info("### [리스너] 이벤트 수신됨! 토픽: {}, 구독여부: {}", event.categoryId(), event.subscribe()); // 추가
         if (event.subscribe()) {
             fcmService.subscribeCategory(event.categoryId(), event.fcmToken());
         } else {
