@@ -4,10 +4,7 @@ import com.amp.global.exception.CustomException;
 import com.amp.global.fcm.exception.FCMErrorCode;
 import com.amp.global.security.service.AuthService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.firebase.messaging.FirebaseMessaging;
-import com.google.firebase.messaging.FirebaseMessagingException;
-import com.google.firebase.messaging.Message;
-import com.google.firebase.messaging.Notification;
+import com.google.firebase.messaging.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,8 +25,12 @@ public class FCMService {
 
     public void subscribeCategory(Long categoryId, String token) {
         try {
-            FirebaseMessaging.getInstance()
+            TopicManagementResponse response = FirebaseMessaging.getInstance()
                     .subscribeToTopic(List.of(token), topic(categoryId));
+
+            log.info("{} tokens were subscribed successfully from topic {}",
+                    response.getSuccessCount(), topic(categoryId));
+
         } catch (FirebaseMessagingException e) {
             log.error("FCM subscribe error: {}", e.getMessage());
             throw new CustomException(FCMErrorCode.FAIL_TO_SEND_PUSH_ALARM);
