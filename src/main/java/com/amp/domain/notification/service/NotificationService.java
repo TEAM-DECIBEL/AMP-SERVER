@@ -1,30 +1,126 @@
 package com.amp.domain.notification.service;
 
 import com.amp.domain.notice.event.NoticeCreatedEvent;
+import com.amp.domain.notification.dto.response.NotificationListResponse;
+import com.amp.domain.notification.dto.response.NotificationResponse;
+import com.amp.domain.notification.entity.Alarm;
+import com.amp.domain.notification.entity.Notification;
+import com.amp.domain.notification.exception.NotificationErrorCode;
+import com.amp.domain.notification.exception.NotificationException;
+import com.amp.domain.notification.repository.AlarmRepository;
+import com.amp.domain.notification.repository.NotificationRepository;
+import com.amp.domain.user.entity.User;
+import com.amp.domain.user.exception.UserErrorCode;
+import com.amp.domain.user.repository.UserRepository;
 import com.amp.global.common.dto.TimeFormatter;
+import com.amp.global.exception.CustomException;
 import com.amp.global.fcm.service.FCMService;
 import com.google.firebase.messaging.FirebaseMessagingException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class NotificationService {
 
     private final FCMService fcmService;
+    private final AlarmRepository alarmRepository;
+    private final NotificationRepository notificationRepository;
+    private final UserRepository userRepository;
 
+    @Transactional
     public void sendNewNoticeNotification(NoticeCreatedEvent event) throws FirebaseMessagingException {
 
-        String title = event.getCategoryName()+" 공지가 업로드 되었어요!";
-        String noticeBody = "["+event.getCategoryName()+"]" +event.getTitle();
+        log.info("===== sendNewNoticeNotification 시작 =====");
+        log.info("[알림] festivalCategoryId={}", event.getCategoryId());
+
+
+        List<Alarm> alarms =
+                alarmRepository.findAllByFestivalCategoryIdAndIsActiveTrue(event.getCategoryId());
+
+        if (alarms.isEmpty()) {
+            log.warn("[알림] 구독자가 없어서 종료");
+            return;
+        }
+        String title = event.getCategoryName() + " 공지가 업로드 되었어요!";
+        String noticeBody = "[" + event.getCategoryName() + "]" + event.getTitle();
         String timeData = TimeFormatter.formatTimeAgo(event.getCreatedAt());
 
+        log.info("[알림] title={}", title);
+
+
+        for (Alarm alarm : alarms) {
+            log.info("[알림] userId={} 저장 시작", alarm.getUser().getId());
+            Notification notification = Notification.builder()
+                    .user(alarm.getUser())
+                    .notice(event.getNotice())
+                    .title(title)
+                    .message(noticeBody)
+                    .build();
+
+            notificationRepository.save(notification);
+            log.info("[알림] userId={} 저장 완료", alarm.getUser().getId());
+        }
+
+        log.info("[알림] FCM 전송 시작");
         fcmService.sendCategoryTopicAlarm(
                 event.getCategoryId(),
                 title,
                 noticeBody,
                 timeData
         );
+        log.info("[알림] FCM 전송 완료");
     }
+
+    @Transactional
+    public NotificationListResponse getMyNotifications() {
+
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        String email = authentication.getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
+
+        return new NotificationListResponse(notificationRepository.findByUserOrderByCreatedAtDesc(user)
+                .stream()
+                .map(n -> new NotificationResponse(
+                        n.getId(),
+                        n.getTitle(),
+                        n.getMessage(),
+                        n.getIsRead(),
+                        n.getNotice().getId(),
+                        TimeFormatter.formatTimeAgo(n.getCreatedAt())
+                ))
+                .toList());
+    }
+
+    @Transactional
+    public void readNotification(Long notificationId) {
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        String email = authentication.getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
+
+
+        Notification notification = notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new NotificationException(NotificationErrorCode.NOTIFICATION_NOT_FOUND));
+
+        if (!notification.getUser().getId().equals(user.getId())) {
+            throw new NotificationException(NotificationErrorCode.NOTIFICATION_FORBIDDEN);
+        }
+
+        notification.markAsRead();
+    }
+
 }
 

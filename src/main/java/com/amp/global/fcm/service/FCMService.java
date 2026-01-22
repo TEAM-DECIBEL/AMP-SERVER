@@ -4,9 +4,7 @@ import com.amp.global.exception.CustomException;
 import com.amp.global.fcm.exception.FCMErrorCode;
 import com.amp.global.security.service.AuthService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.firebase.messaging.FirebaseMessaging;
-import com.google.firebase.messaging.FirebaseMessagingException;
-import com.google.firebase.messaging.Message;
+import com.google.firebase.messaging.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,8 +25,23 @@ public class FCMService {
 
     public void subscribeCategory(Long categoryId, String token) {
         try {
-            FirebaseMessaging.getInstance()
+            TopicManagementResponse response = FirebaseMessaging.getInstance()
                     .subscribeToTopic(List.of(token), topic(categoryId));
+
+            log.info("{} tokens were subscribed successfully from topic {}",
+                    response.getSuccessCount(), topic(categoryId));
+
+            if (response.getFailureCount() > 0) {
+                log.error("### [긴급] 구독 실패! FailureCount: {}", response.getFailureCount());
+                response.getErrors().forEach(error -> {
+                    log.error("### [긴급] 실패 상세 - index: {}, reason: {}",
+                            error.getIndex(),
+                            error.getReason());
+                });
+
+                log.error("### [긴급] 전체 에러 정보: {}", response.getErrors());
+            }
+
         } catch (FirebaseMessagingException e) {
             log.error("FCM subscribe error: {}", e.getMessage());
             throw new CustomException(FCMErrorCode.FAIL_TO_SEND_PUSH_ALARM);
@@ -50,6 +63,10 @@ public class FCMService {
         try {
             Message message = Message.builder()
                     .setTopic(topic)
+                    .setNotification(Notification.builder()
+                            .setTitle(title)
+                            .setBody(noticeBody)
+                            .build())
                     .putData("title", title)
                     .putData("message", noticeBody)
                     .putData("time", timeData)
@@ -62,7 +79,7 @@ public class FCMService {
         }
     }
 
-    private String topic(Long categoryId) {
-        return "category-" + categoryId;
+    private String topic(Long festivalCategoryId) {
+        return "festival-category-" + festivalCategoryId;
     }
 }

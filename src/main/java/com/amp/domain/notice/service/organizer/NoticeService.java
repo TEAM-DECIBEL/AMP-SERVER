@@ -70,7 +70,7 @@ public class NoticeService {
         validateOrganizer(festival, user);
 
         FestivalCategory festivalCategory = festivalCategoryRepository
-                .findByMapping(request.categoryId(), festivalId)
+                .findByMapping(festivalId, request.categoryId())
                 .orElseThrow(() -> new NoticeException(FestivalCategoryErrorCode.NOTICE_CATEGORY_NOT_FOUND));
 
         if (!festivalCategory.getFestival().getId().equals(festival.getId())) {
@@ -104,7 +104,7 @@ public class NoticeService {
                             festivalCategory.getId(),
                             festivalCategory.getCategory().getCategoryName(),
                             notice.getFestival().getTitle(),
-                            notice.getId(),
+                            notice,
                             notice.getTitle(),
                             notice.getCreatedAt()
                     )

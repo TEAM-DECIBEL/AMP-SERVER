@@ -26,6 +26,9 @@ public enum CommonErrorCode implements ErrorCode {
     FORBIDDEN(HttpStatus.FORBIDDEN, "COM", "001", "접근 권한이 없습니다."),
     INSUFFICIENT_PERMISSION(HttpStatus.FORBIDDEN, "COM", "002", "권한이 부족합니다."),
 
+    // 404 Not Found
+    NOT_FOUND(HttpStatus.NOT_FOUND, "COM", "001", "존재하지 않는 리소스입니다."),
+
     // 405 Method Not Allowed
     METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, "COM", "001", "지원하지 않는 HTTP 메소드입니다."),
 
