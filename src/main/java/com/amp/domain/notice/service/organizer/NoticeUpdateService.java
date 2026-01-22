@@ -54,9 +54,7 @@ public class NoticeUpdateService {
         Festival festival = festivalRepository.findById(request.festivalId())
                 .orElseThrow(() -> new CustomException(FestivalErrorCode.FESTIVAL_NOT_FOUND));
 
-        if (!organizerRepository.existsByFestivalAndUser(festival, user)) {
-            throw new CustomException(UserErrorCode.USER_NOT_AUTHENTICATED);
-        }
+        validateOrganizer(festival, user);
 
         Notice notice = noticeRepository.findById(noticeId)
                 .orElseThrow(() ->
@@ -116,5 +114,11 @@ public class NoticeUpdateService {
         return authentication != null &&
                 authentication.isAuthenticated() &&
                 !(authentication instanceof AnonymousAuthenticationToken);
+    }
+
+    private void validateOrganizer(Festival festival, User user) {
+        if (!festival.getOrganizer().getUser().getId().equals(user.getId())) {
+            throw new CustomException(UserErrorCode.USER_NOT_AUTHORIZED);
+        }
     }
 }

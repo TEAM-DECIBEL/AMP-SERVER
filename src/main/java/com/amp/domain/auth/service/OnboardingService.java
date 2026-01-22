@@ -6,7 +6,6 @@ import com.amp.domain.auth.dto.OnboardingStatusResponse;
 import com.amp.domain.auth.exception.OnboardingErrorCode;
 import com.amp.domain.auth.exception.OnboardingException;
 import com.amp.domain.organizer.entity.Organizer;
-import com.amp.domain.organizer.exception.OrganizerErrorCode;
 import com.amp.domain.organizer.repository.OrganizerRepository;
 import com.amp.domain.user.entity.RegistrationStatus;
 import com.amp.domain.user.entity.User;
@@ -69,42 +68,54 @@ public class OnboardingService {
     private void completeAudienceOnboarding(User user, OnboardingRequest request) {
         log.info("Completing audience onboarding for user: {}", user.getEmail());
 
-        // 닉네임 중복 체크
-        validateNicknameUniqueness(request.getNickname());
+        // 닉네임 필수 체크
+        if (request.getNickname() == null || request.getNickname().isBlank()) {
+            throw new OnboardingException(OnboardingErrorCode.INVALID_USER_TYPE);
+        }
 
+        // 닉네임 중복 체크
+        //validateNicknameUniqueness(request.getNickname());
+
+        // User 온보딩 완료
         user.completeAudienceOnboarding(request.getNickname());
         userRepository.save(user);
+
+        log.info("Audience onboarding completed for user: {}, nickname: {}",
+                user.getEmail(), user.getNickname());
     }
 
 
     private void completeOrganizerOnboarding(User user, OnboardingRequest request) {
         log.info("Completing organizer onboarding for user: {}", user.getEmail());
 
-        if (organizerRepository.existsByUser(user)) {
-            throw new CustomException(OrganizerErrorCode.ORGANIZER_ALREADY_EXISTS);
-        }
-
         // 주최사명 필수 체크
         if (request.getOrganizerName() == null || request.getOrganizerName().isBlank()) {
             throw new OnboardingException(OnboardingErrorCode.ORGANIZER_NAME_REQUIRED);
         }
 
+        // 주최사명 중복 체크
+        validateOrganizerNameUniqueness(request.getOrganizerName());
 
-        // Organizer 엔티티 생성
-        // Note: Festival은 나중에 연결하거나, 초기값 null로 설정
-        Organizer organizer = Organizer.builder()
-                .user(user)
-                .festival(null) // 추후 페스티벌 등록 시 연결
-                .organizerName(request.getOrganizerName())
-                .contactEmail(request.getContactEmail())
-                .contactPhone(request.getContactPhone())
-                .description(request.getDescription())
-                .build();
+        // 기존 Organizer 조회 또는 생성
+        Organizer organizer = organizerRepository.findByUser(user)
+                .orElseGet(() -> {
+                    log.info("Creating new organizer for user: {}", user.getEmail());
+                    Organizer newOrganizer = Organizer.builder()
+                            .user(user)
+                            .organizerName(request.getOrganizerName())
+                            .contactEmail(request.getContactEmail())
+                            .contactPhone(request.getContactPhone())
+                            .description(request.getDescription())
+                            .build();
+                    return organizerRepository.save(newOrganizer);
+                });
 
-        organizerRepository.save(organizer);
 
-        log.info("Created organizer entity for user: {}, organizer name: {}",
-                user.getEmail(), request.getOrganizerName());
+        user.completeOrganizerOnboarding();
+        userRepository.save(user);
+
+        log.info("Organizer onboarding completed for user: {}, organizer: {}",
+                user.getEmail(), organizer.getOrganizerName());
     }
 
 
@@ -121,9 +132,17 @@ public class OnboardingService {
                 .build();
     }
 
+
     private void validateNicknameUniqueness(String nickname) {
         if (userRepository.existsByNickname(nickname)) {
             throw new OnboardingException(OnboardingErrorCode.DUPLICATE_NICKNAME);
+        }
+    }
+
+
+    private void validateOrganizerNameUniqueness(String organizerName) {
+        if (organizerRepository.existsByOrganizerName(organizerName)) {
+            throw new OnboardingException(OnboardingErrorCode.DUPLICATE_ORGANIZER_NAME);
         }
     }
 }

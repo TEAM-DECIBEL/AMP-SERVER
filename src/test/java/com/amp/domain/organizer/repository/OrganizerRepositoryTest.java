@@ -2,6 +2,7 @@ package com.amp.domain.organizer.repository;
 
 import com.amp.domain.festival.entity.Festival;
 import com.amp.domain.festival.entity.FestivalStatus;
+import com.amp.domain.festival.repository.FestivalRepository;
 import com.amp.domain.organizer.entity.Organizer;
 import com.amp.domain.user.entity.AuthProvider;
 import com.amp.domain.user.entity.RegistrationStatus;
@@ -27,6 +28,9 @@ class OrganizerRepositoryTest {
     private OrganizerRepository organizerRepository;
 
     @Autowired
+    private FestivalRepository festivalRepository;
+
+    @Autowired
     private TestEntityManager em;
 
     @Test
@@ -43,9 +47,9 @@ class OrganizerRepositoryTest {
         em.persist(upcomingFestival2);
         em.persist(ongoingFestival);
 
-        Organizer organizer1 = createOrganizer(user, upcomingFestival1);
-        Organizer organizer2 = createOrganizer(user, upcomingFestival2);
-        Organizer organizer3 = createOrganizer(user, ongoingFestival);
+        Organizer organizer1 = createOrganizer(user);
+        Organizer organizer2 = createOrganizer(user);
+        Organizer organizer3 = createOrganizer(user);
         em.persist(organizer1);
         em.persist(organizer2);
         em.persist(organizer3);
@@ -54,13 +58,13 @@ class OrganizerRepositoryTest {
         em.clear();
 
         // when
-        Long upcomingCount = organizerRepository.countFestivalsByUserIdAndStatus(
+        Long upcomingCount = festivalRepository.countFestivalsByUserIdAndStatus(
                 user.getId(), FestivalStatus.UPCOMING
         );
-        Long ongoingCount = organizerRepository.countFestivalsByUserIdAndStatus(
+        Long ongoingCount = festivalRepository.countFestivalsByUserIdAndStatus(
                 user.getId(), FestivalStatus.ONGOING
         );
-        Long completedCount = organizerRepository.countFestivalsByUserIdAndStatus(
+        Long completedCount = festivalRepository.countFestivalsByUserIdAndStatus(
                 user.getId(), FestivalStatus.COMPLETED
         );
 
@@ -80,8 +84,8 @@ class OrganizerRepositoryTest {
         Festival festival = createFestival("Festival 1", FestivalStatus.UPCOMING);
         em.persist(festival);
 
-        Organizer organizerWithFestival = createOrganizer(user, festival);
-        Organizer organizerWithoutFestival = createOrganizer(user, null); // festival이 null
+        Organizer organizerWithFestival = createOrganizer(user);
+        Organizer organizerWithoutFestival = createOrganizer(user); // festival이 null
         em.persist(organizerWithFestival);
         em.persist(organizerWithoutFestival);
 
@@ -89,7 +93,7 @@ class OrganizerRepositoryTest {
         em.clear();
 
         // when
-        Long count = organizerRepository.countFestivalsByUserIdAndStatus(
+        Long count = festivalRepository.countFestivalsByUserIdAndStatus(
                 user.getId(), FestivalStatus.UPCOMING
         );
 
@@ -122,10 +126,9 @@ class OrganizerRepositoryTest {
                 .build();
     }
 
-    private Organizer createOrganizer(User user, Festival festival) {
+    private Organizer createOrganizer(User user) {
         return Organizer.builder()
                 .user(user)
-                .festival(festival)
                 .organizerName("Test Organizer")
                 .contactEmail("organizer@email.com")
                 .contactPhone("010-1234-5678")
