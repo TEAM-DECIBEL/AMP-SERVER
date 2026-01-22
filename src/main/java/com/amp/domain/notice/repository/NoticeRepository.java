@@ -26,4 +26,7 @@ public interface NoticeRepository extends JpaRepository<Notice, Long> {
             "AND n.deletedAt IS NULL " +
             "ORDER BY n.isPinned DESC, n.createdAt DESC")
     Page<Notice> findNoticesByFilter(@Param("festival") Festival festival, @Param("categoryId") Long categoryId, Pageable pageable);
+
+    long countByFestivalAndIsPinnedTrueAndDeletedAtIsNull(Festival festival);
+
 }

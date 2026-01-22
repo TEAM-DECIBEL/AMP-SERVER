@@ -73,6 +73,16 @@ public class NoticeService {
                 .findByMapping(festivalId, request.categoryId())
                 .orElseThrow(() -> new NoticeException(FestivalCategoryErrorCode.NOTICE_CATEGORY_NOT_FOUND));
 
+        if (request.isPinned()) {
+            long pinnedCount =
+                    noticeRepository.countByFestivalAndIsPinnedTrueAndDeletedAtIsNull(festival);
+
+            if (pinnedCount >= 3) {
+                throw new NoticeException(NoticeErrorCode.PINNED_NOTICE_LIMIT_EXCEEDED);
+            }
+        }
+
+
         if (!festivalCategory.getFestival().getId().equals(festival.getId())) {
             throw new NoticeException(FestivalCategoryErrorCode.NOTICE_CATEGORY_NOT_FOUND);
         }
