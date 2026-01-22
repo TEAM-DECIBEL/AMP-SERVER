@@ -74,6 +74,7 @@ public class SecurityConfig {
                         ).permitAll()
 
                         .requestMatchers(
+                                "/",
                                 "/api/v1/users/festivals",
                                 "/api/auth/**",
                                 "/api/public/**",
@@ -93,7 +94,7 @@ public class SecurityConfig {
                                 "/actuator/**"
                         ).permitAll()
 
-                        .requestMatchers("/api/organizer/**").hasRole("ORGANIZER")
+                        .requestMatchers("/api/v1/organizer/**").hasRole("ORGANIZER")
                         .requestMatchers("/api/auth/onboarding/**").authenticated()
                         .requestMatchers("/api/v1/festivals/my").hasRole("AUDIENCE")
                         .requestMatchers("/api/v1/festivals/*/wishList").hasRole("AUDIENCE")
@@ -116,7 +117,6 @@ public class SecurityConfig {
                                                         clientRegistrationRepository
                                                 )
                                         )
-                                        // ✅ 쿠키 기반 Repository 등록
                                         .authorizationRequestRepository(cookieAuthorizationRequestRepository)
                         )
                         .redirectionEndpoint(redirection ->
@@ -132,7 +132,6 @@ public class SecurityConfig {
                             log.error("Query String: {}", request.getQueryString());
                             log.error("Exception type: {}", exception.getClass().getName());
 
-                            // ✅ 실패 시 쿠키 정리
                             cookieAuthorizationRequestRepository
                                     .removeAuthorizationRequestCookies(request, response);
 

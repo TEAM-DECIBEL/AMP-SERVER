@@ -19,6 +19,7 @@ public class SavedNoticesResponse {
         private Long noticeId;
         private String festivalTitle;
         private String categoryName;
+        private String content;
         private String title;
         private String imageUrl;
     }
