@@ -30,7 +30,7 @@ jwt:
 app:
   oauth2:
     redirect-uri:
-      audience: http://localhost:5173/auth/callback  # ✅ 로컬 프론트
+      audience: http://localhost:5173/auth/callback
       organizer: http://localhost:5174/auth/callback
     onboarding-uri:
       audience: http://localhost:5173/onboarding
@@ -51,7 +51,7 @@ springdoc:
     enabled: true
   api-docs:
     enabled: true
-  server-url: https://www.ampnotice.kr
+  server-url: https://api.ampnotice.kr
 
 server:
   port: 8080
@@ -59,7 +59,7 @@ server:
 logging:
   level:
     root: INFO
-    com.amp: DEBUG  # ✅ 일단 DEBUG (문제 해결 후 INFO로)
+    com.amp: DEBUG
     org.springframework.security: DEBUG
     com.amp.global.security: DEBUG
 
