@@ -31,6 +31,17 @@ public class FCMService {
             log.info("{} tokens were subscribed successfully from topic {}",
                     response.getSuccessCount(), topic(categoryId));
 
+            if (response.getFailureCount() > 0) {
+                log.error("### [긴급] 구독 실패! FailureCount: {}", response.getFailureCount());
+                response.getErrors().forEach(error -> {
+                    log.error("### [긴급] 실패 상세 - index: {}, reason: {}",
+                            error.getIndex(),
+                            error.getReason());
+                });
+
+                log.error("### [긴급] 전체 에러 정보: {}", response.getErrors());
+            }
+
         } catch (FirebaseMessagingException e) {
             log.error("FCM subscribe error: {}", e.getMessage());
             throw new CustomException(FCMErrorCode.FAIL_TO_SEND_PUSH_ALARM);
