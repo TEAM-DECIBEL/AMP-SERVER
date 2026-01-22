@@ -374,7 +374,7 @@ class NoticeServiceTest {
 
         // when
         NoticeListResponse response =
-                festivalNoticeService.getFestivalNoticeList(1L, 0, 10);
+                festivalNoticeService.getFestivalNoticeList(1L, 1L, 10, 20);
 
         // then
         assertThat(response.announcements()).hasSize(1);
@@ -401,7 +401,7 @@ class NoticeServiceTest {
 
         // when & then
         assertThatThrownBy(() ->
-                festivalNoticeService.getFestivalNoticeList(1L, 0, 10)
+                festivalNoticeService.getFestivalNoticeList(1L, 1L, 10, 20)
         ).isInstanceOf(NoticeException.class);
     }
 
@@ -428,7 +428,7 @@ class NoticeServiceTest {
 
         // when
         NoticeListResponse response =
-                festivalNoticeService.getFestivalNoticeList(1L, 0, 10);
+                festivalNoticeService.getFestivalNoticeList(1L, 1L, 10, 20);
 
         // then
         assertThat(response.announcements().get(0).isSaved()).isFalse();
