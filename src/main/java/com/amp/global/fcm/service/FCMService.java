@@ -62,7 +62,7 @@ public class FCMService {
         }
     }
 
-    private String topic(Long categoryId) {
-        return "category-" + categoryId;
+    private String topic(Long festivalCategoryId) {
+        return "festival-category-" + festivalCategoryId;
     }
 }
