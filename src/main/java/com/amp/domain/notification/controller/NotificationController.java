@@ -41,7 +41,7 @@ public class NotificationController {
 
     @Operation(summary = "카테고리 구독 취소")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_UNSUBSCRIBE)
-    @DeleteMapping("/{categoryId}/subscribe")
+    @DeleteMapping("/{categoryCode}/subscribe")
     public ResponseEntity<BaseResponse<Void>> unsubscribeCategory(
             @PathVariable Long festivalId,
             @PathVariable String categoryCode,
