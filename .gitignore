@@ -39,6 +39,7 @@ out/
 ### env ###
 application-secret.yml
 application-local.yml
+application-test.yml
 .env
 .env.local
 
