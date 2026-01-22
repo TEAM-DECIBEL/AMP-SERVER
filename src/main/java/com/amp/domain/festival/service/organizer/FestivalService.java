@@ -37,7 +37,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 
@@ -64,14 +65,29 @@ public class FestivalService {
     public FestivalCreateResponse createFestival(FestivalCreateRequest request) {
         User user = authService.getCurrentUser();
 
-        List<ScheduleRequest> schedules = parseJson(request.schedules(), new TypeReference<List<ScheduleRequest>>() {
-        }, FestivalErrorCode.INVALID_SCHEDULE_FORMAT);
+        Organizer organizer = organizerRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new CustomException(CommonErrorCode.FORBIDDEN));
 
-        List<StageRequest> stages = parseJson(request.stages(), new TypeReference<List<StageRequest>>() {
-        }, FestivalErrorCode.INVALID_STAGE_FORMAT);
+        List<ScheduleRequest> schedules = parseJson(
+                request.schedules(),
+                new TypeReference<List<ScheduleRequest>>() {
+                },
+                FestivalErrorCode.INVALID_SCHEDULE_FORMAT
+        );
 
-        List<Long> activeCategoryIds = parseJson(request.activeCategoryIds(), new TypeReference<List<Long>>() {
-        }, FestivalErrorCode.INVALID_CATEGORY_FORMAT);
+        List<StageRequest> stages = parseJson(
+                request.stages(),
+                new TypeReference<List<StageRequest>>() {
+                },
+                FestivalErrorCode.INVALID_STAGE_FORMAT
+        );
+
+        List<Long> activeCategoryIds = parseJson(
+                request.activeCategoryIds(),
+                new TypeReference<List<Long>>() {
+                },
+                FestivalErrorCode.INVALID_CATEGORY_FORMAT
+        );
 
         if (schedules == null || schedules.isEmpty()) {
             throw new CustomException(FestivalErrorCode.SCHEDULES_REQUIRED);
@@ -100,19 +116,11 @@ public class FestivalService {
                     .endDate(endDate)
                     .startTime(startTime)
                     .mainImageUrl(publicUrl)
+                    .organizer(organizer)
                     .build();
 
             festival.updateStatus();
             Festival savedFestival = festivalRepository.save(festival);
-
-            Organizer organizer = Organizer.builder()
-                    .user(user)
-                    .festival(savedFestival)
-                    .organizerName(user.getNickname())
-                    .contactEmail(user.getEmail())
-                    .build();
-
-            organizerRepository.save(organizer);
 
             scheduleService.syncSchedules(savedFestival, schedules);
             stageService.syncStages(savedFestival, stages);
@@ -124,16 +132,15 @@ public class FestivalService {
             if (imageKey != null) {
                 s3Service.delete(imageKey);
             }
-
             throw e;
+
         } catch (Exception e) {
             if (imageKey != null) {
                 try {
                     s3Service.delete(imageKey);
-                } catch (Exception deleteException) {
+                } catch (Exception ignore) {
                 }
             }
-
             throw new CustomException(FestivalErrorCode.FESTIVAL_CREATE_FAILED);
         }
     }
@@ -176,21 +183,23 @@ public class FestivalService {
     public void deleteFestival(Long festivalId) {
         User user = authService.getCurrentUser();
         Festival festival = findFestival(festivalId);
+
         validateOrganizer(festival, user);
 
         festivalScheduleRepository.softDeleteByFestivalId(festivalId);
         stageRepository.softDeleteByFestivalId(festivalId);
-        organizerRepository.softDeleteByFestivalId(festivalId);
         festivalCategoryRepository.softDeleteByFestivalId(festivalId);
 
-        festivalRepository.softDeleteById(festivalId);
 
+        festivalRepository.softDeleteById(festivalId);
     }
 
     private <T> LocalDate calculateDate(List<T> schedules, Function<T, LocalDate> dateExtractor, boolean isStart) {
         return schedules.stream()
                 .map(dateExtractor)
-                .reduce(isStart ? BinaryOperator.minBy(Comparator.naturalOrder()) : BinaryOperator.maxBy(Comparator.naturalOrder()))
+                .reduce(isStart
+                        ? BinaryOperator.minBy(Comparator.naturalOrder())
+                        : BinaryOperator.maxBy(Comparator.naturalOrder()))
                 .orElseThrow(() -> new CustomException(FestivalErrorCode.INVALID_FESTIVAL_PERIOD));
     }
 
@@ -226,10 +235,11 @@ public class FestivalService {
                 .orElseThrow(() -> new CustomException(FestivalErrorCode.FESTIVAL_NOT_FOUND));
     }
 
+
     private void validateOrganizer(Festival festival, User user) {
-        if (!organizerRepository.existsByFestivalAndUser(festival, user)) {
+        Long ownerUserId = festival.getOrganizer().getUser().getId();
+        if (!ownerUserId.equals(user.getId())) {
             throw new CustomException(CommonErrorCode.FORBIDDEN);
         }
     }
-
 }
