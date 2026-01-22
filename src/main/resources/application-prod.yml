@@ -51,10 +51,16 @@ springdoc:
     enabled: true
   api-docs:
     enabled: true
-  server-url: https://api.ampnotice.kr
 
 server:
   port: 8080
+
+swagger:
+  server:
+    prod:
+      url: https://api.ampnotice.kr
+    local:
+      url: http://localhost:8080
 
 logging:
   level:
