@@ -48,7 +48,7 @@ public class SwaggerConfig {
     @Value("${swagger.server.local.url:http://localhost:8080}")
     private String localServerUrl;
 
-    @Value("${swagger.server.prod.url:https://ampnotice.kr}")
+    @Value("${swagger.server.prod.url:https://api.ampnotice.kr}")
     private String prodServerUrl;
 
     @Bean
