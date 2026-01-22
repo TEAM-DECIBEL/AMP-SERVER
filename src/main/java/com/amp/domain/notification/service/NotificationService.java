@@ -18,6 +18,7 @@ import com.amp.global.fcm.service.FCMService;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class NotificationService {
 
@@ -36,14 +38,26 @@ public class NotificationService {
     @Transactional
     public void sendNewNoticeNotification(NoticeCreatedEvent event) throws FirebaseMessagingException {
 
+        log.info("===== sendNewNoticeNotification 시작 =====");
+        log.info("[알림] festivalCategoryId={}", event.getCategoryId());
+
+
         List<Alarm> alarms =
                 alarmRepository.findAllByFestivalCategoryIdAndIsActiveTrue(event.getCategoryId());
 
+        if (alarms.isEmpty()) {
+            log.warn("[알림] 구독자가 없어서 종료");
+            return;
+        }
         String title = event.getCategoryName() + " 공지가 업로드 되었어요!";
         String noticeBody = "[" + event.getCategoryName() + "]" + event.getTitle();
         String timeData = TimeFormatter.formatTimeAgo(event.getCreatedAt());
 
+        log.info("[알림] title={}", title);
+
+
         for (Alarm alarm : alarms) {
+            log.info("[알림] userId={} 저장 시작", alarm.getUser().getId());
             Notification notification = Notification.builder()
                     .user(alarm.getUser())
                     .notice(event.getNotice())
@@ -52,13 +66,17 @@ public class NotificationService {
                     .build();
 
             notificationRepository.save(notification);
+            log.info("[알림] userId={} 저장 완료", alarm.getUser().getId());
         }
+
+        log.info("[알림] FCM 전송 시작");
         fcmService.sendCategoryTopicAlarm(
                 event.getCategoryId(),
                 title,
                 noticeBody,
                 timeData
         );
+        log.info("[알림] FCM 전송 완료");
     }
 
     @Transactional
