@@ -34,6 +34,7 @@ public class NotificationService {
     private final AlarmRepository alarmRepository;
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
+    private final NotificationSaveService notificationSaveService;
 
     @Transactional
     public void sendNewNoticeNotification(NoticeCreatedEvent event) throws FirebaseMessagingException {
@@ -65,7 +66,7 @@ public class NotificationService {
                     .message(noticeBody)
                     .build();
 
-            notificationRepository.save(notification);
+            notificationSaveService.save(notification);
             log.info("[알림] userId={} 저장 완료", alarm.getUser().getId());
         }
 

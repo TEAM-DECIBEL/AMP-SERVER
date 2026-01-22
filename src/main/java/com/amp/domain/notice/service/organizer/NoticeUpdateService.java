@@ -61,6 +61,18 @@ public class NoticeUpdateService {
                         new NoticeException(NoticeErrorCode.NOTICE_NOT_FOUND)
                 );
 
+        boolean wasPinned = notice.getIsPinned();
+        boolean willBePinned = request.isPinned();
+
+        if (!wasPinned && willBePinned) {
+            long pinnedCount =
+                    noticeRepository.countByFestivalAndIsPinnedTrueAndDeletedAtIsNull(festival);
+
+            if (pinnedCount >= 3) {
+                throw new NoticeException(NoticeErrorCode.PINNED_NOTICE_LIMIT_EXCEEDED);
+            }
+        }
+
         if (notice.getDeletedAt() != null) {
             throw new NoticeException(NoticeErrorCode.NOTICE_ALREADY_DELETED);
         }
