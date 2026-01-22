@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
+import com.google.firebase.messaging.Notification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -50,6 +51,10 @@ public class FCMService {
         try {
             Message message = Message.builder()
                     .setTopic(topic)
+                    .setNotification(Notification.builder()
+                            .setTitle(title)
+                            .setBody(noticeBody)
+                            .build())
                     .putData("title", title)
                     .putData("message", noticeBody)
                     .putData("time", timeData)
