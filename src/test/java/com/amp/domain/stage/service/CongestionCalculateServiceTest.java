@@ -39,7 +39,10 @@ class CongestionCalculateServiceTest {
     void calculateWeightedAverageTest() {
         // given
         Long stageId = 1L;
-        Stage stage = Stage.builder().id(stageId).build();
+        Stage stage = Stage.builder()
+                .id(stageId)
+                .build();
+
         LocalDateTime now = LocalDateTime.now();
 
         // 10분 전 제보 (가중치 1.0, 혼잡 3점)
@@ -67,5 +70,4 @@ class CongestionCalculateServiceTest {
                 sc.getCongestionLevel() == CongestionLevel.CROWDED
         ));
     }
-
 }
