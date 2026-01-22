@@ -15,10 +15,14 @@ public interface OrganizerRepository extends JpaRepository<Organizer, Long> {
 
     Optional<Organizer> findByUserId(Long userId);
 
+    Optional<Organizer> findByUser(User user);
+
     @Query("SELECT CASE WHEN COUNT(o) > 0 THEN true ELSE false END " +
             "FROM Organizer o JOIN o.festivals f " +
             "WHERE f = :festival AND o.user = :user")
     Boolean existsByFestivalAndUser(@Param("festival") Festival festival,
                                     @Param("user") User user);
+
+    boolean existsByOrganizerName(String organizerName);
 
 }
