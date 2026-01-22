@@ -1,11 +1,9 @@
 package com.amp.domain.organizer.repository;
 
 import com.amp.domain.festival.entity.Festival;
-import com.amp.domain.festival.entity.FestivalStatus;
 import com.amp.domain.organizer.entity.Organizer;
 import com.amp.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -17,19 +15,10 @@ public interface OrganizerRepository extends JpaRepository<Organizer, Long> {
 
     Optional<Organizer> findByUserId(Long userId);
 
-    boolean existsByFestivalAndUser(Festival festival, User user);
+    @Query("SELECT CASE WHEN COUNT(o) > 0 THEN true ELSE false END " +
+            "FROM Organizer o JOIN o.festivals f " +
+            "WHERE f = :festival AND o.user = :user")
+    Boolean existsByFestivalAndUser(@Param("festival") Festival festival,
+                                    @Param("user") User user);
 
-    @Modifying(clearAutomatically = true)
-    @Query("UPDATE Organizer o SET o.deletedAt = CURRENT_TIMESTAMP WHERE o.festival.id = :festivalId AND o.deletedAt IS NULL")
-    void softDeleteByFestivalId(@Param("festivalId") Long festivalId);
-
-    @Query("SELECT COUNT(f) FROM Organizer o " +
-            "LEFT JOIN o.festival f " +
-            "WHERE o.user.id = :userId " +
-            "AND f.status = :status " +
-            "AND f.id IS NOT NULL")
-    Long countFestivalsByUserIdAndStatus(
-            @Param("userId") Long userId,
-            @Param("status") FestivalStatus status
-    );
 }
