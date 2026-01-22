@@ -1,6 +1,8 @@
 package com.amp.domain.notification.service;
 
+import com.amp.domain.notice.entity.Notice;
 import com.amp.domain.notice.event.NoticeCreatedEvent;
+import com.amp.domain.user.entity.User;
 import com.amp.global.fcm.service.FCMService;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import org.junit.jupiter.api.DisplayName;
@@ -25,6 +27,18 @@ class NotificationServiceTest {
 
     @InjectMocks
     private NotificationService notificationService;
+    // given
+    User mockUser = User.builder()
+            .id(1L)
+            .email("test@example.com")
+            .nickname("테스트유저")
+            .build();
+
+    Notice mockNotice = Notice.builder()
+            .title("공지 제목")
+            .content("공지 내용")
+            .user(mockUser)
+            .build();
 
     @Test
     @DisplayName("공지 생성 이벤트 발생 시 카테고리 토픽으로 FCM 알림을 전송한다")
@@ -34,7 +48,7 @@ class NotificationServiceTest {
                 1L,
                 "공지사항",
                 "축제명",
-                10L,
+                mockNotice,
                 "제목",
                 LocalDateTime.now()
         );
@@ -60,7 +74,7 @@ class NotificationServiceTest {
                 1L,
                 "공지사항",
                 "축제명",
-                10L,
+                mockNotice,
                 "제목",
                 LocalDateTime.now()
         );
