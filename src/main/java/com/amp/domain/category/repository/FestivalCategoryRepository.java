@@ -14,9 +14,11 @@ public interface FestivalCategoryRepository extends JpaRepository<FestivalCatego
     void softDeleteByFestivalId(@Param("festivalId") Long festivalId);
 
     @Query("SELECT fc FROM FestivalCategory fc " +
-            "WHERE fc.category.id = :categoryId " +
-            "AND fc.festival.id = :festivalId")
-    Optional<FestivalCategory> findByMapping(@Param("categoryId") Long categoryId,
-                                             @Param("festivalId") Long festivalId);
-
+            "WHERE fc.festival.id = :festivalId " +
+            "AND fc.category.id = :categoryId " +
+            "AND fc.isActive = true")
+    Optional<FestivalCategory> findByMapping(
+            @Param("festivalId") Long festivalId,
+            @Param("categoryId") Long categoryId
+    );
 }

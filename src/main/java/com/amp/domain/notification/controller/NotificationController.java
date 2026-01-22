@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "User API")
-@RequestMapping("/api/v1/users/notifications")
+@RequestMapping("/api/v1/festivals/{festivalId}/users/notifications")
 public class NotificationController {
 
     private final CategorySubscribeService categorySubscribeService;
@@ -26,12 +26,13 @@ public class NotificationController {
 
     @Operation(summary = "카테고리 구독")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_SUBSCRIBE)
-    @PostMapping("/{categoryId}/subscribe")
+    @PostMapping("/{categoryCode}/subscribe")
     public ResponseEntity<BaseResponse<Void>> subscribeCategory(
-            @PathVariable Long categoryId,
+            @PathVariable Long festivalId,
+            @PathVariable String categoryCode,
             @RequestBody FcmTopicSubscribeRequest request
     ) throws FirebaseMessagingException {
-        categorySubscribeService.subscribe(categoryId, request.fcmToken());
+        categorySubscribeService.subscribe(festivalId, categoryCode, request.fcmToken());
         return ResponseEntity
                 .status(SuccessStatus.SUBSCRIBE_SUCCESS.getHttpStatus())
                 .body(BaseResponse.ok(SuccessStatus.SUBSCRIBE_SUCCESS.getMsg(), null));
@@ -40,12 +41,13 @@ public class NotificationController {
 
     @Operation(summary = "카테고리 구독 취소")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_UNSUBSCRIBE)
-    @DeleteMapping("/{categoryId}/subscribe")
+    @DeleteMapping("/{categoryCode}/subscribe")
     public ResponseEntity<BaseResponse<Void>> unsubscribeCategory(
-            @PathVariable Long categoryId,
+            @PathVariable Long festivalId,
+            @PathVariable String categoryCode,
             @RequestBody FcmTopicSubscribeRequest request
     ) throws FirebaseMessagingException {
-        categorySubscribeService.unsubscribe(categoryId, request.fcmToken());
+        categorySubscribeService.unsubscribe(festivalId, categoryCode, request.fcmToken());
         return ResponseEntity
                 .status(SuccessStatus.UNSUBSCRIBE_SUCCESS.getHttpStatus())
                 .body(BaseResponse.ok(SuccessStatus.UNSUBSCRIBE_SUCCESS.getMsg(), null));
