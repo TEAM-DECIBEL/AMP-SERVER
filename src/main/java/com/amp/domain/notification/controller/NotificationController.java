@@ -1,7 +1,6 @@
 package com.amp.domain.notification.controller;
 
 import com.amp.domain.notification.dto.request.FcmTopicSubscribeRequest;
-import com.amp.domain.notification.dto.response.NotificationListResponse;
 import com.amp.domain.notification.service.CategorySubscribeService;
 import com.amp.domain.notification.service.NotificationService;
 import com.amp.global.annotation.ApiErrorCodes;
@@ -61,15 +60,6 @@ public class NotificationController {
         return ResponseEntity
                 .status(SuccessStatus.NOTIFICATION_SET_READ_SUCCESS.getHttpStatus())
                 .body(BaseResponse.ok(SuccessStatus.NOTIFICATION_SET_READ_SUCCESS.getMsg(), null));
-    }
-
-    @GetMapping
-    public ResponseEntity<BaseResponse<NotificationListResponse>> myNotifications() {
-
-        NotificationListResponse response = notificationService.getMyNotifications();
-        return ResponseEntity
-                .status(SuccessStatus.NOTIFICATION_GET_SUCCESS.getHttpStatus())
-                .body(BaseResponse.ok(SuccessStatus.NOTIFICATION_GET_SUCCESS.getMsg(), response));
     }
 
 }
