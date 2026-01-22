@@ -74,6 +74,7 @@ public class SecurityConfig {
                         ).permitAll()
 
                         .requestMatchers(
+                                "/",
                                 "/api/v1/users/festivals",
                                 "/api/auth/**",
                                 "/api/public/**",
