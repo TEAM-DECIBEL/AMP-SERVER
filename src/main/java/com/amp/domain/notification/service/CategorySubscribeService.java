@@ -1,7 +1,10 @@
 package com.amp.domain.notification.service;
 
+import com.amp.domain.category.entity.Category;
 import com.amp.domain.category.entity.FestivalCategory;
+import com.amp.domain.category.exception.CategoryErrorCode;
 import com.amp.domain.category.exception.FestivalCategoryErrorCode;
+import com.amp.domain.category.repository.CategoryRepository;
 import com.amp.domain.category.repository.FestivalCategoryRepository;
 import com.amp.domain.notification.entity.Alarm;
 import com.amp.domain.notification.entity.CategorySubscribeEvent;
@@ -13,7 +16,6 @@ import com.amp.global.exception.CustomException;
 import com.amp.global.fcm.exception.FCMErrorCode;
 import com.amp.global.fcm.service.FCMService;
 import com.amp.global.security.service.AuthService;
-import com.google.firebase.messaging.FirebaseMessagingException;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -32,10 +34,11 @@ public class CategorySubscribeService {
     private final UserRepository userRepository;
     private final FestivalCategoryRepository festivalCategoryRepository;
     private final AuthService authService;
+    private final CategoryRepository categoryRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
 
     @Transactional
-    public void subscribe(Long categoryId, String fcmToken) {
+    public void subscribe(Long festivalId, String categoryCode, String fcmToken) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (!authService.isLoggedInUser(authentication)) {
@@ -45,7 +48,11 @@ public class CategorySubscribeService {
         User user = userRepository.findByEmail(authentication.getName())
                 .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
 
-        FestivalCategory festivalCategory = festivalCategoryRepository.findById(categoryId)
+        Category category = categoryRepository.findByCategoryCode(categoryCode)
+                .orElseThrow(() -> new CustomException(CategoryErrorCode.CATEGORY_NOT_FOUND));
+
+        FestivalCategory festivalCategory = festivalCategoryRepository
+                .findByMapping(festivalId, category.getId())
                 .orElseThrow(() -> new CustomException(FestivalCategoryErrorCode.NOTICE_CATEGORY_NOT_FOUND));
 
         // DB에 이미 구독 기록 있는지 확인
@@ -66,12 +73,12 @@ public class CategorySubscribeService {
 
         // 트랜잭션 안에서 이벤트만 발행
         applicationEventPublisher.publishEvent(
-                new CategorySubscribeEvent(categoryId, fcmToken, true)
+                new CategorySubscribeEvent(festivalCategory.getId(), fcmToken, true)
         );
     }
 
     @Transactional
-    public void unsubscribe(Long categoryId, String fcmToken) throws FirebaseMessagingException {
+    public void unsubscribe(Long festivalId, String categoryCode, String fcmToken) {
         // 로그인 안한 유저가 요청시 예외처리
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -82,8 +89,15 @@ public class CategorySubscribeService {
         User user = userRepository.findByEmail(authentication.getName())
                 .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
 
-        FestivalCategory festivalCategory = festivalCategoryRepository.findById(categoryId)
+
+        Category category = categoryRepository.findByCategoryCode(categoryCode)
+                .orElseThrow(() -> new CustomException(CategoryErrorCode.CATEGORY_NOT_FOUND));
+
+
+        FestivalCategory festivalCategory = festivalCategoryRepository
+                .findByMapping(festivalId, category.getId())
                 .orElseThrow(() -> new CustomException(FestivalCategoryErrorCode.NOTICE_CATEGORY_NOT_FOUND));
+
 
         Alarm alarm = alarmRepository.findByUserAndFestivalCategory(user, festivalCategory)
                 .orElseThrow(() -> new CustomException(FCMErrorCode.NOT_SUBSCRIBED_CATEGORY));
@@ -98,7 +112,11 @@ public class CategorySubscribeService {
         alarmRepository.save(alarm);
 
         applicationEventPublisher.publishEvent(
-                new CategorySubscribeEvent(categoryId, fcmToken, false)
+                new CategorySubscribeEvent(
+                        festivalCategory.getId(),
+                        fcmToken,
+                        false
+                )
         );
     }
 }
