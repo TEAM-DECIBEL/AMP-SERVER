@@ -1,6 +1,7 @@
 package com.amp.domain.festival.util;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 
@@ -18,7 +19,7 @@ public class FestivalUtils {
     }
 
     public static Long calculateDDay(LocalDate startDate, LocalDate endDate) {
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
 
         if (today.isBefore(startDate)) {
             return ChronoUnit.DAYS.between(today, startDate);
