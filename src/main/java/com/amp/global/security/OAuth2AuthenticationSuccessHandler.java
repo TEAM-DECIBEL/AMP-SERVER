@@ -65,9 +65,12 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         log.info("User found - ID: {}, Email: {}, Status: {}, UserType: {}",
                 user.getId(), user.getEmail(), user.getRegistrationStatus(), user.getUserType());
 
-        // state에서 userType 추출 (이미 CustomOAuth2AuthorizationRequestResolver가 판단해서 넣어둠)
+        // state에서 userType과 origin 추출
         String state = request.getParameter("state");
         UserType requestedUserType = extractUserTypeFromState(state);
+        String clientOrigin = extractOriginFromState(state);
+
+        log.info("Extracted from state - userType: {}, origin: {}", requestedUserType, clientOrigin);
 
         String token = jwtUtil.generateToken(email);
         log.info("New JWT token generated");
@@ -76,7 +79,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
         log.info("Response committed after cookie: {}", response.isCommitted());
 
-        String targetUrl = determineTargetUrl(request, user, requestedUserType, token);
+        String targetUrl = determineTargetUrl(clientOrigin, user, requestedUserType, token);
 
         log.info("Final redirect URL: {}", targetUrl);
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
@@ -105,11 +108,12 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
                 cookieDomain != null && !cookieDomain.trim().isEmpty() ? cookieDomain : "current domain");
     }
 
-    private String determineTargetUrl(HttpServletRequest request, User user,
+    private String determineTargetUrl(String clientOrigin, User user,
                                       UserType requestedUserType, String token) {
 
-        // Origin 기반으로 callback URI 생성
-        String callbackUri = extractCallbackUri(request);
+        // state에서 추출한 origin을 callback URI로 사용
+        String callbackUri = clientOrigin + "/callback";
+        log.info("Using callback URI from state: {}", callbackUri);
 
         if (user.getRegistrationStatus() == RegistrationStatus.PENDING) {
             // 온보딩 필요
@@ -132,61 +136,27 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         }
     }
 
-    /**
-     * Origin 또는 Referer 헤더를 기반으로 callback URI를 동적으로 생성
-     */
-    private String extractCallbackUri(HttpServletRequest request) {
-        // 1. Origin 헤더 확인 (가장 신뢰할 수 있는 소스)
-        String origin = request.getHeader("Origin");
-
-        if (origin != null && !origin.trim().isEmpty()) {
-            String callbackUri = origin + "/callback";
-            log.info("Callback URI extracted from Origin header: {}", callbackUri);
-            return callbackUri;
+    private String extractOriginFromState(String state) {
+        if (state == null) {
+            log.warn("State parameter is null, using fallback origin");
+            return "http://localhost:5173"; // fallback
         }
 
-        // 2. Referer 헤더에서 추출 시도
-        String referer = request.getHeader("Referer");
-
-        if (referer != null && !referer.trim().isEmpty()) {
-            try {
-                // Referer에서 origin 부분만 추출
-                java.net.URI uri = new java.net.URI(referer);
-                String extractedOrigin = uri.getScheme() + "://" + uri.getAuthority();
-                String callbackUri = extractedOrigin + "/callback";
-                log.info("Callback URI extracted from Referer header: {}", callbackUri);
-                return callbackUri;
-            } catch (Exception e) {
-                log.warn("Failed to parse Referer header: {}", referer, e);
+        try {
+            if (state.contains("|origin=")) {
+                String[] parts = state.split("\\|origin=");
+                if (parts.length == 2) {
+                    String origin = parts[1];
+                    log.info("Extracted origin from state: {}", origin);
+                    return origin;
+                }
             }
+        } catch (Exception e) {
+            log.error("Failed to parse origin from state: {}", state, e);
         }
 
-        // 3. 요청의 서버 정보에서 추출 (fallback)
-        String scheme = request.getScheme();
-        String serverName = request.getServerName();
-        int serverPort = request.getServerPort();
-
-        StringBuilder fallbackUri = new StringBuilder();
-        fallbackUri.append(scheme).append("://");
-
-        // www. 제거 (www.ampnotice-host.kr -> ampnotice-host.kr)
-        if (serverName.startsWith("www.")) {
-            serverName = serverName.substring(4);
-        }
-
-        fallbackUri.append(serverName);
-
-        // 기본 포트가 아닌 경우에만 포트 추가
-        if ((scheme.equals("http") && serverPort != 80) ||
-                (scheme.equals("https") && serverPort != 443)) {
-            fallbackUri.append(":").append(serverPort);
-        }
-
-        fallbackUri.append("/callback");
-
-        String callbackUri = fallbackUri.toString();
-        log.info("Callback URI extracted from request server info: {}", callbackUri);
-        return callbackUri;
+        log.warn("Could not extract origin from state, using fallback");
+        return "http://localhost:5173"; // fallback
     }
 
     private UserType extractUserTypeFromState(String state) {
@@ -197,12 +167,15 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
         try {
             if (state.contains("|userType=")) {
-                String[] parts = state.split("\\|userType=");
-                if (parts.length == 2) {
-                    String userTypeStr = parts[1];
-                    UserType userType = UserType.valueOf(userTypeStr);
-                    log.info("Extracted userType from state: {}", userType);
-                    return userType;
+                // origin도 포함되어 있으므로 정확히 파싱
+                String[] parts = state.split("\\|");
+                for (String part : parts) {
+                    if (part.startsWith("userType=")) {
+                        String userTypeStr = part.substring("userType=".length());
+                        UserType userType = UserType.valueOf(userTypeStr);
+                        log.info("Extracted userType from state: {}", userType);
+                        return userType;
+                    }
                 }
             }
         } catch (IllegalArgumentException e) {
