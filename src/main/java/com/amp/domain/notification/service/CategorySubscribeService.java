@@ -38,6 +38,15 @@ public class CategorySubscribeService {
 
     @Transactional
     public void subscribe(Long festivalId, String categoryCode, String fcmToken) {
+
+        log.info(
+                "[CategorySubscribeService.subscribe] 카테고리 구독 요청 수신 - festivalId={}, categoryCode={}, fcmToken={}",
+                festivalId,
+                categoryCode,
+                fcmToken
+        );
+
+
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (!authService.isLoggedInUser(authentication)) {
             throw new CustomException(UserErrorCode.USER_NOT_FOUND);
@@ -88,6 +97,13 @@ public class CategorySubscribeService {
         FestivalCategory festivalCategory = festivalCategoryRepository
                 .findByMapping(festivalId, category.getId())
                 .orElseThrow(() -> new CustomException(FestivalCategoryErrorCode.NOTICE_CATEGORY_NOT_FOUND));
+
+
+        log.info(
+                "[CategorySubscribeService.subscribe] FCM 토픽 구독 요청 - topicId={}, token={}",
+                festivalCategory.getId(),
+                fcmToken
+        );
 
         Alarm alarm = alarmRepository.findByUserAndFestivalCategory(user, festivalCategory)
                 .orElseThrow(() -> new CustomException(FCMErrorCode.NOT_SUBSCRIBED_CATEGORY));
