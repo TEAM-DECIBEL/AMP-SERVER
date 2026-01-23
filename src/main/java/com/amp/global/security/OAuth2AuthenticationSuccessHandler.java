@@ -28,18 +28,6 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     private final UserRepository userRepository;
     private final HttpCookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository;
 
-    @Value("${app.oauth2.onboarding-uri.audience:http://localhost:5173/onboarding}")
-    private String audienceOnboardingUri;
-
-    @Value("${app.oauth2.onboarding-uri.organizer:http://localhost:5174/onboarding}")
-    private String organizerOnboardingUri;
-
-    @Value("${app.oauth2.home-uri.audience:http://localhost:5173/root}")
-    private String audienceHomeUri;
-
-    @Value("${app.oauth2.home-uri.organizer:http://localhost:5174/root}")
-    private String organizerHomeUri;
-
     @Value("${app.jwt.cookie-name:accessToken}")
     private String cookieName;
 

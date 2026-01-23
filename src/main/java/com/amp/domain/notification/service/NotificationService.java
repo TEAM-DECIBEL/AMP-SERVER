@@ -111,8 +111,6 @@ public class NotificationService {
         String email = authentication.getName();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
-
-
         Notification notification = notificationRepository.findById(notificationId)
                 .orElseThrow(() -> new NotificationException(NotificationErrorCode.NOTIFICATION_NOT_FOUND));
 
