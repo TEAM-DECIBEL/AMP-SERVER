@@ -3,6 +3,7 @@ package com.amp.domain.festival.entity;
 import com.amp.domain.category.entity.FestivalCategory;
 import com.amp.domain.organizer.entity.Organizer;
 import com.amp.domain.stage.entity.Stage;
+import com.amp.global.common.dto.TimeConstants;
 import com.amp.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -11,7 +12,6 @@ import org.hibernate.annotations.SQLRestriction;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -81,7 +81,7 @@ public class Festival extends BaseTimeEntity {
     }
 
     public void updateStatus() {
-        LocalDate now = LocalDate.now(ZoneId.of("Asia/Seoul"));
+        LocalDate now = LocalDate.now(TimeConstants.KST);
 
         if (now.isBefore(this.startDate)) {
             this.status = FestivalStatus.UPCOMING;
