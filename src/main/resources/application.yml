@@ -4,6 +4,8 @@ spring:
     include: secret
   jackson:
     time-zone: Asia/Seoul
+    deserialization:
+      adjust-dates-to-context-time-zone: false
   servlet:
     multipart:
       max-file-size: 10MB
