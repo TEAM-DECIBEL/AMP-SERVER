@@ -96,9 +96,14 @@ public class FestivalService {
             throw new CustomException(CategoryErrorCode.CATEGORY_REQUIRED);
         }
 
-        LocalDate startDate = calculateDate(schedules, ScheduleRequest::getFestivalDate, true);
+        ScheduleRequest earliestSchedule = schedules.stream()
+                .min(Comparator.comparing(ScheduleRequest::getFestivalDate)
+                        .thenComparing(ScheduleRequest::getFestivalTime))
+                .orElseThrow(() -> new CustomException(FestivalErrorCode.SCHEDULES_REQUIRED));
+
+        LocalDate startDate = earliestSchedule.getFestivalDate();
+        LocalTime startTime = earliestSchedule.getFestivalTime();
         LocalDate endDate = calculateDate(schedules, ScheduleRequest::getFestivalDate, false);
-        LocalTime startTime = calculateTime(schedules, ScheduleRequest::getFestivalTime);
 
         if (request.mainImage() == null || request.mainImage().isEmpty()) {
             throw new CustomException(FestivalErrorCode.MISSING_MAIN_IMAGE);
