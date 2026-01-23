@@ -11,7 +11,6 @@ spring:
       max-file-size: 10MB
       max-request-size: 10MB
 
-
   data:
     redis:
       host: ${REDIS_HOST:localhost}
@@ -60,15 +59,10 @@ jwt:
 
 app:
   oauth2:
-    redirect-uri:
-      audience: ${APP_OAUTH2_REDIRECT_URI_AUDIENCE:http://localhost:5173/auth/callback}
-      organizer: ${APP_OAUTH2_REDIRECT_URI_ORGANIZER:http://localhost:5174/auth/callback}
-    onboarding-uri:
-      audience: ${APP_OAUTH2_ONBOARDING_URI_AUDIENCE:http://localhost:5173/onboarding}
-      organizer: ${APP_OAUTH2_ONBOARDING_URI_ORGANIZER:http://localhost:5174/onboarding}
     failure-redirect-uri: ${APP_OAUTH2_FAILURE_REDIRECT_URI:http://localhost:5173/login}
 
   cors:
+    # ✅ CORS allowed origins - 모든 도메인 포함
     allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173,http://localhost:5174,http://localhost:8080,https://www.ampnotice.kr,https://ampnotice.kr,https://www.ampnotice-host.kr,https://ampnotice-host.kr}
     allowed-methods: ${APP_CORS_ALLOWED_METHODS:GET,POST,PUT,DELETE,PATCH,OPTIONS}
     allowed-headers: ${APP_CORS_ALLOWED_HEADERS:*}

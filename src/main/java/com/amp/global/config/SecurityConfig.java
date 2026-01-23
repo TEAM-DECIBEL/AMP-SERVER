@@ -23,6 +23,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Arrays;
+import java.util.List;
 
 @Slf4j
 @Configuration
@@ -37,12 +38,19 @@ public class SecurityConfig {
     private final CustomAccessDeniedHandler accessDeniedHandler;
     private final OnboardingCheckFilter onboardingCheckFilter;
     private final ClientRegistrationRepository clientRegistrationRepository;
-
-
     private final HttpCookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository;
 
-    @Value("${app.cors.allowed-origins:http://localhost:3000,http://localhost:5173,http://localhost:5174}")
+    @Value("${app.cors.allowed-origins}")
     private String allowedOrigins;
+
+    @Value("${app.cors.allowed-methods:GET,POST,PUT,DELETE,PATCH,OPTIONS}")
+    private String allowedMethods;
+
+    @Value("${app.cors.allowed-headers:*}")
+    private String allowedHeaders;
+
+    @Value("${app.cors.allow-credentials:true}")
+    private boolean allowCredentials;
 
     @Value("${app.oauth2.failure-redirect-uri:http://localhost:5173/login}")
     private String failureRedirectUri;
@@ -51,6 +59,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
+                // ✅ CORS 설정 적용 (가장 먼저!)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
                 // ✅ STATELESS 유지 (쿠키로 OAuth2 처리)
@@ -154,14 +163,39 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList(allowedOrigins.split(",")));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
-        configuration.setAllowCredentials(true);
+
+        // Origins 파싱
+        List<String> origins = Arrays.asList(allowedOrigins.split(","));
+        log.info("✅ CORS Allowed Origins: {}", origins);
+
+        configuration.setAllowedOrigins(origins);
+
+        // Methods 파싱
+        List<String> methods = Arrays.asList(allowedMethods.split(","));
+        configuration.setAllowedMethods(methods);
+
+        // Headers 파싱
+        if ("*".equals(allowedHeaders.trim())) {
+            configuration.setAllowedHeaders(Arrays.asList("*"));
+        } else {
+            configuration.setAllowedHeaders(Arrays.asList(allowedHeaders.split(",")));
+        }
+
+        configuration.setAllowCredentials(allowCredentials);
         configuration.setMaxAge(3600L);
+
+        // ✅ 프론트엔드에서 접근 가능한 헤더 노출
+        configuration.setExposedHeaders(Arrays.asList(
+                "Authorization",
+                "Set-Cookie",
+                "Access-Control-Allow-Origin"
+        ));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
+
+        log.info("✅ CORS Configuration initialized successfully");
+
         return source;
     }
 
