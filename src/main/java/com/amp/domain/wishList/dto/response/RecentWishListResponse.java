@@ -1,6 +1,7 @@
 package com.amp.domain.wishList.dto.response;
 
 import com.amp.domain.festival.entity.Festival;
+import com.amp.domain.festival.util.FestivalUtils;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -24,8 +25,6 @@ public class RecentWishListResponse {
     private Long dDay;
 
     public static RecentWishListResponse from(Festival festival) {
-        long dDay = ChronoUnit.DAYS.between(LocalDate.now(), festival.getStartDate());
-
         return RecentWishListResponse.builder()
                 .festivalId(festival.getId())
                 .title(festival.getTitle())
@@ -33,7 +32,7 @@ public class RecentWishListResponse {
                 .location(festival.getLocation())
                 .startDate(festival.getStartDate())
                 .endDate(festival.getEndDate())
-                .dDay(dDay)
+                .dDay(FestivalUtils.calculateDDay(festival.getStartDate(), festival.getEndDate()))
                 .build();
     }
 
