@@ -51,7 +51,7 @@ public class NotificationService {
             return;
         }
         String title = event.getCategoryName() + " 공지가 업로드 되었어요!";
-        String noticeBody = "[" + event.getCategoryName() + "]" + event.getTitle();
+        String noticeBody = "[" + event.getCategoryName() + "] " + event.getTitle();
         String timeData = TimeFormatter.formatTimeAgo(event.getCreatedAt());
 
         log.info("[알림] title={}", title);
