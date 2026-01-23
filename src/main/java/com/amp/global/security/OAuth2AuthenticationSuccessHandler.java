@@ -31,7 +31,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     @Value("${app.jwt.cookie-name:accessToken}")
     private String cookieName;
 
-    @Value("${app.jwt.cookie-max-age:3600}") // 1시간 (초 단위)
+    @Value("${app.jwt.cookie-max-age:3600}")
     private int cookieMaxAge;
 
     @Value("${app.jwt.cookie-domain:localhost}")
@@ -49,7 +49,6 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
         log.info("=== OAuth2 인증 성공 ===");
 
-        // ✅ OAuth2 관련 쿠키 정리
         cookieAuthorizationRequestRepository.removeAuthorizationRequestCookies(request, response);
 
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
@@ -66,20 +65,18 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         log.info("User found - ID: {}, Email: {}, Status: {}, UserType: {}",
                 user.getId(), user.getEmail(), user.getRegistrationStatus(), user.getUserType());
 
-        // state에서 userType 추출
+        // state에서 userType 추출 (이미 CustomOAuth2AuthorizationRequestResolver가 판단해서 넣어둠)
         String state = request.getParameter("state");
         UserType requestedUserType = extractUserTypeFromState(state);
 
-        // JWT 토큰 생성
         String token = jwtUtil.generateToken(email);
         log.info("New JWT token generated");
 
-        // 쿠키에 토큰 설정 시도 (cross-domain에서는 작동 안 함)
         addTokenCookie(response, token);
 
         log.info("Response committed after cookie: {}", response.isCommitted());
 
-        String targetUrl = determineTargetUrl(user, requestedUserType, token);
+        String targetUrl = determineTargetUrl(request, user, requestedUserType, token);
 
         log.info("Final redirect URL: {}", targetUrl);
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
@@ -108,16 +105,17 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
                 cookieDomain != null && !cookieDomain.trim().isEmpty() ? cookieDomain : "current domain");
     }
 
-    private String determineTargetUrl(User user, UserType requestedUserType, String token) {
+    private String determineTargetUrl(HttpServletRequest request, User user,
+                                      UserType requestedUserType, String token) {
+
+        // Origin 기반으로 callback URI 생성
+        String callbackUri = extractCallbackUri(request);
+
         if (user.getRegistrationStatus() == RegistrationStatus.PENDING) {
             // 온보딩 필요
             user.updateUserType(requestedUserType);
             userRepository.save(user);
             log.info("Updated user type to {} for pending user: {}", requestedUserType, user.getEmail());
-
-            String callbackUri = (requestedUserType == UserType.ORGANIZER)
-                    ? "http://localhost:5174/callback"
-                    : "http://localhost:5173/callback";
 
             return UriComponentsBuilder.fromUriString(callbackUri)
                     .queryParam("token", token)
@@ -127,15 +125,68 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
             // 온보딩 완료
             log.info("User registration completed, redirecting to home: {}", user.getEmail());
 
-            String callbackUri = (user.getUserType() == UserType.ORGANIZER)
-                    ? "http://localhost:5174/callback"
-                    : "http://localhost:5173/callback";
-
             return UriComponentsBuilder.fromUriString(callbackUri)
                     .queryParam("token", token)
                     .queryParam("status", "COMPLETED")
                     .build().toUriString();
         }
+    }
+
+    /**
+     * Origin 또는 Referer 헤더를 기반으로 callback URI를 동적으로 생성
+     */
+    private String extractCallbackUri(HttpServletRequest request) {
+        // 1. Origin 헤더 확인 (가장 신뢰할 수 있는 소스)
+        String origin = request.getHeader("Origin");
+
+        if (origin != null && !origin.trim().isEmpty()) {
+            String callbackUri = origin + "/callback";
+            log.info("Callback URI extracted from Origin header: {}", callbackUri);
+            return callbackUri;
+        }
+
+        // 2. Referer 헤더에서 추출 시도
+        String referer = request.getHeader("Referer");
+
+        if (referer != null && !referer.trim().isEmpty()) {
+            try {
+                // Referer에서 origin 부분만 추출
+                java.net.URI uri = new java.net.URI(referer);
+                String extractedOrigin = uri.getScheme() + "://" + uri.getAuthority();
+                String callbackUri = extractedOrigin + "/callback";
+                log.info("Callback URI extracted from Referer header: {}", callbackUri);
+                return callbackUri;
+            } catch (Exception e) {
+                log.warn("Failed to parse Referer header: {}", referer, e);
+            }
+        }
+
+        // 3. 요청의 서버 정보에서 추출 (fallback)
+        String scheme = request.getScheme();
+        String serverName = request.getServerName();
+        int serverPort = request.getServerPort();
+
+        StringBuilder fallbackUri = new StringBuilder();
+        fallbackUri.append(scheme).append("://");
+
+        // www. 제거 (www.ampnotice-host.kr -> ampnotice-host.kr)
+        if (serverName.startsWith("www.")) {
+            serverName = serverName.substring(4);
+        }
+
+        fallbackUri.append(serverName);
+
+        // 기본 포트가 아닌 경우에만 포트 추가
+        if ((scheme.equals("http") && serverPort != 80) ||
+                (scheme.equals("https") && serverPort != 443)) {
+            fallbackUri.append(":").append(serverPort);
+        }
+
+        fallbackUri.append("/callback");
+
+        String callbackUri = fallbackUri.toString();
+        log.info("Callback URI extracted from request server info: {}", callbackUri);
+        return callbackUri;
     }
 
     private UserType extractUserTypeFromState(String state) {
