@@ -45,16 +45,20 @@ public class CustomOAuth2AuthorizationRequestResolver implements OAuth2Authoriza
         // 1. 요청 파라미터에서 userType 확인 (명시적으로 지정된 경우)
         String userType = request.getParameter("userType");
 
-        // 2. 파라미터가 없거나 유효하지 않으면 Origin/Referer/Domain 기반으로 자동 감지
+        // 2. Origin 추출
+        String origin = extractOrigin(request);
+        log.info("Extracted origin: {}", origin);
+
+        // 3. 파라미터가 없거나 유효하지 않으면 Origin 기반으로 자동 감지
         if (userType == null || !isValidUserType(userType)) {
-            userType = detectUserTypeFromRequest(request);
+            userType = determineUserTypeFromUrl(origin);
         }
 
-        log.info("OAuth2 authorization request with userType: {}", userType);
+        log.info("OAuth2 authorization request with userType: {}, origin: {}", userType, origin);
 
-        // state에 userType 정보 추가
+        // state에 userType과 origin 정보 추가
         String originalState = authorizationRequest.getState();
-        String customState = originalState + "|userType=" + userType;
+        String customState = originalState + "|userType=" + userType + "|origin=" + origin;
 
         return OAuth2AuthorizationRequest
                 .from(authorizationRequest)
@@ -63,34 +67,46 @@ public class CustomOAuth2AuthorizationRequestResolver implements OAuth2Authoriza
     }
 
     /**
-     * Request에서 UserType을 자동 감지
-     * 우선순위: Origin 헤더 > Referer 헤더 > Server Name
+     * Request에서 Origin을 추출
+     * 우선순위: Origin 헤더 > Referer 헤더 > Server Info
      */
-    private String detectUserTypeFromRequest(HttpServletRequest request) {
+    private String extractOrigin(HttpServletRequest request) {
         // 1. Origin 헤더 확인
         String origin = request.getHeader("Origin");
         if (origin != null && !origin.trim().isEmpty()) {
-            String userType = determineUserTypeFromUrl(origin);
-            log.info("UserType detected from Origin header: {} -> {}", origin, userType);
-            return userType;
+            log.info("Origin extracted from Origin header: {}", origin);
+            return origin;
         }
 
-        // 2. Referer 헤더 확인
+        // 2. Referer 헤더에서 추출
         String referer = request.getHeader("Referer");
         if (referer != null && !referer.trim().isEmpty()) {
-            String userType = determineUserTypeFromUrl(referer);
-            log.info("UserType detected from Referer header: {} -> {}", referer, userType);
-            return userType;
+            try {
+                java.net.URI uri = new java.net.URI(referer);
+                String extractedOrigin = uri.getScheme() + "://" + uri.getAuthority();
+                log.info("Origin extracted from Referer header: {}", extractedOrigin);
+                return extractedOrigin;
+            } catch (Exception e) {
+                log.warn("Failed to parse Referer header: {}", referer, e);
+            }
         }
 
-        // 3. Server Name 확인 (fallback)
+        // 3. Server Info 기반 (fallback)
+        String scheme = request.getScheme();
         String serverName = request.getServerName();
         int serverPort = request.getServerPort();
-        String serverInfo = serverName + ":" + serverPort;
 
-        String userType = determineUserTypeFromUrl(serverInfo);
-        log.info("UserType detected from server info: {} -> {}", serverInfo, userType);
-        return userType;
+        StringBuilder fallbackOrigin = new StringBuilder();
+        fallbackOrigin.append(scheme).append("://").append(serverName);
+
+        if ((scheme.equals("http") && serverPort != 80) ||
+                (scheme.equals("https") && serverPort != 443)) {
+            fallbackOrigin.append(":").append(serverPort);
+        }
+
+        String result = fallbackOrigin.toString();
+        log.info("Origin extracted from server info: {}", result);
+        return result;
     }
 
     /**
