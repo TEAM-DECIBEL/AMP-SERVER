@@ -73,6 +73,8 @@ public class NotificationService {
         log.info("[알림] FCM 전송 시작");
         fcmService.sendCategoryTopicAlarm(
                 event.getCategoryId(),
+                event.getNotice().getId(),
+                event.getNotice().getFestival().getId(),
                 title,
                 noticeBody,
                 timeData
