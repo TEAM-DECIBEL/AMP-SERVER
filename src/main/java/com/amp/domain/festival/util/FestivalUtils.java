@@ -24,7 +24,7 @@ public class FestivalUtils {
         LocalDate today = LocalDate.now(TimeConstants.KST);
 
         if (today.isBefore(startDate)) {
-            return ChronoUnit.DAYS.between(today, startDate);
+            return ChronoUnit.DAYS.between(startDate, today);
         } else if (!today.isAfter(endDate)) {
             return 0L;
         } else {
