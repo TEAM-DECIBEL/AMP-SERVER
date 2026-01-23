@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -59,10 +60,8 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
-                // ✅ CORS 설정 적용 (가장 먼저!)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
-                // ✅ STATELESS 유지 (쿠키로 OAuth2 처리)
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
@@ -73,6 +72,9 @@ public class SecurityConfig {
                 )
 
                 .authorizeHttpRequests(auth -> auth
+                        // ✅ OPTIONS 요청 모두 허용 (CORS preflight를 위해 필수!)
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
                         .requestMatchers(
                                 "/api/v1/notices/*/bookmark"
                         ).authenticated()
@@ -164,17 +166,15 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // Origins 파싱
         List<String> origins = Arrays.asList(allowedOrigins.split(","));
         log.info("✅ CORS Allowed Origins: {}", origins);
 
         configuration.setAllowedOrigins(origins);
+        configuration.setAllowedOriginPatterns(origins);
 
-        // Methods 파싱
         List<String> methods = Arrays.asList(allowedMethods.split(","));
         configuration.setAllowedMethods(methods);
 
-        // Headers 파싱
         if ("*".equals(allowedHeaders.trim())) {
             configuration.setAllowedHeaders(Arrays.asList("*"));
         } else {
@@ -184,17 +184,17 @@ public class SecurityConfig {
         configuration.setAllowCredentials(allowCredentials);
         configuration.setMaxAge(3600L);
 
-        // ✅ 프론트엔드에서 접근 가능한 헤더 노출
         configuration.setExposedHeaders(Arrays.asList(
                 "Authorization",
                 "Set-Cookie",
-                "Access-Control-Allow-Origin"
+                "Access-Control-Allow-Origin",
+                "Access-Control-Allow-Credentials"
         ));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
 
-        log.info("✅ CORS Configuration initialized successfully");
+        log.info("✅ CORS Configuration initialized - Methods: {}, Credentials: {}", methods, allowCredentials);
 
         return source;
     }
