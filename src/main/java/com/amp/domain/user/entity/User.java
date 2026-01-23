@@ -47,7 +47,9 @@ public class User {
     private UserType userType;
 
     public void updateExistingUser(String username, String profileImageUrl) {
-        this.nickname = username;
+        if (this.registrationStatus == RegistrationStatus.PENDING) {
+            this.nickname = username;
+        }
         this.profileImageUrl = profileImageUrl;
     }
 
