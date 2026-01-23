@@ -45,20 +45,22 @@ public class CustomOAuth2AuthorizationRequestResolver implements OAuth2Authoriza
         // 1. 요청 파라미터에서 userType 확인 (명시적으로 지정된 경우)
         String userType = request.getParameter("userType");
 
-        // 2. Origin 추출
+        // 2. Origin 추출 (API 서브도메인 제거)
         String origin = extractOrigin(request);
-        log.info("Extracted origin: {}", origin);
+        String frontendOrigin = convertToFrontendOrigin(origin);
+
+        log.info("Original origin: {}, Frontend origin: {}", origin, frontendOrigin);
 
         // 3. 파라미터가 없거나 유효하지 않으면 Origin 기반으로 자동 감지
         if (userType == null || !isValidUserType(userType)) {
-            userType = determineUserTypeFromUrl(origin);
+            userType = determineUserTypeFromUrl(frontendOrigin);
         }
 
-        log.info("OAuth2 authorization request with userType: {}, origin: {}", userType, origin);
+        log.info("OAuth2 authorization request with userType: {}, origin: {}", userType, frontendOrigin);
 
-        // state에 userType과 origin 정보 추가
+        // state에 userType과 프론트엔드 origin 정보 추가
         String originalState = authorizationRequest.getState();
-        String customState = originalState + "|userType=" + userType + "|origin=" + origin;
+        String customState = originalState + "|userType=" + userType + "|origin=" + frontendOrigin;
 
         return OAuth2AuthorizationRequest
                 .from(authorizationRequest)
@@ -107,6 +109,42 @@ public class CustomOAuth2AuthorizationRequestResolver implements OAuth2Authoriza
         String result = fallbackOrigin.toString();
         log.info("Origin extracted from server info: {}", result);
         return result;
+    }
+
+    /**
+     * 백엔드 API 도메인을 프론트엔드 도메인으로 변환
+     * - https://api.ampnotice-host.kr -> https://ampnotice-host.kr
+     * - https://api.ampnotice.kr -> https://ampnotice.kr
+     * - http://localhost:8080 -> http://localhost:5174 (ORGANIZER) or http://localhost:5173 (AUDIENCE)
+     */
+    private String convertToFrontendOrigin(String origin) {
+        if (origin == null || origin.trim().isEmpty()) {
+            return "http://localhost:5173"; // fallback
+        }
+
+        // API 서브도메인 제거
+        if (origin.contains("api.ampnotice-host.kr")) {
+            return origin.replace("api.ampnotice-host.kr", "ampnotice-host.kr");
+        }
+
+        if (origin.contains("api.ampnotice.kr")) {
+            return origin.replace("api.ampnotice.kr", "ampnotice.kr");
+        }
+
+        // 로컬 개발 환경: 백엔드 포트를 프론트엔드 포트로 변환
+        if (origin.contains("localhost:8080")) {
+            // userType에 따라 다른 포트 반환
+            // 여기서는 일단 ORGANIZER 기준으로 (나중에 로직 개선 가능)
+            String userType = determineUserTypeFromUrl(origin);
+            if (userType.equals("ORGANIZER")) {
+                return origin.replace("localhost:8080", "localhost:5174");
+            } else {
+                return origin.replace("localhost:8080", "localhost:5173");
+            }
+        }
+
+        // 변환이 필요 없는 경우 그대로 반환
+        return origin;
     }
 
     /**
