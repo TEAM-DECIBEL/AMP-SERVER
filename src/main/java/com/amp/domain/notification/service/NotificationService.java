@@ -94,6 +94,7 @@ public class NotificationService {
                 .stream()
                 .map(n -> new NotificationResponse(
                         n.getId(),
+                        n.getNotice().getFestival().getId(),
                         n.getTitle(),
                         n.getMessage(),
                         n.getIsRead(),
@@ -111,8 +112,6 @@ public class NotificationService {
         String email = authentication.getName();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
-
-
         Notification notification = notificationRepository.findById(notificationId)
                 .orElseThrow(() -> new NotificationException(NotificationErrorCode.NOTIFICATION_NOT_FOUND));
 

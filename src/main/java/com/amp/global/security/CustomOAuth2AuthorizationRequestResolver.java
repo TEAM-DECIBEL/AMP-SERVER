@@ -42,31 +42,12 @@ public class CustomOAuth2AuthorizationRequestResolver implements OAuth2Authoriza
             return null;
         }
 
-        // 요청 파라미터에서 userType 가져오기
+        // 1. 요청 파라미터에서 userType 확인 (명시적으로 지정된 경우)
         String userType = request.getParameter("userType");
 
+        // 2. 파라미터가 없거나 유효하지 않으면 Origin/Referer/Domain 기반으로 자동 감지
         if (userType == null || !isValidUserType(userType)) {
-            String serverName = request.getServerName();
-            log.info("Detecting userType from domain: {}", serverName);
-
-            if (serverName.equals("www.ampnotice-host.kr") || serverName.equals("ampnotice-host.kr")) {
-                userType = "ORGANIZER";
-                log.info("Domain matched organizer: {} -> userType: ORGANIZER", serverName);
-            } else {
-                // Referer에서 추출 시도
-                String referer = request.getHeader("Referer");
-                if (referer != null) {
-                    if (referer.contains("/organizer")) {
-                        userType = "ORGANIZER";
-                    } else {
-                        userType = "AUDIENCE";
-                    }
-                } else {
-                    // 기본값: 관객
-                    log.warn("userType parameter is missing. Defaulting to 'AUDIENCE'");
-                    userType = "AUDIENCE";
-                }
-            }
+            userType = detectUserTypeFromRequest(request);
         }
 
         log.info("OAuth2 authorization request with userType: {}", userType);
@@ -79,6 +60,60 @@ public class CustomOAuth2AuthorizationRequestResolver implements OAuth2Authoriza
                 .from(authorizationRequest)
                 .state(customState)
                 .build();
+    }
+
+    /**
+     * Request에서 UserType을 자동 감지
+     * 우선순위: Origin 헤더 > Referer 헤더 > Server Name
+     */
+    private String detectUserTypeFromRequest(HttpServletRequest request) {
+        // 1. Origin 헤더 확인
+        String origin = request.getHeader("Origin");
+        if (origin != null && !origin.trim().isEmpty()) {
+            String userType = determineUserTypeFromUrl(origin);
+            log.info("UserType detected from Origin header: {} -> {}", origin, userType);
+            return userType;
+        }
+
+        // 2. Referer 헤더 확인
+        String referer = request.getHeader("Referer");
+        if (referer != null && !referer.trim().isEmpty()) {
+            String userType = determineUserTypeFromUrl(referer);
+            log.info("UserType detected from Referer header: {} -> {}", referer, userType);
+            return userType;
+        }
+
+        // 3. Server Name 확인 (fallback)
+        String serverName = request.getServerName();
+        int serverPort = request.getServerPort();
+        String serverInfo = serverName + ":" + serverPort;
+
+        String userType = determineUserTypeFromUrl(serverInfo);
+        log.info("UserType detected from server info: {} -> {}", serverInfo, userType);
+        return userType;
+    }
+
+    /**
+     * URL 문자열에서 UserType 판단
+     * - localhost:5174 또는 ampnotice-host.kr -> ORGANIZER
+     * - 그 외 -> AUDIENCE
+     */
+    private String determineUserTypeFromUrl(String url) {
+        if (url == null || url.trim().isEmpty()) {
+            return "AUDIENCE";
+        }
+
+        String lowerUrl = url.toLowerCase();
+
+        // ORGANIZER 조건
+        if (lowerUrl.contains("localhost:5174") ||
+                lowerUrl.contains("ampnotice-host.kr") ||
+                lowerUrl.contains("www.ampnotice-host.kr")) {
+            return "ORGANIZER";
+        }
+
+        // 기본값은 AUDIENCE
+        return "AUDIENCE";
     }
 
     private boolean isValidUserType(String userType) {
