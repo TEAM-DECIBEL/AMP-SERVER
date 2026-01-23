@@ -8,6 +8,8 @@ public record AudienceFestivalSummaryResponse(
         String title,
         String mainImageUrl,
         String period,
+        String status,
+
         boolean wishList,
         long dDay
 ) {
@@ -17,6 +19,7 @@ public record AudienceFestivalSummaryResponse(
                 festival.getTitle(),
                 festival.getMainImageUrl(),
                 FestivalUtils.formatPeriod(festival.getStartDate(), festival.getEndDate()),
+                festival.getStatus().getKoreanName(),
                 isWishList,
                 FestivalUtils.calculateDDay(festival.getStartDate(), festival.getEndDate())
         );
