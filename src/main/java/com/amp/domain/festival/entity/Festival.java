@@ -11,6 +11,7 @@ import org.hibernate.annotations.SQLRestriction;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -80,7 +81,7 @@ public class Festival extends BaseTimeEntity {
     }
 
     public void updateStatus() {
-        LocalDate now = LocalDate.now();
+        LocalDate now = LocalDate.now(ZoneId.of("Asia/Seoul"));
 
         if (now.isBefore(this.startDate)) {
             this.status = FestivalStatus.UPCOMING;
