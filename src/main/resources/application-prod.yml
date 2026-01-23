@@ -29,12 +29,6 @@ jwt:
 
 app:
   oauth2:
-    redirect-uri:
-      audience: http://localhost:5173/auth/callback
-      organizer: http://localhost:5174/auth/callback
-    onboarding-uri:
-      audience: http://localhost:5173/onboarding
-      organizer: http://localhost:5174/onboarding
     callback-uri:
       audience: ${AUDIENCE_CALLBACK_URI:http://localhost:5173/callback}
       organizer: ${ORGANIZER_CALLBACK_URI:http://localhost:5174/callback}
