@@ -94,6 +94,7 @@ public class NotificationService {
                 .stream()
                 .map(n -> new NotificationResponse(
                         n.getId(),
+                        n.getNotice().getFestival().getId(),
                         n.getTitle(),
                         n.getMessage(),
                         n.getIsRead(),
