@@ -52,16 +52,6 @@ public class NotificationController {
                 .body(BaseResponse.ok(SuccessStatus.UNSUBSCRIBE_SUCCESS.getMsg(), null));
     }
 
-    @PatchMapping("/{notificationId}/read")
-    public ResponseEntity<BaseResponse<Void>> read(@PathVariable Long notificationId) {
-
-        notificationService.readNotification(notificationId);
-
-        return ResponseEntity
-                .status(SuccessStatus.NOTIFICATION_SET_READ_SUCCESS.getHttpStatus())
-                .body(BaseResponse.ok(SuccessStatus.NOTIFICATION_SET_READ_SUCCESS.getMsg(), null));
-    }
-
 }
 
 

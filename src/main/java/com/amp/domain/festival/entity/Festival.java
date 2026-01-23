@@ -3,6 +3,7 @@ package com.amp.domain.festival.entity;
 import com.amp.domain.category.entity.FestivalCategory;
 import com.amp.domain.organizer.entity.Organizer;
 import com.amp.domain.stage.entity.Stage;
+import com.amp.global.common.dto.TimeConstants;
 import com.amp.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -80,7 +81,7 @@ public class Festival extends BaseTimeEntity {
     }
 
     public void updateStatus() {
-        LocalDate now = LocalDate.now();
+        LocalDate now = LocalDate.now(TimeConstants.KST);
 
         if (now.isBefore(this.startDate)) {
             this.status = FestivalStatus.UPCOMING;
