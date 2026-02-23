@@ -46,6 +46,9 @@ public class User {
     @Enumerated(EnumType.STRING)
     private UserType userType;
 
+    @Column(name = "organizer_name", length = 100)
+    private String organizerName;
+
     public void updateExistingUser(String username, String profileImageUrl) {
         this.nickname = username;
         this.profileImageUrl = profileImageUrl;
@@ -68,8 +71,9 @@ public class User {
         this.isActive = true;
     }
 
-    // 주최자 온보딩 완료 (status만 업데이트, Organizer 엔티티는 별도 생성)
-    public void completeOrganizerOnboarding() {
+    // 주최자 온보딩 완료
+    public void completeOrganizerOnboarding(String organizerName) {
+        this.organizerName = organizerName;
         this.registrationStatus = RegistrationStatus.COMPLETED;
         this.isActive = true;
     }

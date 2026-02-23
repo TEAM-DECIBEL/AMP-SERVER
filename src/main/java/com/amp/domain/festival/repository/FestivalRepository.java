@@ -24,56 +24,56 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
 
 
     @Query("""
-        SELECT f
-        FROM Festival f
-        WHERE f.organizer.user = :user
-          AND f.deletedAt IS NULL
-        ORDER BY f.endDate DESC, f.startTime DESC, f.title ASC
-    """)
+                SELECT f
+                FROM Festival f
+                    WHERE f.organizer = :user
+                    AND f.deletedAt IS NULL
+                ORDER BY f.endDate DESC, f.startTime DESC, f.title ASC
+            """)
     Page<Festival> findAllByMyUser(@Param("user") User user, Pageable pageable);
 
 
     @Query("""
-        SELECT f
-        FROM Festival f
-        WHERE f.organizer.user = :user
-          AND f.status IN :statuses
-          AND f.deletedAt IS NULL
-        ORDER BY f.startDate ASC, f.startTime ASC, f.title ASC
-    """)
+                SELECT f
+                FROM Festival f
+                WHERE f.organizer = :user
+                  AND f.status IN :statuses
+                  AND f.deletedAt IS NULL
+                ORDER BY f.startDate ASC, f.startTime ASC, f.title ASC
+            """)
     Page<Festival> findActiveFestivalsByUser(@Param("user") User user,
                                              @Param("statuses") List<FestivalStatus> statuses,
                                              Pageable pageable);
 
 
     @Query("""
-        SELECT COUNT(f)
-        FROM Festival f
-        WHERE f.organizer.user = :user
-          AND f.status = :status
-          AND f.deletedAt IS NULL
-    """)
+                SELECT COUNT(f)
+                FROM Festival f
+                WHERE f.organizer = :user
+                  AND f.status = :status
+                  AND f.deletedAt IS NULL
+            """)
     long countByOrganizerAndStatus(@Param("user") User user,
                                    @Param("status") FestivalStatus status);
 
 
     @Query("""
-        SELECT f
-        FROM Festival f
-        WHERE f.endDate >= CURRENT_DATE
-          AND f.deletedAt IS NULL
-        ORDER BY f.startDate ASC, f.startTime ASC, f.title ASC
-    """)
+                SELECT f
+                FROM Festival f
+                WHERE f.endDate >= CURRENT_DATE
+                  AND f.deletedAt IS NULL
+                ORDER BY f.startDate ASC, f.startTime ASC, f.title ASC
+            """)
     Page<Festival> findActiveFestivals(Pageable pageable);
 
 
     @Query("""
-        SELECT COUNT(f)
-        FROM Festival f
-        WHERE f.organizer.user.id = :userId
-          AND f.status = :status
-          AND f.deletedAt IS NULL
-    """)
+                SELECT COUNT(f)
+                FROM Festival f
+                WHERE f.organizer.id = :userId
+                  AND f.status = :status
+                  AND f.deletedAt IS NULL
+            """)
     Long countFestivalsByUserIdAndStatus(@Param("userId") Long userId,
                                          @Param("status") FestivalStatus status);
 }
