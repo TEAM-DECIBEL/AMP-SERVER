@@ -27,7 +27,6 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
                 SELECT f
                 FROM Festival f
                     WHERE f.organizer = :user
-                    AND f.deletedAt IS NULL
                 ORDER BY f.endDate DESC, f.startTime DESC, f.title ASC
             """)
     Page<Festival> findAllByMyUser(@Param("user") User user, Pageable pageable);
@@ -38,7 +37,6 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
                 FROM Festival f
                 WHERE f.organizer = :user
                   AND f.status IN :statuses
-                  AND f.deletedAt IS NULL
                 ORDER BY f.startDate ASC, f.startTime ASC, f.title ASC
             """)
     Page<Festival> findActiveFestivalsByUser(@Param("user") User user,
@@ -51,7 +49,6 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
                 FROM Festival f
                 WHERE f.organizer = :user
                   AND f.status = :status
-                  AND f.deletedAt IS NULL
             """)
     long countByOrganizerAndStatus(@Param("user") User user,
                                    @Param("status") FestivalStatus status);
@@ -61,7 +58,6 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
                 SELECT f
                 FROM Festival f
                 WHERE f.endDate >= CURRENT_DATE
-                  AND f.deletedAt IS NULL
                 ORDER BY f.startDate ASC, f.startTime ASC, f.title ASC
             """)
     Page<Festival> findActiveFestivals(Pageable pageable);
@@ -72,7 +68,6 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
                 FROM Festival f
                 WHERE f.organizer.id = :userId
                   AND f.status = :status
-                  AND f.deletedAt IS NULL
             """)
     Long countFestivalsByUserIdAndStatus(@Param("userId") Long userId,
                                          @Param("status") FestivalStatus status);

@@ -88,7 +88,6 @@ public class OnboardingService {
         // 주최사명 중복 체크
         validateOrganizerNameUniqueness(request.getOrganizerName());
 
-        // 기존 Organizer 조회 또는 생성
         user.completeOrganizerOnboarding(request.getOrganizerName());
         userRepository.save(user);
 
