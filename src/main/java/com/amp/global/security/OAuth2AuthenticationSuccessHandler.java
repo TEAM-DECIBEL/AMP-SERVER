@@ -28,22 +28,10 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     private final UserRepository userRepository;
     private final HttpCookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository;
 
-    @Value("${app.oauth2.onboarding-uri.audience:http://localhost:5173/onboarding}")
-    private String audienceOnboardingUri;
-
-    @Value("${app.oauth2.onboarding-uri.organizer:http://localhost:5174/onboarding}")
-    private String organizerOnboardingUri;
-
-    @Value("${app.oauth2.home-uri.audience:http://localhost:5173/root}")
-    private String audienceHomeUri;
-
-    @Value("${app.oauth2.home-uri.organizer:http://localhost:5174/root}")
-    private String organizerHomeUri;
-
     @Value("${app.jwt.cookie-name:accessToken}")
     private String cookieName;
 
-    @Value("${app.jwt.cookie-max-age:3600}") // 1시간 (초 단위)
+    @Value("${app.jwt.cookie-max-age:3600}")
     private int cookieMaxAge;
 
     @Value("${app.jwt.cookie-domain:localhost}")
@@ -61,7 +49,6 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
         log.info("=== OAuth2 인증 성공 ===");
 
-        // ✅ OAuth2 관련 쿠키 정리
         cookieAuthorizationRequestRepository.removeAuthorizationRequestCookies(request, response);
 
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
@@ -78,20 +65,21 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         log.info("User found - ID: {}, Email: {}, Status: {}, UserType: {}",
                 user.getId(), user.getEmail(), user.getRegistrationStatus(), user.getUserType());
 
-        // state에서 userType 추출
+        // state에서 userType과 origin 추출
         String state = request.getParameter("state");
         UserType requestedUserType = extractUserTypeFromState(state);
+        String clientOrigin = extractOriginFromState(state);
 
-        // JWT 토큰 생성
+        log.info("Extracted from state - userType: {}, origin: {}", requestedUserType, clientOrigin);
+
         String token = jwtUtil.generateToken(email);
         log.info("New JWT token generated");
 
-        // 쿠키에 토큰 설정 시도 (cross-domain에서는 작동 안 함)
         addTokenCookie(response, token);
 
         log.info("Response committed after cookie: {}", response.isCommitted());
 
-        String targetUrl = determineTargetUrl(user, requestedUserType, token);
+        String targetUrl = determineTargetUrl(clientOrigin, user, requestedUserType, token);
 
         log.info("Final redirect URL: {}", targetUrl);
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
@@ -120,16 +108,18 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
                 cookieDomain != null && !cookieDomain.trim().isEmpty() ? cookieDomain : "current domain");
     }
 
-    private String determineTargetUrl(User user, UserType requestedUserType, String token) {
+    private String determineTargetUrl(String clientOrigin, User user,
+                                      UserType requestedUserType, String token) {
+
+        // state에서 추출한 origin을 callback URI로 사용
+        String callbackUri = clientOrigin + "/callback";
+        log.info("Using callback URI from state: {}", callbackUri);
+
         if (user.getRegistrationStatus() == RegistrationStatus.PENDING) {
             // 온보딩 필요
             user.updateUserType(requestedUserType);
             userRepository.save(user);
             log.info("Updated user type to {} for pending user: {}", requestedUserType, user.getEmail());
-
-            String callbackUri = (requestedUserType == UserType.ORGANIZER)
-                    ? "http://localhost:5174/callback"
-                    : "http://localhost:5173/callback";
 
             return UriComponentsBuilder.fromUriString(callbackUri)
                     .queryParam("token", token)
@@ -139,15 +129,34 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
             // 온보딩 완료
             log.info("User registration completed, redirecting to home: {}", user.getEmail());
 
-            String callbackUri = (user.getUserType() == UserType.ORGANIZER)
-                    ? "http://localhost:5174/callback"
-                    : "http://localhost:5173/callback";
-
             return UriComponentsBuilder.fromUriString(callbackUri)
                     .queryParam("token", token)
                     .queryParam("status", "COMPLETED")
                     .build().toUriString();
         }
+    }
+
+    private String extractOriginFromState(String state) {
+        if (state == null) {
+            log.warn("State parameter is null, using fallback origin");
+            return "http://localhost:5173"; // fallback
+        }
+
+        try {
+            if (state.contains("|origin=")) {
+                String[] parts = state.split("\\|origin=");
+                if (parts.length == 2) {
+                    String origin = parts[1];
+                    log.info("Extracted origin from state: {}", origin);
+                    return origin;
+                }
+            }
+        } catch (Exception e) {
+            log.error("Failed to parse origin from state: {}", state, e);
+        }
+
+        log.warn("Could not extract origin from state, using fallback");
+        return "http://localhost:5173"; // fallback
     }
 
     private UserType extractUserTypeFromState(String state) {
@@ -158,12 +167,15 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
         try {
             if (state.contains("|userType=")) {
-                String[] parts = state.split("\\|userType=");
-                if (parts.length == 2) {
-                    String userTypeStr = parts[1];
-                    UserType userType = UserType.valueOf(userTypeStr);
-                    log.info("Extracted userType from state: {}", userType);
-                    return userType;
+                // origin도 포함되어 있으므로 정확히 파싱
+                String[] parts = state.split("\\|");
+                for (String part : parts) {
+                    if (part.startsWith("userType=")) {
+                        String userTypeStr = part.substring("userType=".length());
+                        UserType userType = UserType.valueOf(userTypeStr);
+                        log.info("Extracted userType from state: {}", userType);
+                        return userType;
+                    }
                 }
             }
         } catch (IllegalArgumentException e) {

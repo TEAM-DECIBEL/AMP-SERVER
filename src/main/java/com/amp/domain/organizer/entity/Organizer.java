@@ -11,6 +11,8 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLRestriction;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "organizer")
@@ -28,9 +30,8 @@ public class Organizer extends BaseTimeEntity {
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "festival_id", nullable = true)
-    private Festival festival;
+    @OneToMany(mappedBy = "organizer", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Festival> festivals = new ArrayList<>();
 
     @Column(name = "organizer_name", nullable = false, length = 100)
     private String organizerName;
@@ -48,14 +49,22 @@ public class Organizer extends BaseTimeEntity {
     private LocalDateTime deletedAt;
 
     @Builder
-    public Organizer(User user, Festival festival, String organizerName,
+    public Organizer(User user, String organizerName,
                      String contactEmail, String contactPhone,
                      String description) {
         this.user = user;
-        this.festival = festival;
         this.organizerName = organizerName;
         this.contactEmail = contactEmail;
         this.contactPhone = contactPhone;
         this.description = description;
+    }
+
+    public void delete() {
+        this.deletedAt = LocalDateTime.now();
+    }
+
+    public void addFestival(Festival festival) {
+        this.festivals.add(festival);
+        festival.setOrganizer(this);
     }
 }

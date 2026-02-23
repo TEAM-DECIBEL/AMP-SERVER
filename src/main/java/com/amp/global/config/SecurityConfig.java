@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -23,6 +24,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Arrays;
+import java.util.List;
 
 @Slf4j
 @Configuration
@@ -37,12 +39,19 @@ public class SecurityConfig {
     private final CustomAccessDeniedHandler accessDeniedHandler;
     private final OnboardingCheckFilter onboardingCheckFilter;
     private final ClientRegistrationRepository clientRegistrationRepository;
-
-
     private final HttpCookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository;
 
-    @Value("${app.cors.allowed-origins:http://localhost:3000,http://localhost:5173,http://localhost:5174}")
+    @Value("${app.cors.allowed-origins}")
     private String allowedOrigins;
+
+    @Value("${app.cors.allowed-methods:GET,POST,PUT,DELETE,PATCH,OPTIONS}")
+    private String allowedMethods;
+
+    @Value("${app.cors.allowed-headers:*}")
+    private String allowedHeaders;
+
+    @Value("${app.cors.allow-credentials:true}")
+    private boolean allowCredentials;
 
     @Value("${app.oauth2.failure-redirect-uri:http://localhost:5173/login}")
     private String failureRedirectUri;
@@ -53,7 +62,6 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
-                // ✅ STATELESS 유지 (쿠키로 OAuth2 처리)
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
@@ -64,6 +72,9 @@ public class SecurityConfig {
                 )
 
                 .authorizeHttpRequests(auth -> auth
+                        // ✅ OPTIONS 요청 모두 허용 (CORS preflight를 위해 필수!)
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
                         .requestMatchers(
                                 "/api/v1/notices/*/bookmark"
                         ).authenticated()
@@ -74,6 +85,7 @@ public class SecurityConfig {
                         ).permitAll()
 
                         .requestMatchers(
+                                "/",
                                 "/api/v1/users/festivals",
                                 "/api/auth/**",
                                 "/api/public/**",
@@ -93,7 +105,7 @@ public class SecurityConfig {
                                 "/actuator/**"
                         ).permitAll()
 
-                        .requestMatchers("/api/organizer/**").hasRole("ORGANIZER")
+                        .requestMatchers("/api/v1/organizer/**").hasRole("ORGANIZER")
                         .requestMatchers("/api/auth/onboarding/**").authenticated()
                         .requestMatchers("/api/v1/festivals/my").hasRole("AUDIENCE")
                         .requestMatchers("/api/v1/festivals/*/wishList").hasRole("AUDIENCE")
@@ -116,7 +128,6 @@ public class SecurityConfig {
                                                         clientRegistrationRepository
                                                 )
                                         )
-                                        // ✅ 쿠키 기반 Repository 등록
                                         .authorizationRequestRepository(cookieAuthorizationRequestRepository)
                         )
                         .redirectionEndpoint(redirection ->
@@ -132,7 +143,6 @@ public class SecurityConfig {
                             log.error("Query String: {}", request.getQueryString());
                             log.error("Exception type: {}", exception.getClass().getName());
 
-                            // ✅ 실패 시 쿠키 정리
                             cookieAuthorizationRequestRepository
                                     .removeAuthorizationRequestCookies(request, response);
 
@@ -155,14 +165,37 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList(allowedOrigins.split(",")));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
-        configuration.setAllowCredentials(true);
+
+        List<String> origins = Arrays.asList(allowedOrigins.split(","));
+        log.info("✅ CORS Allowed Origins: {}", origins);
+
+        configuration.setAllowedOrigins(origins);
+        configuration.setAllowedOriginPatterns(origins);
+
+        List<String> methods = Arrays.asList(allowedMethods.split(","));
+        configuration.setAllowedMethods(methods);
+
+        if ("*".equals(allowedHeaders.trim())) {
+            configuration.setAllowedHeaders(Arrays.asList("*"));
+        } else {
+            configuration.setAllowedHeaders(Arrays.asList(allowedHeaders.split(",")));
+        }
+
+        configuration.setAllowCredentials(allowCredentials);
         configuration.setMaxAge(3600L);
+
+        configuration.setExposedHeaders(Arrays.asList(
+                "Authorization",
+                "Set-Cookie",
+                "Access-Control-Allow-Origin",
+                "Access-Control-Allow-Credentials"
+        ));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
+
+        log.info("✅ CORS Configuration initialized - Methods: {}, Credentials: {}", methods, allowCredentials);
+
         return source;
     }
 

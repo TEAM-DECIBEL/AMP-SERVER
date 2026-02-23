@@ -1,5 +1,6 @@
 package com.amp.domain.notice.event;
 
+import com.amp.domain.notice.entity.Notice;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -13,7 +14,7 @@ public class NoticeCreatedEvent {
     private final String categoryName;
 
     private final String festivalName;
-    private final Long noticeId;
+    private final Notice notice;
     private final String title;
     private final LocalDateTime createdAt;
 }

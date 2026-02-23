@@ -3,12 +3,10 @@ package com.amp.domain.festival.entity;
 import com.amp.domain.category.entity.FestivalCategory;
 import com.amp.domain.organizer.entity.Organizer;
 import com.amp.domain.stage.entity.Stage;
+import com.amp.global.common.dto.TimeConstants;
 import com.amp.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.SQLRestriction;
 
 import java.time.LocalDate;
@@ -51,6 +49,11 @@ public class Festival extends BaseTimeEntity {
     @Column(nullable = false, length = 20)
     private FestivalStatus status;
 
+    @Setter
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "organizer_id", nullable = false)
+    private Organizer organizer;
+
     @OneToMany(mappedBy = "festival", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FestivalSchedule> schedules = new ArrayList<>();
 
@@ -60,16 +63,13 @@ public class Festival extends BaseTimeEntity {
     @OneToMany(mappedBy = "festival", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FestivalCategory> festivalCategories = new ArrayList<>();
 
-    @OneToMany(mappedBy = "festival", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Organizer> organizers = new ArrayList<>();
-
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
     @Builder
-    public Festival(Long id, String title, String mainImageUrl, String location,
-                    LocalDate startDate, LocalDate endDate, LocalTime startTime, FestivalStatus status) {
-        this.id = id;
+    public Festival(String title, String mainImageUrl, String location,
+                    LocalDate startDate, LocalDate endDate, LocalTime startTime,
+                    FestivalStatus status, Organizer organizer) {
         this.title = title;
         this.mainImageUrl = mainImageUrl;
         this.location = location;
@@ -77,10 +77,11 @@ public class Festival extends BaseTimeEntity {
         this.endDate = endDate;
         this.startTime = startTime;
         this.status = status;
+        this.organizer = organizer;
     }
 
     public void updateStatus() {
-        LocalDate now = LocalDate.now();
+        LocalDate now = LocalDate.now(TimeConstants.KST);
 
         if (now.isBefore(this.startDate)) {
             this.status = FestivalStatus.UPCOMING;

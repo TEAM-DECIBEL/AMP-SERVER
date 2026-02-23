@@ -21,10 +21,9 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(unique = true)
     private String nickname;
 
     @Column(nullable = false, name = "profile_image_url")
@@ -48,7 +47,9 @@ public class User {
     private UserType userType;
 
     public void updateExistingUser(String username, String profileImageUrl) {
-        this.nickname = username;
+        if (this.registrationStatus == RegistrationStatus.PENDING) {
+            this.nickname = username;
+        }
         this.profileImageUrl = profileImageUrl;
     }
 
@@ -69,9 +70,8 @@ public class User {
         this.isActive = true;
     }
 
-    // 주최자 온보딩 완료 (닉네임만 업데이트, Organizer 엔티티는 별도 생성)
-    public void completeOrganizerOnboarding(String nickname) {
-        this.nickname = nickname;
+    // 주최자 온보딩 완료 (status만 업데이트, Organizer 엔티티는 별도 생성)
+    public void completeOrganizerOnboarding() {
         this.registrationStatus = RegistrationStatus.COMPLETED;
         this.isActive = true;
     }

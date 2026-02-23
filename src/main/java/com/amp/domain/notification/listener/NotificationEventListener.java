@@ -21,13 +21,13 @@ public class NotificationEventListener {
             notificationService.sendNewNoticeNotification(event);
             log.info(
                     "[FCM] noticeId={} categoryId={} 알림 전송 완료",
-                    event.getNoticeId(),
+                    event.getNotice().getId(),
                     event.getCategoryId()
             );
         } catch (Exception e) {
             log.error(
                     "[FCM] noticeId={} categoryId={} 알림 전송 실패",
-                    event.getNoticeId(),
+                    event.getNotice().getId(),
                     event.getCategoryId(),
                     e
             );

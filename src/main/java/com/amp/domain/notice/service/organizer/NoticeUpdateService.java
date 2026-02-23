@@ -54,14 +54,24 @@ public class NoticeUpdateService {
         Festival festival = festivalRepository.findById(request.festivalId())
                 .orElseThrow(() -> new CustomException(FestivalErrorCode.FESTIVAL_NOT_FOUND));
 
-        if (!organizerRepository.existsByFestivalAndUser(festival, user)) {
-            throw new CustomException(UserErrorCode.USER_NOT_AUTHENTICATED);
-        }
+        validateOrganizer(festival, user);
 
         Notice notice = noticeRepository.findById(noticeId)
                 .orElseThrow(() ->
                         new NoticeException(NoticeErrorCode.NOTICE_NOT_FOUND)
                 );
+
+        boolean wasPinned = notice.getIsPinned();
+        boolean willBePinned = request.isPinned();
+
+        if (!wasPinned && willBePinned) {
+            long pinnedCount =
+                    noticeRepository.countByFestivalAndIsPinnedTrueAndDeletedAtIsNull(festival);
+
+            if (pinnedCount >= 3) {
+                throw new NoticeException(NoticeErrorCode.PINNED_NOTICE_LIMIT_EXCEEDED);
+            }
+        }
 
         if (notice.getDeletedAt() != null) {
             throw new NoticeException(NoticeErrorCode.NOTICE_ALREADY_DELETED);
@@ -116,5 +126,11 @@ public class NoticeUpdateService {
         return authentication != null &&
                 authentication.isAuthenticated() &&
                 !(authentication instanceof AnonymousAuthenticationToken);
+    }
+
+    private void validateOrganizer(Festival festival, User user) {
+        if (!festival.getOrganizer().getUser().getId().equals(user.getId())) {
+            throw new CustomException(UserErrorCode.USER_NOT_AUTHORIZED);
+        }
     }
 }
