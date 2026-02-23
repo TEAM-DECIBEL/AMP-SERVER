@@ -14,7 +14,9 @@ public record MyPageResponse(
     public static MyPageResponse from(User user) {
         return MyPageResponse.builder()
                 .userId(user.getId())
-                .nickname(user.getNickname())
+                .nickname(user.getUserType() == UserType.ORGANIZER
+                        ? user.getOrganizerName()
+                        : user.getNickname())
                 .profileImageUrl(user.getProfileImageUrl())
                 .userType(user.getUserType())
                 .build();
