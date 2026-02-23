@@ -46,7 +46,7 @@ public class User {
     @Enumerated(EnumType.STRING)
     private UserType userType;
 
-    @Column(name = "organizer_name", length = 100)
+    @Column(name = "organizer_name", length = 100, unique = true)
     private String organizerName;
 
     public void updateExistingUser(String username, String profileImageUrl) {
