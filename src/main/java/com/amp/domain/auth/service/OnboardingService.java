@@ -5,8 +5,6 @@ import com.amp.domain.auth.dto.OnboardingResponse;
 import com.amp.domain.auth.dto.OnboardingStatusResponse;
 import com.amp.domain.auth.exception.OnboardingErrorCode;
 import com.amp.domain.auth.exception.OnboardingException;
-import com.amp.domain.organizer.entity.Organizer;
-import com.amp.domain.organizer.repository.OrganizerRepository;
 import com.amp.domain.user.entity.RegistrationStatus;
 import com.amp.domain.user.entity.User;
 import com.amp.domain.user.entity.UserType;
@@ -26,8 +24,6 @@ import static com.amp.global.common.CommonErrorCode.USER_NOT_FOUND;
 public class OnboardingService {
 
     private final UserRepository userRepository;
-    private final OrganizerRepository organizerRepository;
-
 
     public OnboardingResponse completeOnboarding(String email, OnboardingRequest request) {
         User user = userRepository.findByEmail(email)
@@ -73,9 +69,6 @@ public class OnboardingService {
             throw new OnboardingException(OnboardingErrorCode.INVALID_USER_TYPE);
         }
 
-        // 닉네임 중복 체크
-        //validateNicknameUniqueness(request.getNickname());
-
         // User 온보딩 완료
         user.completeAudienceOnboarding(request.getNickname());
         userRepository.save(user);
@@ -97,27 +90,12 @@ public class OnboardingService {
         validateOrganizerNameUniqueness(request.getOrganizerName());
 
         // 기존 Organizer 조회 또는 생성
-        Organizer organizer = organizerRepository.findByUser(user)
-                .orElseGet(() -> {
-                    log.info("Creating new organizer for user: {}", user.getEmail());
-                    Organizer newOrganizer = Organizer.builder()
-                            .user(user)
-                            .organizerName(request.getOrganizerName())
-                            .contactEmail(request.getContactEmail())
-                            .contactPhone(request.getContactPhone())
-                            .description(request.getDescription())
-                            .build();
-                    return organizerRepository.save(newOrganizer);
-                });
-
-
-        user.completeOrganizerOnboarding();
+        user.completeOrganizerOnboarding(request.getOrganizerName());
         userRepository.save(user);
 
         log.info("Organizer onboarding completed for user: {}, organizer: {}",
-                user.getEmail(), organizer.getOrganizerName());
+                user.getEmail(), request.getOrganizerName());
     }
-
 
     @Transactional(readOnly = true)
     public OnboardingStatusResponse getOnboardingStatus(String email) {
@@ -132,16 +110,8 @@ public class OnboardingService {
                 .build();
     }
 
-
-    private void validateNicknameUniqueness(String nickname) {
-        if (userRepository.existsByNickname(nickname)) {
-            throw new OnboardingException(OnboardingErrorCode.DUPLICATE_NICKNAME);
-        }
-    }
-
-
     private void validateOrganizerNameUniqueness(String organizerName) {
-        if (organizerRepository.existsByOrganizerName(organizerName)) {
+        if (userRepository.existsByOrganizerName(organizerName)) {
             throw new OnboardingException(OnboardingErrorCode.DUPLICATE_ORGANIZER_NAME);
         }
     }

@@ -11,7 +11,6 @@ import com.amp.domain.notice.entity.Notice;
 import com.amp.domain.notice.exception.NoticeErrorCode;
 import com.amp.domain.notice.exception.NoticeException;
 import com.amp.domain.notice.repository.NoticeRepository;
-import com.amp.domain.organizer.repository.OrganizerRepository;
 import com.amp.domain.user.entity.User;
 import com.amp.domain.user.exception.UserErrorCode;
 import com.amp.domain.user.repository.UserRepository;
@@ -33,7 +32,6 @@ public class NoticeUpdateService {
 
     private final NoticeRepository noticeRepository;
     private final UserRepository userRepository;
-    private final OrganizerRepository organizerRepository;
     private final FestivalCategoryRepository festivalCategoryRepository;
     private final FestivalRepository festivalRepository;
     private final S3Service s3Service;
@@ -129,7 +127,7 @@ public class NoticeUpdateService {
     }
 
     private void validateOrganizer(Festival festival, User user) {
-        if (!festival.getOrganizer().getUser().getId().equals(user.getId())) {
+        if (!festival.getOrganizer().getId().equals(user.getId())) {
             throw new CustomException(UserErrorCode.USER_NOT_AUTHORIZED);
         }
     }
