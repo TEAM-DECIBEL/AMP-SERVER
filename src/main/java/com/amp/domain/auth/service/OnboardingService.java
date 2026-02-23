@@ -9,13 +9,12 @@ import com.amp.domain.user.entity.RegistrationStatus;
 import com.amp.domain.user.entity.User;
 import com.amp.domain.user.entity.UserType;
 import com.amp.domain.user.repository.UserRepository;
+import com.amp.global.common.CommonErrorCode;
 import com.amp.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import static com.amp.global.common.CommonErrorCode.USER_NOT_FOUND;
 
 @Slf4j
 @Service
@@ -27,7 +26,7 @@ public class OnboardingService {
 
     public OnboardingResponse completeOnboarding(String email, OnboardingRequest request) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(CommonErrorCode.USER_NOT_FOUND));
 
         // 이미 온보딩 완료된 경우
         if (user.getRegistrationStatus() == RegistrationStatus.COMPLETED) {
@@ -100,7 +99,7 @@ public class OnboardingService {
     @Transactional(readOnly = true)
     public OnboardingStatusResponse getOnboardingStatus(String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(CommonErrorCode.USER_NOT_FOUND));
 
         return OnboardingStatusResponse.builder()
                 .email(user.getEmail())
