@@ -8,6 +8,7 @@ import com.amp.domain.festival.exception.FestivalErrorCode;
 import com.amp.domain.festival.repository.FestivalRepository;
 import com.amp.domain.notice.dto.request.NoticeCreateRequest;
 import com.amp.domain.notice.dto.response.Author;
+import com.amp.domain.user.entity.UserType;
 import com.amp.global.common.dto.CategoryData;
 import com.amp.domain.notice.dto.response.NoticeCreateResponse;
 import com.amp.domain.notice.dto.response.NoticeDetailResponse;
@@ -165,7 +166,9 @@ public class NoticeService {
 
         Author author = new Author(
                 notice.getUser().getId(),
-                notice.getUser().getNickname()
+                notice.getUser().getUserType() == UserType.ORGANIZER
+                        ? notice.getUser().getOrganizerName()
+                        : notice.getUser().getNickname()
         );
 
         return new NoticeDetailResponse(

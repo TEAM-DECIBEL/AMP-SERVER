@@ -4,6 +4,7 @@ import com.amp.domain.festival.entity.FestivalStatus;
 import com.amp.domain.festival.repository.FestivalRepository;
 import com.amp.domain.organizer.dto.response.OrganizerMypageResponse;
 import com.amp.domain.user.entity.User;
+import com.amp.domain.user.entity.UserType;
 import com.amp.domain.user.exception.UserErrorCode;
 import com.amp.domain.user.repository.UserRepository;
 import com.amp.global.exception.CustomException;
@@ -19,11 +20,14 @@ public class OrganizerMypageService {
     private final UserRepository userRepository;
     private final FestivalRepository festivalRepository;
 
-
     public OrganizerMypageResponse getOrganizerMypage(Long userId) {
         // 사용자 정보 조회
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
+
+        if (user.getUserType() != UserType.ORGANIZER) {
+            throw new CustomException(UserErrorCode.USER_NOT_AUTHORIZED);
+        }
 
         // 진행 중인 공연 수 조회
         Long ongoingCount = festivalRepository.countFestivalsByUserIdAndStatus(
