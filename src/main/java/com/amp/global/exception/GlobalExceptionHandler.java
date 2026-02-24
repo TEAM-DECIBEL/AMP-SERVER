@@ -84,7 +84,7 @@ public class GlobalExceptionHandler {
     // DB 제약 조건 위반
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<BaseErrorResponse> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
-        log.error("[ERROR - DataIntegrityViolationException] {}", ex.getMessage());
+        log.error("[ERROR - DataIntegrityViolationException]");
 
         if (ex.getMessage() != null && ex.getMessage().contains("uq_organizer_name")) {
             return ResponseEntity.status(OnboardingErrorCode.DUPLICATE_ORGANIZER_NAME.getHttpStatus())
