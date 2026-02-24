@@ -10,7 +10,9 @@ import lombok.NoArgsConstructor;
 import static com.amp.domain.user.exception.UserErrorCode.USER_TYPE_UNCHANGEABLE;
 
 @Entity
-@Table(name = "users")
+@Table(name = "users", uniqueConstraints = {
+        @UniqueConstraint(name = "uq_organizer_name", columnNames = "organizer_name")
+})
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -46,7 +48,7 @@ public class User {
     @Enumerated(EnumType.STRING)
     private UserType userType;
 
-    @Column(name = "organizer_name", length = 100, unique = true)
+    @Column(name = "organizer_name", length = 100)
     private String organizerName;
 
     public void updateExistingUser(String username, String profileImageUrl) {
