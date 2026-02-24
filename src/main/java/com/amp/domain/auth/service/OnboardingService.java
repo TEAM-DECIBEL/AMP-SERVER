@@ -56,6 +56,7 @@ public class OnboardingService {
                 .userType(user.getUserType())
                 .registrationStatus(user.getRegistrationStatus())
                 .message("온보딩이 완료되었습니다.")
+                .organizerName(user.getOrganizerName())
                 .build();
     }
 
