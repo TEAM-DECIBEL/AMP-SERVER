@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Repository
@@ -57,10 +58,10 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
     @Query("""
                 SELECT f
                 FROM Festival f
-                WHERE f.endDate >= CURRENT_DATE
+                WHERE f.endDate >= :today
                 ORDER BY f.startDate ASC, f.startTime ASC, f.title ASC
             """)
-    Page<Festival> findActiveFestivals(Pageable pageable);
+    Page<Festival> findActiveFestivals(Pageable pageable, @Param("today") LocalDate today);
 
 
     @Query("""
