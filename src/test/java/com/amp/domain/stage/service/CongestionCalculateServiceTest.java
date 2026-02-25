@@ -1,5 +1,8 @@
 package com.amp.domain.stage.service;
 
+import com.amp.domain.festival.entity.Festival;
+import com.amp.domain.festival.entity.FestivalSchedule;
+import com.amp.domain.festival.repository.FestivalScheduleRepository;
 import com.amp.domain.stage.entity.CongestionLevel;
 import com.amp.domain.stage.entity.Stage;
 import com.amp.domain.stage.entity.UserCongestionReport;
@@ -13,7 +16,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,13 +38,18 @@ class CongestionCalculateServiceTest {
     private StageCongestionRepository stageCongestionRepository;
     @Mock
     private StageRepository stageRepository;
+    @Mock
+    private FestivalScheduleRepository festivalScheduleRepository;
+    @Mock
+    private Festival festival;
 
     @Test
     @DisplayName("최신 제보에 더 높은 가중치를 주어 혼잡도를 계산한다")
     void calculateWeightedAverageTest() {
         // given
         Long stageId = 1L;
-        Stage stage = Stage.builder().id(stageId).build();
+        Long festivalId = 1L;
+        Stage stage = Stage.builder().id(stageId).festival(festival).build();
         LocalDateTime now = LocalDateTime.now();
 
         // 10분 전 제보 (가중치 1.0, 혼잡 3점)
@@ -54,6 +64,13 @@ class CongestionCalculateServiceTest {
                 .reportedAt(now.minusMinutes(50))
                 .build();
 
+        given(festival.getId()).willReturn(festivalId);
+        given(festivalScheduleRepository.findByFestivalIdAndFestivalDate(eq(festivalId), any()))
+                .willReturn(Optional.of(FestivalSchedule.builder()
+                        .festival(festival)
+                        .festivalDate(LocalDate.now())
+                        .festivalTime(LocalTime.of(20, 0))
+                        .build()));
         given(stageRepository.findById(stageId)).willReturn(Optional.of(stage));
         given(reportRepository.findRecentReports(eq(stageId), any())).willReturn(List.of(report1, report2));
 
