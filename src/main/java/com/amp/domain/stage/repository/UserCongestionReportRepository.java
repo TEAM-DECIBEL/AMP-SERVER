@@ -13,7 +13,6 @@ public interface UserCongestionReportRepository extends JpaRepository<UserConges
     @Query("SELECT r FROM UserCongestionReport r " +
             "WHERE r.stage.id = :stageId " +
             "AND r.reportedAt >= :oneHourAgo " +
-            "AND FUNCTION('DATE', r.reportedAt) = CURRENT_DATE " +
             "ORDER BY r.reportedAt DESC"
     )
     List<UserCongestionReport> findRecentReports(

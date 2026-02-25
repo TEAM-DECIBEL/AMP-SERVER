@@ -10,6 +10,8 @@ import com.amp.global.security.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
+import java.time.LocalDate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,7 +31,7 @@ public class AudienceFestivalService {
     @Transactional(readOnly = true)
     public PageResponse<AudienceFestivalSummaryResponse> getAllFestivals(Pageable pageable) {
         User user = authService.getCurrentUserOrNull();
-        Page<Festival> festivalPage = festivalRepository.findActiveFestivals(pageable);
+        Page<Festival> festivalPage = festivalRepository.findActiveFestivals(pageable, LocalDate.now());
 
         Set<Long> wishlistIds = (user != null)
                 ? userFestivalRepository.findAllFestivalIdsByUserId(user.getId())
