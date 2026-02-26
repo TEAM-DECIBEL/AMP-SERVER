@@ -29,7 +29,7 @@ public class AudienceNoticesService {
         Pageable pageable = PageRequest.of(page, size);
 
         Page<Bookmark> bookmarksPage =
-                bookmarkRepository.findByUserIdWithDetails(userId, pageable);
+                bookmarkRepository.findByAudienceIdWithDetails(userId, pageable);
 
         List<SavedNoticesResponse.SavedAnnouncementDto> notices =
                 bookmarksPage.getContent().stream()

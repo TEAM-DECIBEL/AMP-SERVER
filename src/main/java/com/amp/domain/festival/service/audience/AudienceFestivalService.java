@@ -21,7 +21,7 @@ import java.util.Set;
 @Transactional(readOnly = true)
 public class AudienceFestivalService {
 
-    private final WishListRepository userFestivalRepository;
+    private final WishListRepository wishListRepository;
     private final FestivalRepository festivalRepository;
     private final AuthService authService;
 
@@ -30,7 +30,7 @@ public class AudienceFestivalService {
         Page<Festival> festivalPage = festivalRepository.findActiveFestivals(pageable);
 
         Set<Long> wishlistIds = (user != null)
-                ? userFestivalRepository.findAllFestivalIdsByUserId(user.getId())
+                ? wishListRepository.findAllFestivalIdsByAudienceId(user.getId())
                 : Collections.emptySet();
 
         Page<AudienceFestivalSummaryResponse> festivalList = festivalPage.map(f ->

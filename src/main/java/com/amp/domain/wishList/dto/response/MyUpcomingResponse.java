@@ -14,15 +14,15 @@ public record MyUpcomingResponse(
         boolean wishList,
         Long dDay
 ) {
-    public static MyUpcomingResponse of(AudienceFestival userFestival) {
-        Festival festival = userFestival.getFestival();
+    public static MyUpcomingResponse of(AudienceFestival audienceFestival) {
+        Festival festival = audienceFestival.getFestival();
         return new MyUpcomingResponse(
                 festival.getId(),
                 festival.getTitle(),
                 festival.getMainImageUrl(),
                 FestivalUtils.formatPeriod(festival.getStartDate(), festival.getEndDate()),
                 WishListUtils.convertToUserStatus(festival.getStatus()),
-                userFestival.getWishList(),
+                audienceFestival.getWishList(),
                 FestivalUtils.calculateDDay(festival.getStartDate(), festival.getEndDate())
         );
     }

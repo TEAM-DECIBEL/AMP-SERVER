@@ -48,7 +48,7 @@ public class WishListService {
         User user = authService.getCurrentUser();
 
         if (!(user instanceof Audience)) {
-            throw new CustomException(UserErrorCode.USER_NOT_AUTHENTICATED);
+            throw new CustomException(UserErrorCode.USER_NOT_AUTHORIZED);
         }
         Audience audience = (Audience) user;
 
@@ -61,8 +61,8 @@ public class WishListService {
                         .festival(festival)
                         .build());
 
-        wishListRepository.save(audienceFestival);
         audienceFestival.updateWishList(request.wishList());
+        wishListRepository.save(audienceFestival);
 
         return new UpdateWishListResponse(festival.getId(), audienceFestival.getWishList());
     }
