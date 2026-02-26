@@ -85,7 +85,7 @@ public class FestivalNoticeService {
         return audienceRepository.findByEmail(userEmail)
                 .map(audience -> {
                     List<Long> noticeIds = notices.stream().map(Notice::getId).toList();
-                    return new HashSet<>(bookmarkRepository.findNoticeIdsByUserAndNoticeIdIn(audience, noticeIds));
+                    return new HashSet<>(bookmarkRepository.findNoticeIdsByAudienceAndNoticeIdIn(audience, noticeIds));
                 })
                 .orElse(new HashSet<>());
     }

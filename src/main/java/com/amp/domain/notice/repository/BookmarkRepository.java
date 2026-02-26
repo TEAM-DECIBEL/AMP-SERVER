@@ -29,12 +29,12 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
         WHERE b.audience.id = :userId
         ORDER BY b.createdAt DESC
         """)
-    Page<Bookmark> findByUserIdWithDetails(
+    Page<Bookmark> findByAudienceIdWithDetails(
             @Param("userId") Long userId,
             Pageable pageable
     );
 
 
     @Query("SELECT b.notice.id FROM Bookmark b WHERE b.audience = :audience AND b.notice.id IN :noticeIds")
-    List<Long> findNoticeIdsByUserAndNoticeIdIn(@Param("audience") Audience audience, @Param("noticeIds") List<Long> noticeIds);
+    List<Long> findNoticeIdsByAudienceAndNoticeIdIn(@Param("audience") Audience audience, @Param("noticeIds") List<Long> noticeIds);
 }
