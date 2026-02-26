@@ -2,7 +2,7 @@ package com.amp.domain.notice.controller.audience;
 
 import com.amp.domain.notice.dto.request.BookmarkRequest;
 import com.amp.domain.notice.dto.response.BookmarkResponse;
-import com.amp.domain.notice.service.user.BookmarkService;
+import com.amp.domain.notice.service.audience.BookmarkService;
 import com.amp.global.annotation.ApiErrorCodes;
 import com.amp.global.common.SuccessStatus;
 import com.amp.global.response.success.BaseResponse;

@@ -1,4 +1,4 @@
-package com.amp.domain.notice.service.user;
+package com.amp.domain.notice.service.audience;
 
 import com.amp.domain.notice.dto.request.BookmarkRequest;
 import com.amp.domain.notice.dto.response.BookmarkResponse;
