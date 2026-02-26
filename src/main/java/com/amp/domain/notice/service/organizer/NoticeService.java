@@ -8,7 +8,6 @@ import com.amp.domain.festival.exception.FestivalErrorCode;
 import com.amp.domain.festival.repository.FestivalRepository;
 import com.amp.domain.notice.dto.request.NoticeCreateRequest;
 import com.amp.domain.notice.dto.response.Author;
-import com.amp.domain.user.entity.UserType;
 import com.amp.global.common.dto.CategoryData;
 import com.amp.domain.notice.dto.response.NoticeCreateResponse;
 import com.amp.domain.notice.dto.response.NoticeDetailResponse;
@@ -18,9 +17,11 @@ import com.amp.domain.notice.exception.NoticeErrorCode;
 import com.amp.domain.notice.exception.NoticeException;
 import com.amp.domain.notice.repository.BookmarkRepository;
 import com.amp.domain.notice.repository.NoticeRepository;
-import com.amp.domain.user.entity.User;
+import com.amp.domain.user.entity.Audience;
+import com.amp.domain.user.entity.Organizer;
 import com.amp.domain.user.exception.UserErrorCode;
-import com.amp.domain.user.repository.UserRepository;
+import com.amp.domain.user.repository.AudienceRepository;
+import com.amp.domain.user.repository.OrganizerRepository;
 import com.amp.global.exception.CustomException;
 import com.amp.global.s3.S3ErrorCode;
 import com.amp.global.s3.S3Service;
@@ -43,12 +44,14 @@ public class NoticeService {
 
     private final NoticeRepository noticeRepository;
     private final BookmarkRepository bookmarkRepository;
-    private final UserRepository userRepository;
+    private final OrganizerRepository organizerRepository;
+    private final AudienceRepository audienceRepository;
     private final FestivalCategoryRepository festivalCategoryRepository;
     private final FestivalRepository festivalRepository;
     private final S3Service s3Service;
 
     private final ApplicationEventPublisher eventPublisher;
+    private final AuthService authService;
 
     @Transactional
     public NoticeCreateResponse createNotice(Long festivalId, NoticeCreateRequest request) {
@@ -60,13 +63,13 @@ public class NoticeService {
             throw new CustomException(UserErrorCode.USER_NOT_FOUND);
         }
 
-        User user = userRepository.findByEmail(authentication.getName())
+        Organizer organizer = organizerRepository.findByEmail(authentication.getName())
                 .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
 
         Festival festival = festivalRepository.findById(festivalId)
                 .orElseThrow(() -> new CustomException(FestivalErrorCode.FESTIVAL_NOT_FOUND));
 
-        validateOrganizer(festival, user);
+        validateOrganizer(festival, organizer);
 
         FestivalCategory festivalCategory = festivalCategoryRepository
                 .findByMapping(festivalId, request.categoryId())
@@ -101,7 +104,7 @@ public class NoticeService {
                     .content(request.content())
                     .imageUrl(imageUrl)
                     .isPinned(request.isPinned())
-                    .user(user)
+                    .organizer(organizer)
                     .festival(festival)
                     .festivalCategory(festivalCategory)
                     .build();
@@ -145,8 +148,6 @@ public class NoticeService {
         }
     }
 
-    private final AuthService authService;
-
     public NoticeDetailResponse getNoticeDetail(Long noticeId) {
 
         // 공지 조회 (존재 검증 포함)
@@ -165,10 +166,8 @@ public class NoticeService {
         );
 
         Author author = new Author(
-                notice.getUser().getId(),
-                notice.getUser().getUserType() == UserType.ORGANIZER
-                        ? notice.getUser().getOrganizerName()
-                        : notice.getUser().getNickname()
+                notice.getOrganizer().getId(),
+                notice.getOrganizer().getOrganizerName()
         );
 
         return new NoticeDetailResponse(
@@ -192,15 +191,13 @@ public class NoticeService {
         Authentication authentication =
                 SecurityContextHolder.getContext().getAuthentication();
 
-        // 로그인한 사용자만 북마크 여부 확인
+        // 로그인한 사용자만 북마크 여부 확인 (Audience만 북마크 가능)
         if (authService.isLoggedInUser(authentication)) {
             String userEmail = authentication.getName();
-            User user = userRepository.findByEmail(userEmail).orElseThrow(() ->
-                    new CustomException(UserErrorCode.USER_NOT_FOUND));
-
-
-            isSaved = bookmarkRepository
-                    .existsByNoticeAndUser(notice, user);
+            Audience audience = audienceRepository.findByEmail(userEmail).orElse(null);
+            if (audience != null) {
+                isSaved = bookmarkRepository.existsByNoticeAndAudience(notice, audience);
+            }
         }
         return isSaved;
     }
@@ -223,20 +220,20 @@ public class NoticeService {
         }
 
         String email = authentication.getName();
-        User user = userRepository.findByEmail(email)
+        Organizer organizer = organizerRepository.findByEmail(email)
                 .orElseThrow(() ->
                         new CustomException(UserErrorCode.USER_NOT_FOUND)
                 );
 
-        if (!notice.getUser().getId().equals(user.getId())) {
+        if (!notice.getOrganizer().getId().equals(organizer.getId())) {
             throw new NoticeException(NoticeErrorCode.NOTICE_DELETE_FORBIDDEN);
         }
 
         notice.delete();
     }
 
-    private void validateOrganizer(Festival festival, User user) {
-        if (!festival.getOrganizer().getId().equals(user.getId())) {
+    private void validateOrganizer(Festival festival, Organizer organizer) {
+        if (!festival.getOrganizer().getId().equals(organizer.getId())) {
             throw new CustomException(UserErrorCode.USER_NOT_AUTHORIZED);
         }
     }

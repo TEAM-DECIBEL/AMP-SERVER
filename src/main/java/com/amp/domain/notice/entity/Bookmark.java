@@ -1,6 +1,6 @@
 package com.amp.domain.notice.entity;
 
-import com.amp.domain.user.entity.User;
+import com.amp.domain.user.entity.Audience;
 import com.amp.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -25,15 +25,15 @@ public class Bookmark extends BaseTimeEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    private Audience audience;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "notice_id", nullable = false)
     private Notice notice;
 
     @Builder
-    public Bookmark(User user, Notice notice) {
-        this.user = user;
+    public Bookmark(Audience audience, Notice notice) {
+        this.audience = audience;
         this.notice = notice;
     }
 

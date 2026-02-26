@@ -2,11 +2,11 @@ package com.amp.domain.festival.service.common;
 
 import com.amp.domain.festival.dto.response.FestivalInfoResponse;
 import com.amp.domain.festival.entity.Festival;
-import com.amp.domain.festival.entity.UserFestival;
+import com.amp.domain.festival.entity.AudienceFestival;
 import com.amp.domain.festival.exception.FestivalErrorCode;
 import com.amp.domain.festival.repository.FestivalRepository;
+import com.amp.domain.user.entity.Audience;
 import com.amp.domain.user.entity.User;
-import com.amp.domain.user.entity.UserType;
 import com.amp.domain.wishList.repository.WishListRepository;
 import com.amp.global.exception.CustomException;
 import com.amp.global.security.service.AuthService;
@@ -34,13 +34,13 @@ public class FestivalInfoService {
         if (user == null) {
             // 비로그인 유저
             isWishlist = false;
-        } else if (user.getUserType() == UserType.ORGANIZER) {
-            // 주최사 유저
+        } else if (!(user instanceof Audience)) {
+            // 주최자 유저
             isWishlist = null;
         } else {
-            // 로그인 유저
-            isWishlist = wishListRepository.findByUserAndFestival(user, festival)
-                    .map(UserFestival::getWishList)
+            // 관객 유저
+            isWishlist = wishListRepository.findByAudienceAndFestival((Audience) user, festival)
+                    .map(AudienceFestival::getWishList)
                     .orElse(false);
         }
 

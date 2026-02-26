@@ -10,9 +10,9 @@ import com.amp.domain.notice.exception.NoticeErrorCode;
 import com.amp.domain.notice.exception.NoticeException;
 import com.amp.domain.notice.repository.BookmarkRepository;
 import com.amp.domain.notice.repository.NoticeRepository;
-import com.amp.domain.user.entity.User;
+import com.amp.domain.user.entity.Audience;
 import com.amp.domain.user.exception.UserErrorCode;
-import com.amp.domain.user.repository.UserRepository;
+import com.amp.domain.user.repository.AudienceRepository;
 import com.amp.global.exception.CustomException;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -26,7 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class BookmarkService {
 
     private final BookmarkRepository bookmarkRepository;
-    private final UserRepository userRepository;
+    private final AudienceRepository audienceRepository;
     private final NoticeRepository noticeRepository;
 
     public BookmarkResponse updateBookmark(Long noticeId, BookmarkRequest request) {
@@ -35,12 +35,12 @@ public class BookmarkService {
                 SecurityContextHolder.getContext().getAuthentication();
 
         String email = authentication.getName();
-        User user = userRepository.findByEmail(email)
+        Audience audience = audienceRepository.findByEmail(email)
                 .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
         Notice notice = noticeRepository.findById(noticeId)
                 .orElseThrow(() -> new NoticeException(NoticeErrorCode.NOTICE_NOT_FOUND));
         Bookmark bookmark = bookmarkRepository
-                .findByNoticeAndUser(notice, user)
+                .findByNoticeAndAudience(notice, audience)
                 .orElse(null);
         boolean isSaved;
 
@@ -48,7 +48,7 @@ public class BookmarkService {
             if (bookmark != null) {
                 throw new BookmarkException(BookmarkErrorCode.NOTICE_ALREADY_BOOKMARKED);
             }
-            bookmarkRepository.save(new Bookmark(user, notice));
+            bookmarkRepository.save(new Bookmark(audience, notice));
             isSaved = true;
 
         } else {

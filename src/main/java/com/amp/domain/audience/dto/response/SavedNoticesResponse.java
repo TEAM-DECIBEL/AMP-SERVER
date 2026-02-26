@@ -1,4 +1,4 @@
-package com.amp.domain.user.dto.response;
+package com.amp.domain.audience.dto.response;
 
 import com.amp.global.common.dto.response.PaginationResponse;
 import lombok.Builder;

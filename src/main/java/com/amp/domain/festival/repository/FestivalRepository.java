@@ -2,7 +2,7 @@ package com.amp.domain.festival.repository;
 
 import com.amp.domain.festival.entity.Festival;
 import com.amp.domain.festival.entity.FestivalStatus;
-import com.amp.domain.user.entity.User;
+import com.amp.domain.user.entity.Organizer;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -26,20 +26,20 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
     @Query("""
                 SELECT f
                 FROM Festival f
-                    WHERE f.organizer = :user
+                    WHERE f.organizer = :organizer
                 ORDER BY f.endDate DESC, f.startTime DESC, f.title ASC
             """)
-    Page<Festival> findAllByMyUser(@Param("user") User user, Pageable pageable);
+    Page<Festival> findAllByMyUser(@Param("organizer") Organizer organizer, Pageable pageable);
 
 
     @Query("""
                 SELECT f
                 FROM Festival f
-                WHERE f.organizer = :user
+                WHERE f.organizer = :organizer
                   AND f.status IN :statuses
                 ORDER BY f.startDate ASC, f.startTime ASC, f.title ASC
             """)
-    Page<Festival> findActiveFestivalsByUser(@Param("user") User user,
+    Page<Festival> findActiveFestivalsByUser(@Param("organizer") Organizer organizer,
                                              @Param("statuses") List<FestivalStatus> statuses,
                                              Pageable pageable);
 
@@ -47,10 +47,10 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
     @Query("""
                 SELECT COUNT(f)
                 FROM Festival f
-                WHERE f.organizer = :user
+                WHERE f.organizer = :organizer
                   AND f.status = :status
             """)
-    long countByOrganizerAndStatus(@Param("user") User user,
+    long countByOrganizerAndStatus(@Param("organizer") Organizer organizer,
                                    @Param("status") FestivalStatus status);
 
 

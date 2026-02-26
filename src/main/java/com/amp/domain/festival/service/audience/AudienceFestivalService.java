@@ -1,4 +1,4 @@
-package com.amp.domain.festival.service.user;
+package com.amp.domain.festival.service.audience;
 
 import com.amp.domain.festival.entity.Festival;
 import com.amp.domain.festival.repository.FestivalRepository;
@@ -25,8 +25,6 @@ public class AudienceFestivalService {
     private final FestivalRepository festivalRepository;
     private final AuthService authService;
 
-
-    @Transactional(readOnly = true)
     public PageResponse<AudienceFestivalSummaryResponse> getAllFestivals(Pageable pageable) {
         User user = authService.getCurrentUserOrNull();
         Page<Festival> festivalPage = festivalRepository.findActiveFestivals(pageable);
@@ -41,5 +39,4 @@ public class AudienceFestivalService {
 
         return PageResponse.of(festivalList);
     }
-
 }
