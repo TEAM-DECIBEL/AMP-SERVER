@@ -2,10 +2,10 @@ package com.amp.domain.stage.service;
 
 import com.amp.domain.stage.entity.CongestionLevel;
 import com.amp.domain.stage.entity.Stage;
-import com.amp.domain.stage.entity.UserCongestionReport;
+import com.amp.domain.stage.entity.AudienceCongestionReport;
 import com.amp.domain.stage.repository.StageCongestionRepository;
 import com.amp.domain.stage.repository.StageRepository;
-import com.amp.domain.stage.repository.UserCongestionReportRepository;
+import com.amp.domain.stage.repository.AudienceCongestionReportRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,7 +28,7 @@ class CongestionCalculateServiceTest {
     private CongestionCalculateService calculateService;
 
     @Mock
-    private UserCongestionReportRepository reportRepository;
+    private AudienceCongestionReportRepository reportRepository;
     @Mock
     private StageCongestionRepository stageCongestionRepository;
     @Mock
@@ -43,13 +43,13 @@ class CongestionCalculateServiceTest {
         LocalDateTime now = LocalDateTime.now();
 
         // 10분 전 제보 (가중치 1.0, 혼잡 3점)
-        UserCongestionReport report1 = UserCongestionReport.builder()
+        AudienceCongestionReport report1 = AudienceCongestionReport.builder()
                 .reportedLevel(CongestionLevel.CROWDED) // 3점
                 .reportedAt(now.minusMinutes(10))
                 .build();
 
         // 50분 전 제보 (가중치 0.25, 여유 1점)
-        UserCongestionReport report2 = UserCongestionReport.builder()
+        AudienceCongestionReport report2 = AudienceCongestionReport.builder()
                 .reportedLevel(CongestionLevel.SMOOTH) // 1점
                 .reportedAt(now.minusMinutes(50))
                 .build();

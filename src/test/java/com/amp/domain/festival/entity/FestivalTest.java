@@ -17,14 +17,11 @@ class FestivalTest {
     @DisplayName("공연 시작 전이면 UPCOMING 상태여야 한다")
     void statusShouldBeUpcomingBeforeStartDate() {
         Festival festival = Festival.builder()
-                .startDate(LocalDate.of(2026, 1, 20))
-                .endDate(LocalDate.of(2026, 1, 22))
+                .startDate(LocalDate.now().plusDays(1))
+                .endDate(LocalDate.now().plusDays(3))
                 .build();
 
-        log.info("Festival값 뽑아보기 {},{},{},{}" ,festival.getId(),festival.getStatus(),festival.getStartDate(),festival.getEndDate());
-
-
-        // festival.updateStatus(LocalDate.of(2026, 1, 15));
+        festival.updateStatus();
 
         assertThat(festival.getStatus()).isEqualTo(FestivalStatus.UPCOMING);
     }
@@ -33,11 +30,11 @@ class FestivalTest {
     @DisplayName("공연 기간 중이면 ONGOING 상태여야 한다")
     void statusShouldBeOngoingDuringFestival() {
         Festival festival = Festival.builder()
-                .startDate(LocalDate.of(2026, 1, 20))
-                .endDate(LocalDate.of(2026, 1, 22))
+                .startDate(LocalDate.now().minusDays(1))
+                .endDate(LocalDate.now().plusDays(1))
                 .build();
 
-       // festival.updateStatus(LocalDate.of(2026, 1, 21));
+        festival.updateStatus();
 
         assertThat(festival.getStatus()).isEqualTo(FestivalStatus.ONGOING);
     }
