@@ -1,8 +1,8 @@
-package com.amp.domain.user.service;
+package com.amp.domain.audience.service;
 
+import com.amp.domain.audience.dto.response.SavedNoticesResponse;
 import com.amp.domain.notice.entity.Bookmark;
 import com.amp.domain.notice.repository.BookmarkRepository;
-import com.amp.domain.user.dto.response.SavedNoticesResponse;
 import com.amp.global.common.dto.response.PaginationResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,21 +19,18 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class UserNoticesService {
+public class AudienceNoticesService {
 
     private final BookmarkRepository bookmarkRepository;
 
     public SavedNoticesResponse getSavedAnnouncements(Long userId, int page, int size) {
         log.info("저장한 공지 조회 - userId: {}, page: {}, size: {}", userId, page, size);
 
-        // 페이지네이션 설정
         Pageable pageable = PageRequest.of(page, size);
 
-        // 저장한 공지 조회 (fetch join으로 N+1 방지)
         Page<Bookmark> bookmarksPage =
                 bookmarkRepository.findByUserIdWithDetails(userId, pageable);
 
-        // DTO 변환
         List<SavedNoticesResponse.SavedAnnouncementDto> notices =
                 bookmarksPage.getContent().stream()
                         .map(this::convertToDto)

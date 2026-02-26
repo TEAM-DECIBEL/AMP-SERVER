@@ -18,8 +18,8 @@ import com.amp.domain.festival.scheduler.FestivalScheduleService;
 import com.amp.domain.stage.dto.request.StageRequest;
 import com.amp.domain.stage.repository.StageRepository;
 import com.amp.domain.stage.service.StageService;
+import com.amp.domain.user.entity.Organizer;
 import com.amp.domain.user.entity.User;
-import com.amp.domain.user.entity.UserType;
 import com.amp.global.annotation.LogExecutionTime;
 import com.amp.global.common.CommonErrorCode;
 import com.amp.global.exception.CustomException;
@@ -63,9 +63,10 @@ public class FestivalService {
     public FestivalCreateResponse createFestival(FestivalCreateRequest request) {
         User user = authService.getCurrentUser();
 
-        if (user.getUserType() != UserType.ORGANIZER) {
+        if (!(user instanceof Organizer)) {
             throw new CustomException(CommonErrorCode.FORBIDDEN);
         }
+        Organizer organizer = (Organizer) user;
 
         List<ScheduleRequest> schedules = parseJson(
                 request.schedules(),
@@ -120,7 +121,7 @@ public class FestivalService {
                     .endDate(endDate)
                     .startTime(startTime)
                     .mainImageUrl(publicUrl)
-                    .organizer(user)
+                    .organizer(organizer)
                     .build();
 
             festival.updateStatus();

@@ -5,9 +5,11 @@ import com.amp.domain.auth.dto.OnboardingResponse;
 import com.amp.domain.auth.dto.OnboardingStatusResponse;
 import com.amp.domain.auth.exception.OnboardingErrorCode;
 import com.amp.domain.auth.exception.OnboardingException;
+import com.amp.domain.user.entity.Organizer;
 import com.amp.domain.user.entity.RegistrationStatus;
 import com.amp.domain.user.entity.User;
 import com.amp.domain.user.entity.UserType;
+import com.amp.domain.user.repository.OrganizerRepository;
 import com.amp.domain.user.repository.UserRepository;
 import com.amp.global.common.CommonErrorCode;
 import com.amp.global.exception.CustomException;
@@ -23,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class OnboardingService {
 
     private final UserRepository userRepository;
+    private final OrganizerRepository organizerRepository;
 
     public OnboardingResponse completeOnboarding(String email, OnboardingRequest request) {
         User user = userRepository.findByEmail(email)
@@ -56,7 +59,7 @@ public class OnboardingService {
                 .userType(user.getUserType())
                 .registrationStatus(user.getRegistrationStatus())
                 .message("온보딩이 완료되었습니다.")
-                .organizerName(user.getOrganizerName())
+                .organizerName(user instanceof Organizer o ? o.getOrganizerName() : null)
                 .build();
     }
 
@@ -89,7 +92,7 @@ public class OnboardingService {
         // 주최사명 중복 체크
         validateOrganizerNameUniqueness(request.getOrganizerName());
 
-        user.completeOrganizerOnboarding(request.getOrganizerName());
+        ((Organizer) user).completeOrganizerOnboarding(request.getOrganizerName());
         userRepository.save(user);
 
         log.info("Organizer onboarding completed for user: {}, organizer: {}",
@@ -110,7 +113,7 @@ public class OnboardingService {
     }
 
     private void validateOrganizerNameUniqueness(String organizerName) {
-        if (userRepository.existsByOrganizerName(organizerName)) {
+        if (organizerRepository.existsByOrganizerName(organizerName)) {
             throw new OnboardingException(OnboardingErrorCode.DUPLICATE_ORGANIZER_NAME);
         }
     }

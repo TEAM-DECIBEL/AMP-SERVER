@@ -9,11 +9,8 @@ import com.amp.domain.notice.entity.Notice;
 import com.amp.domain.notice.exception.NoticeException;
 import com.amp.domain.notice.repository.BookmarkRepository;
 import com.amp.domain.notice.repository.NoticeRepository;
-import com.amp.domain.user.entity.User;
-import com.amp.domain.user.exception.UserErrorCode;
-import com.amp.domain.user.repository.UserRepository;
+import com.amp.domain.user.repository.AudienceRepository;
 import com.amp.global.common.dto.response.PaginationResponse;
-import com.amp.global.exception.CustomException;
 import com.amp.global.security.service.AuthService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,7 +38,7 @@ public class FestivalNoticeService {
 
     private final NoticeRepository noticeRepository;
     private final BookmarkRepository bookmarkRepository;
-    private final UserRepository userRepository;
+    private final AudienceRepository audienceRepository;
     private final FestivalRepository festivalRepository;
 
     private final AuthService authService;
@@ -84,11 +81,13 @@ public class FestivalNoticeService {
             return Collections.emptySet();
         }
         String userEmail = authentication.getName();
-        User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
 
-        List<Long> noticeIds = notices.stream().map(Notice::getId).toList();
-        return new HashSet<>(bookmarkRepository.findNoticeIdsByUserAndNoticeIdIn(user, noticeIds));
+        return audienceRepository.findByEmail(userEmail)
+                .map(audience -> {
+                    List<Long> noticeIds = notices.stream().map(Notice::getId).toList();
+                    return new HashSet<>(bookmarkRepository.findNoticeIdsByUserAndNoticeIdIn(audience, noticeIds));
+                })
+                .orElse(new HashSet<>());
     }
 
 }

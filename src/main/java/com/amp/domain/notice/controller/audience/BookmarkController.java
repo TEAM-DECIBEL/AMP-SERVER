@@ -1,4 +1,4 @@
-package com.amp.domain.notice.controller.user;
+package com.amp.domain.notice.controller.audience;
 
 import com.amp.domain.notice.dto.request.BookmarkRequest;
 import com.amp.domain.notice.dto.response.BookmarkResponse;
@@ -16,8 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/users/notices")
-@Tag(name = "User API")
+@RequestMapping("/api/v1/audience/notices")
+@Tag(name = "Audience API")
 @RequiredArgsConstructor
 public class BookmarkController {
 
@@ -28,7 +28,7 @@ public class BookmarkController {
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_UPDATE_BOOKMARK)
     @PostMapping("/{noticeId}/bookmark")
     public ResponseEntity<BaseResponse<BookmarkResponse>> updateBookmark(
-            @PathVariable("noticeId") @Positive Long noticeId,
+            @PathVariable @Positive Long noticeId,
             @RequestBody @Valid BookmarkRequest bookmarkRequest
     ) {
         BookmarkResponse response =
@@ -38,6 +38,4 @@ public class BookmarkController {
                 .status(SuccessStatus.BOOKMARK_UPDATE_SUCCESS.getHttpStatus())
                 .body(BaseResponse.create(SuccessStatus.BOOKMARK_UPDATE_SUCCESS.getMsg(), response));
     }
-
 }
-
