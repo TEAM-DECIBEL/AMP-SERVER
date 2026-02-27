@@ -3,7 +3,6 @@ package com.amp.domain.festival.util;
 import com.amp.global.common.dto.TimeConstants;
 
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 

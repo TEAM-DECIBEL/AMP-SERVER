@@ -2,7 +2,7 @@ package com.amp.domain.festival.repository;
 
 import com.amp.domain.festival.entity.Festival;
 import com.amp.domain.festival.entity.FestivalStatus;
-import com.amp.domain.user.entity.User;
+import com.amp.domain.user.entity.Organizer;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -24,56 +24,51 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
 
 
     @Query("""
-        SELECT f
-        FROM Festival f
-        WHERE f.organizer.user = :user
-          AND f.deletedAt IS NULL
-        ORDER BY f.endDate DESC, f.startTime DESC, f.title ASC
-    """)
-    Page<Festival> findAllByMyUser(@Param("user") User user, Pageable pageable);
+                SELECT f
+                FROM Festival f
+                    WHERE f.organizer = :organizer
+                ORDER BY f.endDate DESC, f.startTime DESC, f.title ASC
+            """)
+    Page<Festival> findAllByMyUser(@Param("organizer") Organizer organizer, Pageable pageable);
 
 
     @Query("""
-        SELECT f
-        FROM Festival f
-        WHERE f.organizer.user = :user
-          AND f.status IN :statuses
-          AND f.deletedAt IS NULL
-        ORDER BY f.startDate ASC, f.startTime ASC, f.title ASC
-    """)
-    Page<Festival> findActiveFestivalsByUser(@Param("user") User user,
+                SELECT f
+                FROM Festival f
+                WHERE f.organizer = :organizer
+                  AND f.status IN :statuses
+                ORDER BY f.startDate ASC, f.startTime ASC, f.title ASC
+            """)
+    Page<Festival> findActiveFestivalsByUser(@Param("organizer") Organizer organizer,
                                              @Param("statuses") List<FestivalStatus> statuses,
                                              Pageable pageable);
 
 
     @Query("""
-        SELECT COUNT(f)
-        FROM Festival f
-        WHERE f.organizer.user = :user
-          AND f.status = :status
-          AND f.deletedAt IS NULL
-    """)
-    long countByOrganizerAndStatus(@Param("user") User user,
+                SELECT COUNT(f)
+                FROM Festival f
+                WHERE f.organizer = :organizer
+                  AND f.status = :status
+            """)
+    long countByOrganizerAndStatus(@Param("organizer") Organizer organizer,
                                    @Param("status") FestivalStatus status);
 
 
     @Query("""
-        SELECT f
-        FROM Festival f
-        WHERE f.endDate >= CURRENT_DATE
-          AND f.deletedAt IS NULL
-        ORDER BY f.startDate ASC, f.startTime ASC, f.title ASC
-    """)
+                SELECT f
+                FROM Festival f
+                WHERE f.endDate >= CURRENT_DATE
+                ORDER BY f.startDate ASC, f.startTime ASC, f.title ASC
+            """)
     Page<Festival> findActiveFestivals(Pageable pageable);
 
 
     @Query("""
-        SELECT COUNT(f)
-        FROM Festival f
-        WHERE f.organizer.user.id = :userId
-          AND f.status = :status
-          AND f.deletedAt IS NULL
-    """)
+                SELECT COUNT(f)
+                FROM Festival f
+                WHERE f.organizer.id = :userId
+                  AND f.status = :status
+            """)
     Long countFestivalsByUserIdAndStatus(@Param("userId") Long userId,
                                          @Param("status") FestivalStatus status);
 }

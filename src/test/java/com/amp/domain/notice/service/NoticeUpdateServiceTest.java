@@ -11,10 +11,9 @@ import com.amp.domain.notice.entity.Notice;
 import com.amp.domain.notice.exception.NoticeException;
 import com.amp.domain.notice.repository.NoticeRepository;
 import com.amp.domain.notice.service.organizer.NoticeUpdateService;
-import com.amp.domain.organizer.repository.OrganizerRepository;
-import com.amp.domain.user.entity.User;
+import com.amp.domain.user.entity.Organizer;
 import com.amp.domain.user.exception.UserErrorCode;
-import com.amp.domain.user.repository.UserRepository;
+import com.amp.domain.user.repository.OrganizerRepository;
 import com.amp.global.exception.CustomException;
 import com.amp.global.s3.S3Service;
 import org.junit.jupiter.api.AfterEach;
@@ -46,8 +45,6 @@ class NoticeUpdateServiceTest {
     @Mock
     private NoticeRepository noticeRepository;
     @Mock
-    private UserRepository userRepository;
-    @Mock
     private OrganizerRepository organizerRepository;
     @Mock
     private FestivalCategoryRepository festivalCategoryRepository;
@@ -62,7 +59,7 @@ class NoticeUpdateServiceTest {
     private Festival festival;
     private FestivalCategory festivalCategory;
     private Notice notice;
-    private User organizer;
+    private Organizer organizer;
 
     @AfterEach
     void clearSecurityContext() {
@@ -71,6 +68,11 @@ class NoticeUpdateServiceTest {
 
     @BeforeEach
     void setUp() {
+        organizer = Organizer.builder()
+                .id(1L)
+                .email("organizer@test.com")
+                .build();
+
         festival = Festival.builder()
                 .title("축제")
                 .status(FestivalStatus.ONGOING)
@@ -78,6 +80,7 @@ class NoticeUpdateServiceTest {
                 .endDate(LocalDate.now().plusDays(1))
                 .build();
         ReflectionTestUtils.setField(festival, "id", 1L);
+        ReflectionTestUtils.setField(festival, "organizer", organizer);
 
         Category category = Category.builder()
                 .categoryName("공지")
@@ -89,17 +92,12 @@ class NoticeUpdateServiceTest {
                 .build();
         ReflectionTestUtils.setField(festivalCategory, "id", 1L);
 
-        organizer = User.builder()
-                .id(1L)
-                .email("organizer@test.com")
-                .build();
-
         notice = Notice.builder()
                 .title("기존 제목")
                 .content("기존 내용")
                 .festival(festival)
                 .festivalCategory(festivalCategory)
-                .user(organizer)
+                .organizer(organizer)
                 .imageUrl("old-image-url")
                 .build();
         ReflectionTestUtils.setField(notice, "id", 1L);
@@ -107,7 +105,7 @@ class NoticeUpdateServiceTest {
 
     @Test
     @DisplayName("공지 수정 성공 - 주최자는 공지를 수정할 수 있다")
-    void updateNotice_success() {
+    void updateNoticeSuccess() {
         // given
         Authentication auth =
                 new UsernamePasswordAuthenticationToken(
@@ -124,12 +122,10 @@ class NoticeUpdateServiceTest {
                 "http://image.jpg"  // previousImageUrl
         );
 
-        when(userRepository.findByEmail(organizer.getEmail()))
+        when(organizerRepository.findByEmail(organizer.getEmail()))
                 .thenReturn(Optional.of(organizer));
         when(festivalRepository.findById(1L))
                 .thenReturn(Optional.of(festival));
-        when(organizerRepository.existsByFestivalAndUser(festival, organizer))
-                .thenReturn(true);
         when(noticeRepository.findById(1L))
                 .thenReturn(Optional.of(notice));
         when(festivalCategoryRepository.findById(1L))
@@ -146,7 +142,7 @@ class NoticeUpdateServiceTest {
 
     @Test
     @DisplayName("비로그인 사용자는 공지 수정 불가")
-    void updateNotice_notLoggedIn_throwException() {
+    void updateNoticeNotLoggedInThrowException() {
         // given
         SecurityContextHolder.clearContext();
 
@@ -163,7 +159,7 @@ class NoticeUpdateServiceTest {
 
     @Test
     @DisplayName("주최자가 아니면 공지 수정 불가")
-    void updateNotice_notOrganizer_throwException() {
+    void updateNoticeNotOrganizerThrowException() {
         // given
         Authentication auth =
                 new UsernamePasswordAuthenticationToken(
@@ -174,24 +170,27 @@ class NoticeUpdateServiceTest {
                 new NoticeUpdateRequest(
                         1L, "제목", 1L, null, "내용", false, null);
 
-        when(userRepository.findByEmail(organizer.getEmail()))
-                .thenReturn(Optional.of(organizer));
+        Organizer differentOrganizer = Organizer.builder()
+                .id(99L)
+                .email(organizer.getEmail())
+                .build();
+
+        when(organizerRepository.findByEmail(organizer.getEmail()))
+                .thenReturn(Optional.of(differentOrganizer));
         when(festivalRepository.findById(1L))
                 .thenReturn(Optional.of(festival));
-        when(organizerRepository.existsByFestivalAndUser(festival, organizer))
-                .thenReturn(false);
 
         // then
         assertThatThrownBy(() ->
                 noticeUpdateService.updateNotice(1L, request))
                 .isInstanceOf(CustomException.class)
-                .hasMessageContaining(UserErrorCode.USER_NOT_AUTHENTICATED.getMsg());
+                .hasMessageContaining(UserErrorCode.USER_NOT_AUTHORIZED.getMsg());
     }
 
 
     @Test
     @DisplayName("존재하지 않는 공지면 예외 발생")
-    void updateNotice_noticeNotFound_throwException() {
+    void updateNoticeNoticeNotFoundThrowException() {
         // given
         Authentication auth =
                 new UsernamePasswordAuthenticationToken(
@@ -208,12 +207,10 @@ class NoticeUpdateServiceTest {
                         true,
                         "http://image.jpg"
                 );
-        when(userRepository.findByEmail(organizer.getEmail()))
+        when(organizerRepository.findByEmail(organizer.getEmail()))
                 .thenReturn(Optional.of(organizer));
         when(festivalRepository.findById(1L))
                 .thenReturn(Optional.of(festival));
-        when(organizerRepository.existsByFestivalAndUser(festival, organizer))
-                .thenReturn(true);
         when(noticeRepository.findById(1L))
                 .thenReturn(Optional.empty());
 
@@ -225,7 +222,7 @@ class NoticeUpdateServiceTest {
 
     @Test
     @DisplayName("삭제된 공지는 수정할 수 없다")
-    void updateNotice_deletedNotice_throwException() {
+    void updateNoticeDeletedNoticeThrowException() {
         // given
         notice.delete();
 
@@ -244,12 +241,10 @@ class NoticeUpdateServiceTest {
                         true,
                         "http://image.jpg"
                 );
-        when(userRepository.findByEmail(organizer.getEmail()))
+        when(organizerRepository.findByEmail(organizer.getEmail()))
                 .thenReturn(Optional.of(organizer));
         when(festivalRepository.findById(1L))
                 .thenReturn(Optional.of(festival));
-        when(organizerRepository.existsByFestivalAndUser(festival, organizer))
-                .thenReturn(true);
         when(noticeRepository.findById(1L))
                 .thenReturn(Optional.of(notice));
 
@@ -261,7 +256,7 @@ class NoticeUpdateServiceTest {
 
     @Test
     @DisplayName("이미지 포함 수정 시 S3 업로드가 수행된다")
-    void updateNotice_withImage_success() {
+    void updateNoticeWithImageSuccess() {
         // given
         Authentication auth =
                 new UsernamePasswordAuthenticationToken(
@@ -282,12 +277,10 @@ class NoticeUpdateServiceTest {
                         true,
                         "http://image.jpg"
                 );
-        when(userRepository.findByEmail(organizer.getEmail()))
+        when(organizerRepository.findByEmail(organizer.getEmail()))
                 .thenReturn(Optional.of(organizer));
         when(festivalRepository.findById(1L))
                 .thenReturn(Optional.of(festival));
-        when(organizerRepository.existsByFestivalAndUser(festival, organizer))
-                .thenReturn(true);
         when(noticeRepository.findById(1L))
                 .thenReturn(Optional.of(notice));
         when(festivalCategoryRepository.findById(1L))

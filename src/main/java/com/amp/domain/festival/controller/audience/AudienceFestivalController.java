@@ -1,7 +1,7 @@
-package com.amp.domain.festival.controller.user;
+package com.amp.domain.festival.controller.audience;
 
 import com.amp.domain.festival.dto.response.AudienceFestivalSummaryResponse;
-import com.amp.domain.festival.service.user.AudienceFestivalService;
+import com.amp.domain.festival.service.audience.AudienceFestivalService;
 import com.amp.global.common.SuccessStatus;
 import com.amp.global.common.dto.response.PageResponse;
 import com.amp.global.response.success.BaseResponse;
@@ -22,8 +22,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @Validated
-@RequestMapping("/api/v1/users/festivals")
-@Tag(name = "User API")
+@RequestMapping("/api/v1/audience/festivals")
+@Tag(name = "Audience API")
 @RequiredArgsConstructor
 public class AudienceFestivalController {
     private final AudienceFestivalService audienceFestivalService;
@@ -48,5 +48,4 @@ public class AudienceFestivalController {
                 .status(status.getHttpStatus())
                 .body(BaseResponse.ok(status.getMsg(), response));
     }
-
 }
