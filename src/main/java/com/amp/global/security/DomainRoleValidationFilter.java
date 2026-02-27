@@ -1,8 +1,10 @@
 package com.amp.global.security;
 
+import com.amp.domain.auth.exception.AuthErrorCode;
 import com.amp.domain.user.entity.User;
 import com.amp.domain.user.entity.UserType;
 import com.amp.domain.user.repository.UserRepository;
+import com.amp.global.response.error.AuthErrorResponse;
 import com.amp.global.security.util.DomainRoleMapping;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
@@ -18,16 +20,14 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 도메인-역할 검증 필터
- *
+ * <p>
  * 이미 로그인된 사용자가 다른 도메인에서 API를 호출할 때
  * 사용자의 역할과 접근 도메인이 일치하는지 검증합니다.
- *
+ * <p>
  * - 불일치 시 API 요청: 403 JSON 응답 + correctDomain 정보
  * - 불일치 시 웹 요청: 올바른 도메인으로 리다이렉트
  */
@@ -98,6 +98,11 @@ public class DomainRoleValidationFilter extends OncePerRequestFilter {
         }
 
         UserType userType = user.getUserType();
+
+        if (userType == null) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         // 도메인-역할 검증
         if (!domainRoleMapping.isValidDomainForRole(userType, origin)) {
@@ -181,11 +186,11 @@ public class DomainRoleValidationFilter extends OncePerRequestFilter {
         response.setStatus(HttpServletResponse.SC_FORBIDDEN);
         response.setContentType("application/json;charset=UTF-8");
 
-        Map<String, Object> errorResponse = new HashMap<>();
-        errorResponse.put("error", "DomainRoleMismatch");
-        errorResponse.put("message", "접근 도메인과 사용자 역할이 일치하지 않습니다.");
-        errorResponse.put("correctDomain", correctDomain);
-        errorResponse.put("userType", userType.name());
+        AuthErrorResponse errorResponse = AuthErrorResponse.domainRoleMismatch(
+                AuthErrorCode.DOMAIN_ROLE_MISMATCH,
+                correctDomain,
+                userType.name()
+        );
 
         response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
     }
