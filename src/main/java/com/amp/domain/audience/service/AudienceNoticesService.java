@@ -1,7 +1,6 @@
 package com.amp.domain.audience.service;
 
 import com.amp.domain.audience.dto.response.SavedNoticesResponse;
-import com.amp.domain.notice.entity.Bookmark;
 import com.amp.domain.notice.repository.BookmarkRepository;
 import com.amp.global.common.dto.response.PaginationResponse;
 import lombok.RequiredArgsConstructor;
@@ -12,8 +11,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -28,29 +25,13 @@ public class AudienceNoticesService {
 
         Pageable pageable = PageRequest.of(page, size);
 
-        Page<Bookmark> bookmarksPage =
-                bookmarkRepository.findByAudienceIdWithDetails(userId, pageable);
-
-        List<SavedNoticesResponse.SavedAnnouncementDto> notices =
-                bookmarksPage.getContent().stream()
-                        .map(this::convertToDto)
-                        .collect(Collectors.toList());
+        Page<SavedNoticesResponse.SavedAnnouncementDto> dtoPage =
+                bookmarkRepository.findByAudienceIdWithDetails(userId, pageable)
+                        .map(SavedNoticesResponse.SavedAnnouncementDto::from);
 
         return SavedNoticesResponse.builder()
-                .notices(notices)
-                .pagination(PaginationResponse.from(bookmarksPage))
-                .build();
-    }
-
-    private SavedNoticesResponse.SavedAnnouncementDto convertToDto(Bookmark bookmark) {
-        return SavedNoticesResponse.SavedAnnouncementDto.builder()
-                .savedNoticeId(bookmark.getId())
-                .noticeId(bookmark.getNotice().getId())
-                .content(bookmark.getNotice().getContent())
-                .festivalTitle(bookmark.getNotice().getFestival().getTitle())
-                .categoryName(bookmark.getNotice().getFestivalCategory().getCategory().getCategoryName())
-                .title(bookmark.getNotice().getTitle())
-                .imageUrl(bookmark.getNotice().getImageUrl())
+                .notices(dtoPage.getContent())
+                .pagination(PaginationResponse.from(dtoPage))
                 .build();
     }
 }
