@@ -1,8 +1,8 @@
 package com.amp.domain.wishList.repository;
 
+import com.amp.domain.festival.entity.AudienceFestival;
 import com.amp.domain.festival.entity.Festival;
-import com.amp.domain.festival.entity.UserFestival;
-import com.amp.domain.user.entity.User;
+import com.amp.domain.user.entity.Audience;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,18 +14,18 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-public interface WishListRepository extends JpaRepository<UserFestival, Long> {
+public interface WishListRepository extends JpaRepository<AudienceFestival, Long> {
 
     @Query("""
-            SELECT uf.festival 
-            FROM UserFestival uf 
-            WHERE uf.user.id = :userId 
-            AND uf.wishList = true 
+            SELECT uf.festival
+            FROM AudienceFestival uf
+            WHERE uf.audience.id = :userId
+            AND uf.wishList = true
             AND uf.festival.endDate >= :today
             AND uf.festival.deletedAt IS NULL
-            ORDER BY 
-                uf.festival.startDate ASC, 
-                uf.festival.startTime ASC, 
+            ORDER BY
+                uf.festival.startDate ASC,
+                uf.festival.startTime ASC,
                 uf.festival.title ASC
             """)
     List<Festival> findUpcomingWishlistFestivals(
@@ -34,25 +34,25 @@ public interface WishListRepository extends JpaRepository<UserFestival, Long> {
     );
 
     @Query("SELECT uf.festival.id " +
-            "FROM UserFestival uf " +
-            "WHERE uf.user.id = :userId " +
+            "FROM AudienceFestival uf " +
+            "WHERE uf.audience.id = :audienceId " +
             "AND uf.wishList = true")
-    Set<Long> findAllFestivalIdsByUserId(@Param("userId") Long userId);
+    Set<Long> findAllFestivalIdsByAudienceId(@Param("audienceId") Long audienceId);
 
-    Optional<UserFestival> findByUserAndFestival(User user, Festival festival);
+    Optional<AudienceFestival> findByAudienceAndFestival(Audience audience, Festival festival);
 
-    @Query("SELECT uf FROM UserFestival uf " +
+    @Query("SELECT uf FROM AudienceFestival uf " +
             "JOIN FETCH uf.festival f " +
-            "WHERE uf.user.id = :userId " +
+            "WHERE uf.audience.id = :userId " +
             "AND uf.wishList = true " +
             "AND f.deletedAt IS NULL " +
             "AND f.endDate >= :today " +
             "ORDER BY f.startDate ASC, f.startTime ASC, f.title ASC")
-    Page<UserFestival> findAllByUserIdAndWishListTrue(Long userId, Pageable pageable, @Param("today") LocalDate today);
+    Page<AudienceFestival> findAllByUserIdAndWishListTrue(@Param("userId") Long userId, Pageable pageable);
 
-    @Query("SELECT uf FROM UserFestival uf JOIN FETCH uf.festival f " +
-            "WHERE uf.user.id = :userId AND uf.wishList = true " +
+    @Query("SELECT uf FROM AudienceFestival uf JOIN FETCH uf.festival f " +
+            "WHERE uf.audience.id = :userId AND uf.wishList = true " +
             "AND f.deletedAt IS NULL " +
             "ORDER BY f.endDate DESC , f.startTime DESC , f.title ASC")
-    Page<UserFestival> findAllWishListHistory(@Param("userId") Long userId, Pageable pageable);
+    Page<AudienceFestival> findAllWishListHistory(@Param("userId") Long userId, Pageable pageable);
 }

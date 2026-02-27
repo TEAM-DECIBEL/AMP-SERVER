@@ -76,17 +76,15 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
                         .requestMatchers(
-                                "/api/v1/notices/*/bookmark"
-                        ).authenticated()
-
-                        .requestMatchers(
-                                "/api/v1/notices/*",
-                                "/api/v1/common/festivals/*/notices"
+                                "/api/v1/common/notices/*",
+                                "/api/v1/common/festivals/*",
+                                "/api/v1/common/festivals/*/notices",
+                                "/api/v1/common/festivals/*/congestion",
+                                "/api/v1/audience/festivals"
                         ).permitAll()
 
                         .requestMatchers(
                                 "/",
-                                "/api/v1/users/festivals",
                                 "/api/auth/**",
                                 "/api/public/**",
                                 "/api/auth/logout",
@@ -107,10 +105,13 @@ public class SecurityConfig {
 
                         .requestMatchers("/api/v1/organizer/**").hasRole("ORGANIZER")
                         .requestMatchers("/api/auth/onboarding/**").authenticated()
-                        .requestMatchers("/api/v1/festivals/my").hasRole("AUDIENCE")
-                        .requestMatchers("/api/v1/festivals/*/wishList").hasRole("AUDIENCE")
-                        .requestMatchers("/api/v1/users/me/**").hasRole("AUDIENCE")
+                        .requestMatchers("/api/v1/audience/me/**").hasRole("AUDIENCE")
+                        .requestMatchers("/api/v1/audience/mypage").hasRole("AUDIENCE")
+                        .requestMatchers("/api/v1/audience/stages/**").hasRole("AUDIENCE")
+                        .requestMatchers("/api/v1/audience/notifications/**").hasRole("AUDIENCE")
+                        .requestMatchers("/api/v1/audience/festivals/*/notifications/**").hasRole("AUDIENCE")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/v1/audience/notices/*/bookmark").hasRole("AUDIENCE")
                         .anyRequest().authenticated()
                 )
 

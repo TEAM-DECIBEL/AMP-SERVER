@@ -5,10 +5,10 @@ import com.amp.domain.user.entity.RegistrationStatus;
 import com.amp.domain.user.entity.User;
 import com.amp.domain.user.entity.UserType;
 
-
 public final class TestFixtures {
 
-    private TestFixtures() {}
+    private TestFixtures() {
+    }
 
     public static User user(String email, String nickname) {
         return User.builder()

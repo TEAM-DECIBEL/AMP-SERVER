@@ -25,12 +25,12 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @Validated
-@RequestMapping("/api/v1/users/me/festivals")
-@Tag(name = "User API")
+@RequestMapping("/api/v1/audience/me/festivals")
+@Tag(name = "Audience API")
 @RequiredArgsConstructor
 public class WishListController {
 
-    private final WishListService userFestivalService;
+    private final WishListService wishListService;
 
     @GetMapping("/recent")
     @Operation(summary = "관람 예정 공연 중 가장 임박한 공연 조회")
@@ -39,7 +39,7 @@ public class WishListController {
             @AuthenticationPrincipal CustomUserPrincipal principal) {
 
         Long userId = principal.getUserId();
-        RecentWishListResponse response = userFestivalService.getRecentFestival(userId).orElse(null);
+        RecentWishListResponse response = wishListService.getRecentFestival(userId).orElse(null);
 
         if (response == null) {
             return ResponseEntity
@@ -59,7 +59,7 @@ public class WishListController {
             @PathVariable Long festivalId,
             @RequestBody @Valid WishListRequest request
     ) {
-        UpdateWishListResponse response = userFestivalService.toggleWishlist(festivalId, request);
+        UpdateWishListResponse response = wishListService.toggleWishlist(festivalId, request);
 
         SuccessStatus status = response.wishList()
                 ? SuccessStatus.WISHLIST_ADDED
@@ -82,7 +82,7 @@ public class WishListController {
     ) {
 
         Pageable pageable = PageRequest.of(page, size);
-        PageResponse<MyUpcomingResponse> response = userFestivalService.getMyWishList(pageable);
+        PageResponse<MyUpcomingResponse> response = wishListService.getMyWishList(pageable);
         SuccessStatus status = response.content().isEmpty()
                 ? SuccessStatus.MY_WISHLIST_IS_EMPTY
                 : SuccessStatus.MY_UPCOMING_WISHLIST_FOUND;
@@ -103,7 +103,7 @@ public class WishListController {
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size
     ) {
         Pageable pageable = PageRequest.of(page, size);
-        PageResponse<WishListHistoryResponse> response = userFestivalService.getHistoryWishList(pageable);
+        PageResponse<WishListHistoryResponse> response = wishListService.getHistoryWishList(pageable);
         SuccessStatus status = response.content().isEmpty()
                 ? SuccessStatus.MY_WISHLIST_IS_EMPTY
                 : SuccessStatus.MY_HISTORY_WISHLIST_FOUND;

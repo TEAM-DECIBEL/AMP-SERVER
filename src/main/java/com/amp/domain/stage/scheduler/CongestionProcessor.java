@@ -1,11 +1,11 @@
 package com.amp.domain.stage.scheduler;
 
+import com.amp.domain.stage.entity.AudienceCongestionReport;
 import com.amp.domain.stage.entity.CongestionLevel;
-import com.amp.domain.stage.entity.UserCongestionReport;
+import com.amp.domain.stage.repository.AudienceCongestionReportRepository;
 import com.amp.domain.stage.repository.StageRepository;
-import com.amp.domain.stage.repository.UserCongestionReportRepository;
 import com.amp.domain.stage.service.CongestionCalculateService;
-import com.amp.domain.user.repository.UserRepository;
+import com.amp.domain.user.repository.AudienceRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -27,8 +27,8 @@ public class CongestionProcessor {
     private final RedisTemplate<String, String> redisTemplate;
     private final CongestionCalculateService calculationService;
     private final StageRepository stageRepository;
-    private final UserRepository userRepository;
-    private final UserCongestionReportRepository userReportRepository;
+    private final AudienceRepository audienceRepository;
+    private final AudienceCongestionReportRepository audienceReportRepository;
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -60,10 +60,10 @@ public class CongestionProcessor {
             return;
         }
 
-        List<UserCongestionReport> reports = parseReports(data, stageId);
+        List<AudienceCongestionReport> reports = parseReports(data, stageId);
 
         if (!reports.isEmpty()) {
-            userReportRepository.saveAll(reports);
+            audienceReportRepository.saveAll(reports);
             log.info("DB 저장 완료: stageId={}, {}건", stageId, reports.size());
         }
 
@@ -76,8 +76,8 @@ public class CongestionProcessor {
         });
     }
 
-    private List<UserCongestionReport> parseReports(List<String> data, Long stageId) {
-        List<UserCongestionReport> reports = new ArrayList<>();
+    private List<AudienceCongestionReport> parseReports(List<String> data, Long stageId) {
+        List<AudienceCongestionReport> reports = new ArrayList<>();
 
         for (String reportData : data) {
             try {
@@ -92,8 +92,8 @@ public class CongestionProcessor {
                 CongestionLevel level = CongestionLevel.valueOf(parts[1]);
                 LocalDateTime reportedAt = LocalDateTime.parse(parts[2], FORMATTER);
 
-                UserCongestionReport report = UserCongestionReport.builder()
-                        .user(userRepository.getReferenceById(userId))
+                AudienceCongestionReport report = AudienceCongestionReport.builder()
+                        .audience(audienceRepository.getReferenceById(userId))
                         .stage(stageRepository.getReferenceById(stageId))
                         .reportedLevel(level)
                         .reportedAt(reportedAt)

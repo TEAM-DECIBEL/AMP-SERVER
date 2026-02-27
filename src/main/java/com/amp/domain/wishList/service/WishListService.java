@@ -1,14 +1,14 @@
 package com.amp.domain.wishList.service;
 
-import com.amp.domain.festival.entity.UserFestival;
+import com.amp.domain.festival.entity.AudienceFestival;
 import com.amp.domain.festival.exception.FestivalErrorCode;
-import com.amp.domain.user.entity.UserType;
+import com.amp.domain.user.entity.Audience;
+import com.amp.domain.user.entity.User;
 import com.amp.domain.user.exception.UserErrorCode;
 import com.amp.domain.wishList.dto.request.WishListRequest;
 import com.amp.domain.wishList.dto.response.*;
 import com.amp.domain.festival.entity.Festival;
 import com.amp.domain.festival.repository.FestivalRepository;
-import com.amp.domain.user.entity.User;
 import com.amp.domain.wishList.dto.response.RecentWishListResponse;
 import com.amp.domain.wishList.dto.response.UpdateWishListResponse;
 import com.amp.domain.wishList.repository.WishListRepository;
@@ -47,32 +47,31 @@ public class WishListService {
     public UpdateWishListResponse toggleWishlist(Long festivalId, WishListRequest request) {
         User user = authService.getCurrentUser();
 
-        if (user.getUserType() == UserType.ORGANIZER) {
-            throw new CustomException(UserErrorCode.USER_NOT_AUTHENTICATED);
+        if (!(user instanceof Audience audience)) {
+            throw new CustomException(UserErrorCode.USER_NOT_AUTHORIZED);
         }
 
         Festival festival = festivalRepository.findById(festivalId)
                 .orElseThrow(() -> new CustomException(FestivalErrorCode.FESTIVAL_NOT_FOUND));
 
-
-        UserFestival userFestival = wishListRepository.findByUserAndFestival(user, festival)
-                .orElseGet(() -> UserFestival.builder()
-                        .user(user)
+        AudienceFestival audienceFestival = wishListRepository.findByAudienceAndFestival(audience, festival)
+                .orElseGet(() -> AudienceFestival.builder()
+                        .audience(audience)
                         .festival(festival)
                         .build());
 
-        wishListRepository.save(userFestival);
-        userFestival.updateWishList(request.wishList());
+        audienceFestival.updateWishList(request.wishList());
+        wishListRepository.save(audienceFestival);
 
-        return new UpdateWishListResponse(festival.getId(), userFestival.getWishList());
+        return new UpdateWishListResponse(festival.getId(), audienceFestival.getWishList());
     }
 
     @Transactional(readOnly = true)
     public PageResponse<MyUpcomingResponse> getMyWishList(Pageable pageable) {
         User user = authService.getCurrentUser();
 
-        Page<UserFestival> userFestivals = wishListRepository.findAllByUserIdAndWishListTrue(user.getId(), pageable, LocalDate.now());
-        Page<MyUpcomingResponse> responsePage = userFestivals.map(MyUpcomingResponse::of);
+        Page<AudienceFestival> audienceFestivals = wishListRepository.findAllByUserIdAndWishListTrue(user.getId(), pageable);
+        Page<MyUpcomingResponse> responsePage = audienceFestivals.map(MyUpcomingResponse::of);
 
         return PageResponse.of(responsePage);
     }
@@ -80,8 +79,8 @@ public class WishListService {
     public PageResponse<WishListHistoryResponse> getHistoryWishList(Pageable pageable) {
         User user = authService.getCurrentUser();
 
-        Page<UserFestival> userFestivals = wishListRepository.findAllWishListHistory(user.getId(), pageable);
-        Page<WishListHistoryResponse> historyPage = userFestivals.map(WishListHistoryResponse::from);
+        Page<AudienceFestival> audienceFestivals = wishListRepository.findAllWishListHistory(user.getId(), pageable);
+        Page<WishListHistoryResponse> historyPage = audienceFestivals.map(WishListHistoryResponse::from);
         return PageResponse.of(historyPage);
     }
 }
