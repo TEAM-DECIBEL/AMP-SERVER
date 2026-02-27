@@ -10,7 +10,7 @@ import java.util.Optional;
 
 /**
  * 도메인-역할 매핑 유틸리티
- *
+ * <p>
  * 도메인 매핑:
  * - localhost:5173, ampnotice.kr → AUDIENCE
  * - localhost:5174, host.ampnotice.kr → ORGANIZER
@@ -61,7 +61,7 @@ public class DomainRoleMapping {
     /**
      * UserType과 요청 origin에 따라 올바른 도메인 반환
      *
-     * @param userType 사용자 역할
+     * @param userType      사용자 역할
      * @param currentOrigin 현재 요청 origin
      * @return 해당 UserType에 맞는 도메인
      */
@@ -79,7 +79,7 @@ public class DomainRoleMapping {
      * 사용자 역할과 접근 도메인이 일치하는지 검증
      *
      * @param userType 사용자의 실제 역할
-     * @param origin 접근 시도한 origin
+     * @param origin   접근 시도한 origin
      * @return 일치하면 true, 불일치하면 false
      */
     public boolean isValidDomainForRole(UserType userType, String origin) {
@@ -116,11 +116,15 @@ public class DomainRoleMapping {
      * @return 프로덕션이면 true
      */
     public boolean isProductionOrigin(String origin) {
+        String host = extractHost(origin);
         if (origin == null) {
             return false;
         }
-        String lowerOrigin = origin.toLowerCase();
-        return lowerOrigin.contains("ampnotice.kr");
+        String lowerHost = host.toLowerCase();
+        return lowerHost.equals("ampnotice.kr")
+                || lowerHost.equals("www.ampnotice.kr")
+                || lowerHost.equals("host.ampnotice.kr")
+                || lowerHost.endsWith(".ampnotice.kr");
     }
 
     /**
@@ -141,7 +145,7 @@ public class DomainRoleMapping {
      * - https://api.host.ampnotice.kr → https://host.ampnotice.kr
      * - http://localhost:8080 → origin 기반으로 결정
      *
-     * @param origin API origin
+     * @param origin            API origin
      * @param requestedUserType 요청한 UserType (로컬 환경에서 사용)
      * @return 프론트엔드 origin
      */
