@@ -15,10 +15,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.time.Duration;
+
+import static com.amp.global.security.util.DomainConstants.*;
 
 @Slf4j
 @Component
@@ -68,6 +69,11 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
         log.info("Extracted from state - userType: {}, origin: {}", requestedUserType, clientOrigin);
 
+        // 신규 사용자인 경우 UserType 업데이트 (DB 저장 로직 분리)
+        if (user.getRegistrationStatus() == RegistrationStatus.PENDING) {
+            updatePendingUserType(user, requestedUserType);
+        }
+
         String token = jwtUtil.generateToken(email);
         log.info("New JWT token generated");
 
@@ -76,10 +82,19 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
         log.info("Response committed after cookie: {}", response.isCommitted());
 
-        String targetUrl = determineTargetUrl(clientOrigin, user, requestedUserType);
+        String targetUrl = determineTargetUrl(clientOrigin, user);
 
         log.info("Final redirect URL: {}", targetUrl);
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
+    }
+
+    /**
+     * 신규 사용자(PENDING)의 UserType을 업데이트
+     */
+    private void updatePendingUserType(User user, UserType requestedUserType) {
+        user.updateUserType(requestedUserType);
+        userRepository.save(user);
+        log.info("Updated user type to {} for pending user: {}", requestedUserType, user.getEmail());
     }
 
     private void addTokenCookie(HttpServletResponse response, String token, String origin) {
@@ -109,44 +124,39 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
                 dynamicCookieDomain != null && !dynamicCookieDomain.trim().isEmpty() ? dynamicCookieDomain : "current domain");
     }
 
-    private String determineTargetUrl(String clientOrigin, User user,
-                                      UserType requestedUserType) {
-
+    /**
+     * 리다이렉트 URL 결정 (순수하게 URL만 결정, DB 저장 로직 없음)
+     */
+    private String determineTargetUrl(String clientOrigin, User user) {
         if (user.getRegistrationStatus() == RegistrationStatus.PENDING) {
-            // 신규 사용자: 온보딩 페이지로 직접 리다이렉트
-            user.updateUserType(requestedUserType);
-            userRepository.save(user);
-            log.info("Updated user type to {} for pending user: {}", requestedUserType, user.getEmail());
-
-            String onboardingUrl = clientOrigin + "/onboarding";
+            // 신규 사용자: 온보딩 페이지로 리다이렉트
+            String onboardingUrl = clientOrigin + ONBOARDING_PATH;
             log.info("New user, redirecting to onboarding: {}", onboardingUrl);
-
             return onboardingUrl;
-        } else {
-            // 기존 사용자: 도메인-역할 검증
-            UserType actualUserType = user.getUserType();
-
-            if (!domainRoleMapping.isValidDomainForRole(actualUserType, clientOrigin)) {
-                // 도메인 불일치: 올바른 도메인의 메인 페이지로 리다이렉트
-                String correctDomain = domainRoleMapping.getCorrectDomain(actualUserType, clientOrigin);
-
-                log.info("Domain mismatch! User {} with type {} accessed from {}. Redirecting to {}",
-                        user.getEmail(), actualUserType, clientOrigin, correctDomain);
-
-                return correctDomain;
-            }
-
-            // 도메인 일치: 메인 페이지로 리다이렉트
-            log.info("User registration completed, redirecting to main: {}", clientOrigin);
-
-            return clientOrigin;
         }
+
+        // 기존 사용자: 도메인-역할 검증
+        UserType actualUserType = user.getUserType();
+
+        if (!domainRoleMapping.isValidDomainForRole(actualUserType, clientOrigin)) {
+            // 도메인 불일치: 올바른 도메인의 메인 페이지로 리다이렉트
+            String correctDomain = domainRoleMapping.getCorrectDomain(actualUserType, clientOrigin);
+
+            log.info("Domain mismatch! User {} with type {} accessed from {}. Redirecting to {}",
+                    user.getEmail(), actualUserType, clientOrigin, correctDomain);
+
+            return correctDomain;
+        }
+
+        // 도메인 일치: 메인 페이지로 리다이렉트
+        log.info("User registration completed, redirecting to main: {}", clientOrigin);
+        return clientOrigin;
     }
 
     private String extractOriginFromState(String state) {
         if (state == null) {
             log.warn("State parameter is null, using fallback origin");
-            return "http://localhost:5173"; // fallback
+            return LOCAL_AUDIENCE_URL;
         }
 
         try {
@@ -163,7 +173,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         }
 
         log.warn("Could not extract origin from state, using fallback");
-        return "http://localhost:5173"; // fallback
+        return LOCAL_AUDIENCE_URL;
     }
 
     private UserType extractUserTypeFromState(String state) {
