@@ -38,6 +38,7 @@ public class SecurityConfig {
     private final CustomAuthenticationEntryPoint authenticationEntryPoint;
     private final CustomAccessDeniedHandler accessDeniedHandler;
     private final OnboardingCheckFilter onboardingCheckFilter;
+    private final DomainRoleValidationFilter domainRoleValidationFilter;
     private final ClientRegistrationRepository clientRegistrationRepository;
     private final HttpCookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository;
 
@@ -72,7 +73,6 @@ public class SecurityConfig {
                 )
 
                 .authorizeHttpRequests(auth -> auth
-                        // ✅ OPTIONS 요청 모두 허용 (CORS preflight를 위해 필수!)
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
                         .requestMatchers(
@@ -158,7 +158,8 @@ public class SecurityConfig {
                 )
 
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterAfter(onboardingCheckFilter, JwtAuthenticationFilter.class);
+                .addFilterAfter(domainRoleValidationFilter, JwtAuthenticationFilter.class)
+                .addFilterAfter(onboardingCheckFilter, DomainRoleValidationFilter.class);
 
         return http.build();
     }

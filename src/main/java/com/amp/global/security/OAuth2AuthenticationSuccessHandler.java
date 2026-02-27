@@ -4,6 +4,7 @@ import com.amp.domain.user.entity.RegistrationStatus;
 import com.amp.domain.user.entity.User;
 import com.amp.domain.user.entity.UserType;
 import com.amp.domain.user.repository.UserRepository;
+import com.amp.global.security.util.DomainRoleMapping;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -27,18 +28,13 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
     private final HttpCookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository;
+    private final DomainRoleMapping domainRoleMapping;
 
     @Value("${app.jwt.cookie-name:accessToken}")
     private String cookieName;
 
     @Value("${app.jwt.cookie-max-age:3600}")
     private int cookieMaxAge;
-
-    @Value("${app.jwt.cookie-domain:localhost}")
-    private String cookieDomain;
-
-    @Value("${app.jwt.cookie-secure:false}")
-    private boolean cookieSecure;
 
     @Value("${app.jwt.cookie-same-site:Lax}")
     private String cookieSameSite;
@@ -75,27 +71,32 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         String token = jwtUtil.generateToken(email);
         log.info("New JWT token generated");
 
-        addTokenCookie(response, token);
+        // 쿠키에 토큰 설정 (URL에는 토큰 노출하지 않음)
+        addTokenCookie(response, token, clientOrigin);
 
         log.info("Response committed after cookie: {}", response.isCommitted());
 
-        String targetUrl = determineTargetUrl(clientOrigin, user, requestedUserType, token);
+        String targetUrl = determineTargetUrl(clientOrigin, user, requestedUserType);
 
         log.info("Final redirect URL: {}", targetUrl);
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
     }
 
-    private void addTokenCookie(HttpServletResponse response, String token) {
+    private void addTokenCookie(HttpServletResponse response, String token, String origin) {
+        // origin 기반으로 쿠키 설정 결정
+        String dynamicCookieDomain = domainRoleMapping.getCookieDomain(origin);
+        boolean dynamicCookieSecure = domainRoleMapping.shouldCookieBeSecure(origin);
+
         ResponseCookie.ResponseCookieBuilder cookieBuilder = ResponseCookie.from(cookieName, token)
                 .httpOnly(true)
-                .secure(cookieSecure)
+                .secure(dynamicCookieSecure)
                 .path("/")
                 .maxAge(Duration.ofSeconds(cookieMaxAge))
                 .sameSite(cookieSameSite);
 
-        if (cookieDomain != null && !cookieDomain.trim().isEmpty()) {
-            cookieBuilder.domain(cookieDomain);
-            log.info("Setting cookie domain: {}", cookieDomain);
+        if (dynamicCookieDomain != null && !dynamicCookieDomain.trim().isEmpty()) {
+            cookieBuilder.domain(dynamicCookieDomain);
+            log.info("Setting cookie domain: {}", dynamicCookieDomain);
         } else {
             log.info("Cookie domain not set (will use current domain)");
         }
@@ -104,35 +105,41 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         response.addHeader("Set-Cookie", cookie.toString());
 
         log.info("JWT token added to cookie - name: {}, secure: {}, sameSite: {}, maxAge: {}s, domain: {}",
-                cookieName, cookieSecure, cookieSameSite, cookieMaxAge,
-                cookieDomain != null && !cookieDomain.trim().isEmpty() ? cookieDomain : "current domain");
+                cookieName, dynamicCookieSecure, cookieSameSite, cookieMaxAge,
+                dynamicCookieDomain != null && !dynamicCookieDomain.trim().isEmpty() ? dynamicCookieDomain : "current domain");
     }
 
     private String determineTargetUrl(String clientOrigin, User user,
-                                      UserType requestedUserType, String token) {
-
-        // state에서 추출한 origin을 callback URI로 사용
-        String callbackUri = clientOrigin + "/callback";
-        log.info("Using callback URI from state: {}", callbackUri);
+                                      UserType requestedUserType) {
 
         if (user.getRegistrationStatus() == RegistrationStatus.PENDING) {
-            // 온보딩 필요
+            // 신규 사용자: 온보딩 페이지로 직접 리다이렉트
             user.updateUserType(requestedUserType);
             userRepository.save(user);
             log.info("Updated user type to {} for pending user: {}", requestedUserType, user.getEmail());
 
-            return UriComponentsBuilder.fromUriString(callbackUri)
-                    .queryParam("token", token)
-                    .queryParam("status", "PENDING")
-                    .build().toUriString();
-        } else {
-            // 온보딩 완료
-            log.info("User registration completed, redirecting to home: {}", user.getEmail());
+            String onboardingUrl = clientOrigin + "/onboarding";
+            log.info("New user, redirecting to onboarding: {}", onboardingUrl);
 
-            return UriComponentsBuilder.fromUriString(callbackUri)
-                    .queryParam("token", token)
-                    .queryParam("status", "COMPLETED")
-                    .build().toUriString();
+            return onboardingUrl;
+        } else {
+            // 기존 사용자: 도메인-역할 검증
+            UserType actualUserType = user.getUserType();
+
+            if (!domainRoleMapping.isValidDomainForRole(actualUserType, clientOrigin)) {
+                // 도메인 불일치: 올바른 도메인의 메인 페이지로 리다이렉트
+                String correctDomain = domainRoleMapping.getCorrectDomain(actualUserType, clientOrigin);
+
+                log.info("Domain mismatch! User {} with type {} accessed from {}. Redirecting to {}",
+                        user.getEmail(), actualUserType, clientOrigin, correctDomain);
+
+                return correctDomain;
+            }
+
+            // 도메인 일치: 메인 페이지로 리다이렉트
+            log.info("User registration completed, redirecting to main: {}", clientOrigin);
+
+            return clientOrigin;
         }
     }
 
