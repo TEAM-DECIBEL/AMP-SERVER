@@ -5,6 +5,7 @@ import com.amp.domain.auth.dto.OnboardingResponse;
 import com.amp.domain.auth.dto.OnboardingStatusResponse;
 import com.amp.domain.auth.exception.OnboardingErrorCode;
 import com.amp.domain.auth.exception.OnboardingException;
+import com.amp.domain.user.entity.Audience;
 import com.amp.domain.user.entity.Organizer;
 import com.amp.domain.user.entity.RegistrationStatus;
 import com.amp.domain.user.entity.User;
@@ -45,26 +46,15 @@ public class OnboardingService {
 
         // 사용자 타입에 따라 온보딩 처리
         if (request.getUserType() == UserType.AUDIENCE) {
-            completeAudienceOnboarding(user, request);
+            return completeAudienceOnboarding(user, request);
         } else if (request.getUserType() == UserType.ORGANIZER) {
-            completeOrganizerOnboarding(user, request);
+            return completeOrganizerOnboarding(user, request);
         } else {
             throw new OnboardingException(OnboardingErrorCode.INVALID_USER_TYPE);
         }
-
-        return OnboardingResponse.builder()
-                .userId(user.getId())
-                .email(user.getEmail())
-                .nickname(user.getNickname())
-                .userType(user.getUserType())
-                .registrationStatus(user.getRegistrationStatus())
-                .message("온보딩이 완료되었습니다.")
-                .organizerName(user instanceof Organizer o ? o.getOrganizerName() : null)
-                .build();
     }
 
-
-    private void completeAudienceOnboarding(User user, OnboardingRequest request) {
+    private OnboardingResponse completeAudienceOnboarding(User user, OnboardingRequest request) {
         log.info("Completing audience onboarding for user: {}", user.getEmail());
 
         // 닉네임 필수 체크
@@ -78,16 +68,25 @@ public class OnboardingService {
             throw new OnboardingException(OnboardingErrorCode.NICKNAME_LENGTH_INVALID);
         }
 
-        // User 온보딩 완료
-        user.completeAudienceOnboarding(nickname);
-        userRepository.save(user);
+        // Audience로 캐스팅하여 온보딩 완료
+        Audience audience = (Audience) user;
+        audience.completeAudienceOnboarding(nickname);
+        userRepository.save(audience);
 
         log.info("Audience onboarding completed for user: {}, nickname: {}",
-                user.getEmail(), user.getNickname());
+                user.getEmail(), audience.getNickname());
+
+        return OnboardingResponse.builder()
+                .userId(audience.getId())
+                .email(audience.getEmail())
+                .nickname(audience.getNickname())
+                .userType(audience.getUserType())
+                .registrationStatus(audience.getRegistrationStatus())
+                .message("온보딩이 완료되었습니다.")
+                .build();
     }
 
-
-    private void completeOrganizerOnboarding(User user, OnboardingRequest request) {
+    private OnboardingResponse completeOrganizerOnboarding(User user, OnboardingRequest request) {
         log.info("Completing organizer onboarding for user: {}", user.getEmail());
 
         // 주최사명 필수 체크
@@ -104,11 +103,22 @@ public class OnboardingService {
         // 주최사명 중복 체크
         validateOrganizerNameUniqueness(organizerName);
 
-        ((Organizer) user).completeOrganizerOnboarding(organizerName);
-        userRepository.save(user);
+        // Organizer로 캐스팅하여 온보딩 완료
+        Organizer organizer = (Organizer) user;
+        organizer.completeOrganizerOnboarding(organizerName);
+        userRepository.save(organizer);
 
         log.info("Organizer onboarding completed for user: {}, organizer: {}",
                 user.getEmail(), organizerName);
+
+        return OnboardingResponse.builder()
+                .userId(organizer.getId())
+                .email(organizer.getEmail())
+                .userType(organizer.getUserType())
+                .registrationStatus(organizer.getRegistrationStatus())
+                .organizerName(organizer.getOrganizerName())
+                .message("온보딩이 완료되었습니다.")
+                .build();
     }
 
     @Transactional(readOnly = true)
