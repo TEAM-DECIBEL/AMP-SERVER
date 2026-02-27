@@ -13,6 +13,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -62,7 +64,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable())
+                .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
                 .sessionManagement(session ->
@@ -70,8 +72,7 @@ public class SecurityConfig {
                 )
 
                 .headers(headers -> headers
-                        .frameOptions(frame -> frame.deny())
-                        .contentTypeOptions(contentType -> contentType.disable())
+                        .frameOptions(HeadersConfigurer.FrameOptionsConfig::deny)
                 )
 
                 .authorizeHttpRequests(auth -> auth
@@ -174,7 +175,6 @@ public class SecurityConfig {
         List<String> origins = Arrays.asList(allowedOrigins.split(","));
         log.info("✅ CORS Allowed Origins: {}", origins);
 
-        configuration.setAllowedOrigins(origins);
         configuration.setAllowedOriginPatterns(origins);
 
         List<String> methods = Arrays.asList(allowedMethods.split(","));
