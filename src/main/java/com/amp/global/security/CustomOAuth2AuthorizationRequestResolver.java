@@ -113,7 +113,7 @@ public class CustomOAuth2AuthorizationRequestResolver implements OAuth2Authoriza
 
     /**
      * 백엔드 API 도메인을 프론트엔드 도메인으로 변환
-     * - https://api.ampnotice-host.kr -> https://ampnotice-host.kr
+     * - https://api.host.ampnotice.kr -> https://host.ampnotice.kr
      * - https://api.ampnotice.kr -> https://ampnotice.kr
      * - http://localhost:8080 -> http://localhost:5174 (ORGANIZER) or http://localhost:5173 (AUDIENCE)
      */
@@ -122,9 +122,9 @@ public class CustomOAuth2AuthorizationRequestResolver implements OAuth2Authoriza
             return "http://localhost:5173"; // fallback
         }
 
-        // API 서브도메인 제거
-        if (origin.contains("api.ampnotice-host.kr")) {
-            return origin.replace("api.ampnotice-host.kr", "ampnotice-host.kr");
+        // API 서브도메인 제거 (host.ampnotice.kr 도메인)
+        if (origin.contains("api.host.ampnotice.kr")) {
+            return origin.replace("api.host.ampnotice.kr", "host.ampnotice.kr");
         }
 
         if (origin.contains("api.ampnotice.kr")) {
@@ -134,7 +134,6 @@ public class CustomOAuth2AuthorizationRequestResolver implements OAuth2Authoriza
         // 로컬 개발 환경: 백엔드 포트를 프론트엔드 포트로 변환
         if (origin.contains("localhost:8080")) {
             // userType에 따라 다른 포트 반환
-            // 여기서는 일단 ORGANIZER 기준으로 (나중에 로직 개선 가능)
             String userType = determineUserTypeFromUrl(origin);
             if (userType.equals("ORGANIZER")) {
                 return origin.replace("localhost:8080", "localhost:5174");
@@ -149,7 +148,7 @@ public class CustomOAuth2AuthorizationRequestResolver implements OAuth2Authoriza
 
     /**
      * URL 문자열에서 UserType 판단
-     * - localhost:5174 또는 ampnotice-host.kr -> ORGANIZER
+     * - localhost:5174 또는 host.ampnotice.kr -> ORGANIZER
      * - 그 외 -> AUDIENCE
      */
     private String determineUserTypeFromUrl(String url) {
@@ -161,8 +160,7 @@ public class CustomOAuth2AuthorizationRequestResolver implements OAuth2Authoriza
 
         // ORGANIZER 조건
         if (lowerUrl.contains("localhost:5174") ||
-                lowerUrl.contains("ampnotice-host.kr") ||
-                lowerUrl.contains("www.ampnotice-host.kr")) {
+                lowerUrl.contains("host.ampnotice.kr")) {
             return "ORGANIZER";
         }
 
