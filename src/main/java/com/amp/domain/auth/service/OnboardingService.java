@@ -5,19 +5,18 @@ import com.amp.domain.auth.dto.OnboardingResponse;
 import com.amp.domain.auth.dto.OnboardingStatusResponse;
 import com.amp.domain.auth.exception.OnboardingErrorCode;
 import com.amp.domain.auth.exception.OnboardingException;
-import com.amp.domain.organizer.entity.Organizer;
-import com.amp.domain.organizer.repository.OrganizerRepository;
+import com.amp.domain.user.entity.Organizer;
 import com.amp.domain.user.entity.RegistrationStatus;
 import com.amp.domain.user.entity.User;
 import com.amp.domain.user.entity.UserType;
+import com.amp.domain.user.repository.OrganizerRepository;
 import com.amp.domain.user.repository.UserRepository;
+import com.amp.global.common.CommonErrorCode;
 import com.amp.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import static com.amp.global.common.CommonErrorCode.USER_NOT_FOUND;
 
 @Slf4j
 @Service
@@ -28,10 +27,9 @@ public class OnboardingService {
     private final UserRepository userRepository;
     private final OrganizerRepository organizerRepository;
 
-
     public OnboardingResponse completeOnboarding(String email, OnboardingRequest request) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(CommonErrorCode.USER_NOT_FOUND));
 
         // 이미 온보딩 완료된 경우
         if (user.getRegistrationStatus() == RegistrationStatus.COMPLETED) {
@@ -61,6 +59,7 @@ public class OnboardingService {
                 .userType(user.getUserType())
                 .registrationStatus(user.getRegistrationStatus())
                 .message("온보딩이 완료되었습니다.")
+                .organizerName(user instanceof Organizer o ? o.getOrganizerName() : null)
                 .build();
     }
 
@@ -72,9 +71,6 @@ public class OnboardingService {
         if (request.getNickname() == null || request.getNickname().isBlank()) {
             throw new OnboardingException(OnboardingErrorCode.INVALID_USER_TYPE);
         }
-
-        // 닉네임 중복 체크
-        //validateNicknameUniqueness(request.getNickname());
 
         // User 온보딩 완료
         user.completeAudienceOnboarding(request.getNickname());
@@ -96,33 +92,17 @@ public class OnboardingService {
         // 주최사명 중복 체크
         validateOrganizerNameUniqueness(request.getOrganizerName());
 
-        // 기존 Organizer 조회 또는 생성
-        Organizer organizer = organizerRepository.findByUser(user)
-                .orElseGet(() -> {
-                    log.info("Creating new organizer for user: {}", user.getEmail());
-                    Organizer newOrganizer = Organizer.builder()
-                            .user(user)
-                            .organizerName(request.getOrganizerName())
-                            .contactEmail(request.getContactEmail())
-                            .contactPhone(request.getContactPhone())
-                            .description(request.getDescription())
-                            .build();
-                    return organizerRepository.save(newOrganizer);
-                });
-
-
-        user.completeOrganizerOnboarding();
+        ((Organizer) user).completeOrganizerOnboarding(request.getOrganizerName());
         userRepository.save(user);
 
         log.info("Organizer onboarding completed for user: {}, organizer: {}",
-                user.getEmail(), organizer.getOrganizerName());
+                user.getEmail(), request.getOrganizerName());
     }
-
 
     @Transactional(readOnly = true)
     public OnboardingStatusResponse getOnboardingStatus(String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(CommonErrorCode.USER_NOT_FOUND));
 
         return OnboardingStatusResponse.builder()
                 .email(user.getEmail())
@@ -131,14 +111,6 @@ public class OnboardingService {
                 .needsOnboarding(user.getRegistrationStatus() == RegistrationStatus.PENDING)
                 .build();
     }
-
-
-    private void validateNicknameUniqueness(String nickname) {
-        if (userRepository.existsByNickname(nickname)) {
-            throw new OnboardingException(OnboardingErrorCode.DUPLICATE_NICKNAME);
-        }
-    }
-
 
     private void validateOrganizerNameUniqueness(String organizerName) {
         if (organizerRepository.existsByOrganizerName(organizerName)) {

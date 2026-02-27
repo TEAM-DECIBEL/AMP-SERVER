@@ -11,10 +11,9 @@ import com.amp.domain.notice.entity.Notice;
 import com.amp.domain.notice.exception.NoticeErrorCode;
 import com.amp.domain.notice.exception.NoticeException;
 import com.amp.domain.notice.repository.NoticeRepository;
-import com.amp.domain.organizer.repository.OrganizerRepository;
-import com.amp.domain.user.entity.User;
+import com.amp.domain.user.entity.Organizer;
 import com.amp.domain.user.exception.UserErrorCode;
-import com.amp.domain.user.repository.UserRepository;
+import com.amp.domain.user.repository.OrganizerRepository;
 import com.amp.global.exception.CustomException;
 import com.amp.global.s3.S3Service;
 import lombok.AllArgsConstructor;
@@ -32,7 +31,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class NoticeUpdateService {
 
     private final NoticeRepository noticeRepository;
-    private final UserRepository userRepository;
     private final OrganizerRepository organizerRepository;
     private final FestivalCategoryRepository festivalCategoryRepository;
     private final FestivalRepository festivalRepository;
@@ -48,13 +46,13 @@ public class NoticeUpdateService {
             throw new CustomException(UserErrorCode.USER_NOT_FOUND);
         }
 
-        User user = userRepository.findByEmail(authentication.getName())
+        Organizer organizer = organizerRepository.findByEmail(authentication.getName())
                 .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
 
         Festival festival = festivalRepository.findById(request.festivalId())
                 .orElseThrow(() -> new CustomException(FestivalErrorCode.FESTIVAL_NOT_FOUND));
 
-        validateOrganizer(festival, user);
+        validateOrganizer(festival, organizer);
 
         Notice notice = noticeRepository.findById(noticeId)
                 .orElseThrow(() ->
@@ -128,8 +126,8 @@ public class NoticeUpdateService {
                 !(authentication instanceof AnonymousAuthenticationToken);
     }
 
-    private void validateOrganizer(Festival festival, User user) {
-        if (!festival.getOrganizer().getUser().getId().equals(user.getId())) {
+    private void validateOrganizer(Festival festival, Organizer organizer) {
+        if (!festival.getOrganizer().getId().equals(organizer.getId())) {
             throw new CustomException(UserErrorCode.USER_NOT_AUTHORIZED);
         }
     }

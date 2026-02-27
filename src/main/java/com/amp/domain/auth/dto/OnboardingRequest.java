@@ -22,9 +22,4 @@ public class OnboardingRequest {
     // 주최자 전용 필드
     @Size(min = 2, max = 12, message = "주최사명은 2-12자 사이여야 합니다.")
     private String organizerName;
-
-    // 주최자 전용 - 연락처 정보 (선택사항)
-    private String contactEmail;
-    private String contactPhone;
-    private String description;
 }

@@ -2,7 +2,7 @@ package com.amp.domain.notice.repository;
 
 import com.amp.domain.notice.entity.Notice;
 import com.amp.domain.notice.entity.Bookmark;
-import com.amp.domain.user.entity.User;
+import com.amp.domain.user.entity.Audience;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,9 +13,9 @@ import java.util.List;
 import java.util.Optional;
 
 public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
-    boolean existsByNoticeAndUser(Notice notice, User user);
+    boolean existsByNoticeAndAudience(Notice notice, Audience audience);
 
-    Optional<Bookmark> findByNoticeAndUser(Notice notice, User user);
+    Optional<Bookmark> findByNoticeAndAudience(Notice notice, Audience audience);
 
     /**
      * 사용자가 저장한 공지사항 목록을 조회 (N+1 방지를 위한 fetch join)
@@ -26,15 +26,15 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
         JOIN FETCH b.notice n
         JOIN FETCH n.festival f
         JOIN FETCH n.festivalCategory fc
-        WHERE b.user.id = :userId
+        WHERE b.audience.id = :audienceId
         ORDER BY b.createdAt DESC
         """)
-    Page<Bookmark> findByUserIdWithDetails(
-            @Param("userId") Long userId,
+    Page<Bookmark> findByAudienceIdWithDetails(
+            @Param("audienceId") Long audienceId,
             Pageable pageable
     );
 
 
-    @Query("SELECT b.notice.id FROM Bookmark b WHERE b.user = :user AND b.notice.id IN :noticeIds")
-    List<Long> findNoticeIdsByUserAndNoticeIdIn(@Param("user") User user, @Param("noticeIds") List<Long> noticeIds);
+    @Query("SELECT b.notice.id FROM Bookmark b WHERE b.audience = :audience AND b.notice.id IN :noticeIds")
+    List<Long> findNoticeIdsByAudienceAndNoticeIdIn(@Param("audience") Audience audience, @Param("noticeIds") List<Long> noticeIds);
 }

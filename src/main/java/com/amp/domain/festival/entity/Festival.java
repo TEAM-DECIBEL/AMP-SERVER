@@ -1,8 +1,8 @@
 package com.amp.domain.festival.entity;
 
 import com.amp.domain.category.entity.FestivalCategory;
-import com.amp.domain.organizer.entity.Organizer;
 import com.amp.domain.stage.entity.Stage;
+import com.amp.domain.user.entity.Organizer;
 import com.amp.global.common.dto.TimeConstants;
 import com.amp.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
@@ -49,9 +49,8 @@ public class Festival extends BaseTimeEntity {
     @Column(nullable = false, length = 20)
     private FestivalStatus status;
 
-    @Setter
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "organizer_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private Organizer organizer;
 
     @OneToMany(mappedBy = "festival", cascade = CascadeType.ALL, orphanRemoval = true)

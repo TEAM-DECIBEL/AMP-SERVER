@@ -6,15 +6,22 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.DiscriminatorFormula;
 
 import static com.amp.domain.user.exception.UserErrorCode.USER_TYPE_UNCHANGEABLE;
 
 @Entity
-@Table(name = "users")
+@Table(name = "users", uniqueConstraints = {
+        @UniqueConstraint(name = "uq_organizer_name", columnNames = "organizer_name")
+})
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorFormula("COALESCE(user_type, 'PENDING')")
+@DiscriminatorValue("PENDING")
 public class User {
 
     @Id
@@ -61,17 +68,16 @@ public class User {
         this.userType = userType;
     }
 
-    // 관객 온보딩 완료
-    public void completeAudienceOnboarding(String nickname) {
-        this.nickname = nickname;
+    // 공통 온보딩 완료 처리 (서브클래스에서 호출)
+    protected void finishOnboarding() {
         this.registrationStatus = RegistrationStatus.COMPLETED;
         this.isActive = true;
     }
 
-    // 주최자 온보딩 완료 (status만 업데이트, Organizer 엔티티는 별도 생성)
-    public void completeOrganizerOnboarding() {
-        this.registrationStatus = RegistrationStatus.COMPLETED;
-        this.isActive = true;
+    // 관객 온보딩 완료
+    public void completeAudienceOnboarding(String nickname) {
+        this.nickname = nickname;
+        finishOnboarding();
     }
 
 }
