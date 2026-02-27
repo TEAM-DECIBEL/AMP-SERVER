@@ -23,6 +23,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -325,5 +326,7 @@ class OAuth2AuthenticationSuccessHandlerTest {
         // DomainRoleMapping 기본 설정
         lenient().when(domainRoleMapping.getCookieDomain(origin)).thenReturn(null);
         lenient().when(domainRoleMapping.shouldCookieBeSecure(origin)).thenReturn(false);
+        // 보안 검증: origin이 허용된 도메인이면 그대로 반환
+        lenient().when(domainRoleMapping.getSafeOrigin(eq(origin), any())).thenReturn(origin);
     }
 }
