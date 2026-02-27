@@ -34,14 +34,14 @@ public class FestivalInfoService {
         if (user == null) {
             // 비로그인 유저
             isWishlist = false;
-        } else if (!(user instanceof Audience)) {
-            // 주최자 유저
-            isWishlist = null;
-        } else {
+        } else if (user instanceof Audience audience) {
             // 관객 유저
-            isWishlist = wishListRepository.findByAudienceAndFestival((Audience) user, festival)
+            isWishlist = wishListRepository.findByAudienceAndFestival(audience, festival)
                     .map(AudienceFestival::getWishList)
                     .orElse(false);
+        } else {
+            // 주최자 유저
+            isWishlist = null;
         }
 
         return FestivalInfoResponse.from(festival, isWishlist);
