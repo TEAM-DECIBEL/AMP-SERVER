@@ -26,11 +26,11 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
         JOIN FETCH b.notice n
         JOIN FETCH n.festival f
         JOIN FETCH n.festivalCategory fc
-        WHERE b.audience.id = :userId
+        WHERE b.audience.id = :audienceId
         ORDER BY b.createdAt DESC
         """)
     Page<Bookmark> findByAudienceIdWithDetails(
-            @Param("userId") Long userId,
+            @Param("audienceId") Long audienceId,
             Pageable pageable
     );
 
