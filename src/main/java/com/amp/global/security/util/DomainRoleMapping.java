@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 
 import java.net.URI;
 import java.util.Map;
+import java.util.Set;
 
 import static com.amp.global.security.util.DomainConstants.*;
 
@@ -19,6 +20,15 @@ import static com.amp.global.security.util.DomainConstants.*;
 @Slf4j
 @Component
 public class DomainRoleMapping {
+
+    // 허용된 도메인 목록 (보안: 리다이렉트 허용 도메인)
+    private static final Set<String> ALLOWED_HOSTS = Set.of(
+            LOCAL_AUDIENCE_HOST,
+            LOCAL_ORGANIZER_HOST,
+            PROD_AUDIENCE_HOST,
+            PROD_AUDIENCE_WWW_HOST,
+            PROD_ORGANIZER_HOST
+    );
 
     // 도메인 → UserType 매핑
     private static final Map<String, UserType> DOMAIN_TO_ROLE = Map.of(
@@ -174,6 +184,50 @@ public class DomainRoleMapping {
         }
 
         return origin;
+    }
+
+    /**
+     * 허용된 도메인인지 검증 (보안: Open Redirect 방지)
+     *
+     * @param origin 검증할 origin URL
+     * @return 허용된 도메인이면 true, 그렇지 않으면 false
+     */
+    public boolean isAllowedOrigin(String origin) {
+        if (origin == null || origin.trim().isEmpty()) {
+            return false;
+        }
+
+        String host = extractHost(origin);
+        if (host == null) {
+            return false;
+        }
+
+        boolean isAllowed = ALLOWED_HOSTS.contains(host);
+        if (!isAllowed) {
+            log.warn("Blocked redirect to unauthorized origin: {}", origin);
+        }
+        return isAllowed;
+    }
+
+    /**
+     * origin이 허용되지 않은 경우 기본 도메인 반환
+     *
+     * @param origin            검증할 origin
+     * @param requestedUserType 요청한 UserType (fallback 결정에 사용)
+     * @return 허용된 origin이면 그대로, 아니면 기본 도메인
+     */
+    public String getSafeOrigin(String origin, UserType requestedUserType) {
+        if (isAllowedOrigin(origin)) {
+            return origin;
+        }
+
+        // 허용되지 않은 origin인 경우 기본 도메인으로 fallback
+        log.warn("Origin not allowed, falling back to default domain. Original: {}, UserType: {}",
+                origin, requestedUserType);
+
+        return requestedUserType == UserType.ORGANIZER
+                ? LOCAL_ORGANIZER_URL
+                : LOCAL_AUDIENCE_URL;
     }
 
     /**
