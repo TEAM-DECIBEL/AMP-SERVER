@@ -6,7 +6,8 @@ import org.springframework.stereotype.Component;
 
 import java.net.URI;
 import java.util.Map;
-import java.util.Optional;
+
+import static com.amp.global.security.util.DomainConstants.*;
 
 /**
  * 도메인-역할 매핑 유틸리티
@@ -21,23 +22,23 @@ public class DomainRoleMapping {
 
     // 도메인 → UserType 매핑
     private static final Map<String, UserType> DOMAIN_TO_ROLE = Map.of(
-            "localhost:5173", UserType.AUDIENCE,
-            "localhost:5174", UserType.ORGANIZER,
-            "ampnotice.kr", UserType.AUDIENCE,
-            "www.ampnotice.kr", UserType.AUDIENCE,
-            "host.ampnotice.kr", UserType.ORGANIZER
+            LOCAL_AUDIENCE_HOST, UserType.AUDIENCE,
+            LOCAL_ORGANIZER_HOST, UserType.ORGANIZER,
+            PROD_AUDIENCE_HOST, UserType.AUDIENCE,
+            PROD_AUDIENCE_WWW_HOST, UserType.AUDIENCE,
+            PROD_ORGANIZER_HOST, UserType.ORGANIZER
     );
 
     // UserType → 로컬 도메인 매핑
     private static final Map<UserType, String> ROLE_TO_LOCAL_DOMAIN = Map.of(
-            UserType.AUDIENCE, "http://localhost:5173",
-            UserType.ORGANIZER, "http://localhost:5174"
+            UserType.AUDIENCE, LOCAL_AUDIENCE_URL,
+            UserType.ORGANIZER, LOCAL_ORGANIZER_URL
     );
 
     // UserType → 프로덕션 도메인 매핑
     private static final Map<UserType, String> ROLE_TO_PROD_DOMAIN = Map.of(
-            UserType.AUDIENCE, "https://ampnotice.kr",
-            UserType.ORGANIZER, "https://host.ampnotice.kr"
+            UserType.AUDIENCE, PROD_AUDIENCE_URL,
+            UserType.ORGANIZER, PROD_ORGANIZER_URL
     );
 
     /**
@@ -104,7 +105,7 @@ public class DomainRoleMapping {
      */
     public String getCookieDomain(String origin) {
         if (isProductionOrigin(origin)) {
-            return ".ampnotice.kr";
+            return PROD_COOKIE_DOMAIN;
         }
         return null; // 로컬에서는 도메인 설정하지 않음
     }
@@ -116,15 +117,18 @@ public class DomainRoleMapping {
      * @return 프로덕션이면 true
      */
     public boolean isProductionOrigin(String origin) {
-        String host = extractHost(origin);
         if (origin == null) {
             return false;
         }
+        String host = extractHost(origin);
+        if (host == null) {
+            return false;
+        }
         String lowerHost = host.toLowerCase();
-        return lowerHost.equals("ampnotice.kr")
-                || lowerHost.equals("www.ampnotice.kr")
-                || lowerHost.equals("host.ampnotice.kr")
-                || lowerHost.endsWith(".ampnotice.kr");
+        return lowerHost.equals(PROD_AUDIENCE_HOST)
+                || lowerHost.equals(PROD_AUDIENCE_WWW_HOST)
+                || lowerHost.equals(PROD_ORGANIZER_HOST)
+                || lowerHost.endsWith(PROD_COOKIE_DOMAIN);
     }
 
     /**
@@ -155,18 +159,18 @@ public class DomainRoleMapping {
         }
 
         // API 서브도메인 제거
-        if (origin.contains("api.host.ampnotice.kr")) {
-            return origin.replace("api.host.ampnotice.kr", "host.ampnotice.kr");
+        if (origin.contains(PROD_API_ORGANIZER_HOST)) {
+            return origin.replace(PROD_API_ORGANIZER_HOST, PROD_ORGANIZER_HOST);
         }
-        if (origin.contains("api.ampnotice.kr")) {
-            return origin.replace("api.ampnotice.kr", "ampnotice.kr");
+        if (origin.contains(PROD_API_HOST)) {
+            return origin.replace(PROD_API_HOST, PROD_AUDIENCE_HOST);
         }
 
         // 로컬 백엔드 포트를 프론트엔드 포트로 변환
-        if (origin.contains("localhost:8080")) {
+        if (origin.contains(LOCAL_BACKEND_HOST)) {
             return requestedUserType == UserType.ORGANIZER
-                    ? "http://localhost:5174"
-                    : "http://localhost:5173";
+                    ? LOCAL_ORGANIZER_URL
+                    : LOCAL_AUDIENCE_URL;
         }
 
         return origin;
@@ -176,6 +180,9 @@ public class DomainRoleMapping {
      * Origin에서 host 부분 추출 (포트 포함)
      */
     private String extractHost(String origin) {
+        if (origin == null) {
+            return null;
+        }
         try {
             URI uri = new URI(origin);
             String host = uri.getHost();
