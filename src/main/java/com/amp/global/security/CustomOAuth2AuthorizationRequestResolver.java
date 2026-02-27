@@ -52,20 +52,23 @@ public class CustomOAuth2AuthorizationRequestResolver implements OAuth2Authoriza
 
         // 2. Origin 추출 (API 서브도메인 제거)
         String origin = extractOrigin(request);
-        String frontendOrigin = domainRoleMapping.convertToFrontendOrigin(origin, requestedUserType);
+        String convertedOrigin = domainRoleMapping.convertToFrontendOrigin(origin, requestedUserType);
 
-        log.info("Original origin: {}, Frontend origin: {}", origin, frontendOrigin);
+        log.info("Original origin: {}, Converted origin: {}", origin, convertedOrigin);
 
         // 3. 파라미터가 없거나 유효하지 않으면 Origin 기반으로 자동 감지
         if (requestedUserType == null) {
-            requestedUserType = domainRoleMapping.getUserTypeFromOrigin(frontendOrigin);
+            requestedUserType = domainRoleMapping.getUserTypeFromOrigin(convertedOrigin);
         }
 
-        log.info("OAuth2 authorization request with userType: {}, origin: {}", requestedUserType, frontendOrigin);
+        // 4. 보안: 허용된 도메인인지 검증 (Open Redirect 방지)
+        String safeOrigin = domainRoleMapping.getSafeOrigin(convertedOrigin, requestedUserType);
 
-        // state에 userType과 프론트엔드 origin 정보 추가
+        log.info("OAuth2 authorization request with userType: {}, safeOrigin: {}", requestedUserType, safeOrigin);
+
+        // state에 userType과 검증된 프론트엔드 origin 정보 추가
         String originalState = authorizationRequest.getState();
-        String customState = originalState + "|userType=" + requestedUserType.name() + "|origin=" + frontendOrigin;
+        String customState = originalState + "|userType=" + requestedUserType.name() + "|origin=" + safeOrigin;
 
         return OAuth2AuthorizationRequest
                 .from(authorizationRequest)
