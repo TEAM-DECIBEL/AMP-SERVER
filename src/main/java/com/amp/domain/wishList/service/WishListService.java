@@ -47,10 +47,9 @@ public class WishListService {
     public UpdateWishListResponse toggleWishlist(Long festivalId, WishListRequest request) {
         User user = authService.getCurrentUser();
 
-        if (!(user instanceof Audience)) {
+        if (!(user instanceof Audience audience)) {
             throw new CustomException(UserErrorCode.USER_NOT_AUTHORIZED);
         }
-        Audience audience = (Audience) user;
 
         Festival festival = festivalRepository.findById(festivalId)
                 .orElseThrow(() -> new CustomException(FestivalErrorCode.FESTIVAL_NOT_FOUND));
