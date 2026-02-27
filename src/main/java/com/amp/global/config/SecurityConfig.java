@@ -4,6 +4,7 @@ import com.amp.global.security.*;
 import com.amp.global.security.handler.CustomAccessDeniedHandler;
 import com.amp.global.security.handler.CustomAuthenticationEntryPoint;
 import com.amp.global.security.service.CustomOAuthUserService;
+import com.amp.global.security.util.DomainRoleMapping;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -41,6 +42,7 @@ public class SecurityConfig {
     private final DomainRoleValidationFilter domainRoleValidationFilter;
     private final ClientRegistrationRepository clientRegistrationRepository;
     private final HttpCookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository;
+    private final DomainRoleMapping domainRoleMapping;
 
     @Value("${app.cors.allowed-origins}")
     private String allowedOrigins;
@@ -126,7 +128,8 @@ public class SecurityConfig {
                                         .baseUri("/oauth2/authorization")
                                         .authorizationRequestResolver(
                                                 new CustomOAuth2AuthorizationRequestResolver(
-                                                        clientRegistrationRepository
+                                                        clientRegistrationRepository,
+                                                        domainRoleMapping
                                                 )
                                         )
                                         .authorizationRequestRepository(cookieAuthorizationRequestRepository)

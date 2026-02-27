@@ -1,6 +1,7 @@
 package com.amp.global.security;
 
 import com.amp.domain.user.entity.UserType;
+import com.amp.global.security.util.DomainRoleMapping;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
@@ -12,13 +13,16 @@ import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequ
 public class CustomOAuth2AuthorizationRequestResolver implements OAuth2AuthorizationRequestResolver {
 
     private final DefaultOAuth2AuthorizationRequestResolver defaultResolver;
+    private final DomainRoleMapping domainRoleMapping;
 
     public CustomOAuth2AuthorizationRequestResolver(
-            ClientRegistrationRepository clientRegistrationRepository) {
+            ClientRegistrationRepository clientRegistrationRepository,
+            DomainRoleMapping domainRoleMapping) {
         this.defaultResolver = new DefaultOAuth2AuthorizationRequestResolver(
                 clientRegistrationRepository,
                 "/oauth2/authorization"
         );
+        this.domainRoleMapping = domainRoleMapping;
     }
 
     @Override
@@ -43,24 +47,25 @@ public class CustomOAuth2AuthorizationRequestResolver implements OAuth2Authoriza
         }
 
         // 1. 요청 파라미터에서 userType 확인 (명시적으로 지정된 경우)
-        String userType = request.getParameter("userType");
+        String userTypeParam = request.getParameter("userType");
+        UserType requestedUserType = parseUserType(userTypeParam);
 
         // 2. Origin 추출 (API 서브도메인 제거)
         String origin = extractOrigin(request);
-        String frontendOrigin = convertToFrontendOrigin(origin);
+        String frontendOrigin = domainRoleMapping.convertToFrontendOrigin(origin, requestedUserType);
 
         log.info("Original origin: {}, Frontend origin: {}", origin, frontendOrigin);
 
         // 3. 파라미터가 없거나 유효하지 않으면 Origin 기반으로 자동 감지
-        if (userType == null || !isValidUserType(userType)) {
-            userType = determineUserTypeFromUrl(frontendOrigin);
+        if (requestedUserType == null) {
+            requestedUserType = domainRoleMapping.getUserTypeFromOrigin(frontendOrigin);
         }
 
-        log.info("OAuth2 authorization request with userType: {}, origin: {}", userType, frontendOrigin);
+        log.info("OAuth2 authorization request with userType: {}, origin: {}", requestedUserType, frontendOrigin);
 
         // state에 userType과 프론트엔드 origin 정보 추가
         String originalState = authorizationRequest.getState();
-        String customState = originalState + "|userType=" + userType + "|origin=" + frontendOrigin;
+        String customState = originalState + "|userType=" + requestedUserType.name() + "|origin=" + frontendOrigin;
 
         return OAuth2AuthorizationRequest
                 .from(authorizationRequest)
@@ -112,68 +117,17 @@ public class CustomOAuth2AuthorizationRequestResolver implements OAuth2Authoriza
     }
 
     /**
-     * 백엔드 API 도메인을 프론트엔드 도메인으로 변환
-     * - https://api.host.ampnotice.kr -> https://host.ampnotice.kr
-     * - https://api.ampnotice.kr -> https://ampnotice.kr
-     * - http://localhost:8080 -> http://localhost:5174 (ORGANIZER) or http://localhost:5173 (AUDIENCE)
+     * 문자열을 UserType으로 파싱
+     * @return 유효하면 UserType, 그렇지 않으면 null
      */
-    private String convertToFrontendOrigin(String origin) {
-        if (origin == null || origin.trim().isEmpty()) {
-            return "http://localhost:5173"; // fallback
+    private UserType parseUserType(String userType) {
+        if (userType == null || userType.trim().isEmpty()) {
+            return null;
         }
-
-        // API 서브도메인 제거 (host.ampnotice.kr 도메인)
-        if (origin.contains("api.host.ampnotice.kr")) {
-            return origin.replace("api.host.ampnotice.kr", "host.ampnotice.kr");
-        }
-
-        if (origin.contains("api.ampnotice.kr")) {
-            return origin.replace("api.ampnotice.kr", "ampnotice.kr");
-        }
-
-        // 로컬 개발 환경: 백엔드 포트를 프론트엔드 포트로 변환
-        if (origin.contains("localhost:8080")) {
-            // userType에 따라 다른 포트 반환
-            String userType = determineUserTypeFromUrl(origin);
-            if (userType.equals("ORGANIZER")) {
-                return origin.replace("localhost:8080", "localhost:5174");
-            } else {
-                return origin.replace("localhost:8080", "localhost:5173");
-            }
-        }
-
-        // 변환이 필요 없는 경우 그대로 반환
-        return origin;
-    }
-
-    /**
-     * URL 문자열에서 UserType 판단
-     * - localhost:5174 또는 host.ampnotice.kr -> ORGANIZER
-     * - 그 외 -> AUDIENCE
-     */
-    private String determineUserTypeFromUrl(String url) {
-        if (url == null || url.trim().isEmpty()) {
-            return "AUDIENCE";
-        }
-
-        String lowerUrl = url.toLowerCase();
-
-        // ORGANIZER 조건
-        if (lowerUrl.contains("localhost:5174") ||
-                lowerUrl.contains("host.ampnotice.kr")) {
-            return "ORGANIZER";
-        }
-
-        // 기본값은 AUDIENCE
-        return "AUDIENCE";
-    }
-
-    private boolean isValidUserType(String userType) {
         try {
-            UserType.valueOf(userType);
-            return true;
+            return UserType.valueOf(userType);
         } catch (IllegalArgumentException e) {
-            return false;
+            return null;
         }
     }
 }
