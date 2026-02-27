@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.DiscriminatorFormula;
 
 import static com.amp.domain.user.exception.UserErrorCode.USER_TYPE_UNCHANGEABLE;
 
@@ -16,7 +18,10 @@ import static com.amp.domain.user.exception.UserErrorCode.USER_TYPE_UNCHANGEABLE
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorFormula("COALESCE(user_type, 'PENDING')")
+@DiscriminatorValue("PENDING")
 public class User {
 
     @Id
@@ -48,9 +53,6 @@ public class User {
     @Enumerated(EnumType.STRING)
     private UserType userType;
 
-    @Column(name = "organizer_name", length = 100)
-    private String organizerName;
-
     public void updateExistingUser(String username, String profileImageUrl) {
         this.nickname = username;
         this.profileImageUrl = profileImageUrl;
@@ -66,18 +68,16 @@ public class User {
         this.userType = userType;
     }
 
-    // 관객 온보딩 완료
-    public void completeAudienceOnboarding(String nickname) {
-        this.nickname = nickname;
+    // 공통 온보딩 완료 처리 (서브클래스에서 호출)
+    protected void finishOnboarding() {
         this.registrationStatus = RegistrationStatus.COMPLETED;
         this.isActive = true;
     }
 
-    // 주최자 온보딩 완료
-    public void completeOrganizerOnboarding(String organizerName) {
-        this.organizerName = organizerName;
-        this.registrationStatus = RegistrationStatus.COMPLETED;
-        this.isActive = true;
+    // 관객 온보딩 완료
+    public void completeAudienceOnboarding(String nickname) {
+        this.nickname = nickname;
+        finishOnboarding();
     }
 
 }

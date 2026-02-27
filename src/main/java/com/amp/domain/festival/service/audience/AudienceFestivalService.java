@@ -1,4 +1,4 @@
-package com.amp.domain.festival.service.user;
+package com.amp.domain.festival.service.audience;
 
 import com.amp.domain.festival.entity.Festival;
 import com.amp.domain.festival.repository.FestivalRepository;
@@ -23,18 +23,16 @@ import java.util.Set;
 @Transactional(readOnly = true)
 public class AudienceFestivalService {
 
-    private final WishListRepository userFestivalRepository;
+    private final WishListRepository wishListRepository;
     private final FestivalRepository festivalRepository;
     private final AuthService authService;
 
-
-    @Transactional(readOnly = true)
     public PageResponse<AudienceFestivalSummaryResponse> getAllFestivals(Pageable pageable) {
         User user = authService.getCurrentUserOrNull();
         Page<Festival> festivalPage = festivalRepository.findActiveFestivals(pageable, LocalDate.now());
 
         Set<Long> wishlistIds = (user != null)
-                ? userFestivalRepository.findAllFestivalIdsByUserId(user.getId())
+                ? wishListRepository.findAllFestivalIdsByAudienceId(user.getId())
                 : Collections.emptySet();
 
         Page<AudienceFestivalSummaryResponse> festivalList = festivalPage.map(f ->
@@ -43,5 +41,4 @@ public class AudienceFestivalService {
 
         return PageResponse.of(festivalList);
     }
-
 }

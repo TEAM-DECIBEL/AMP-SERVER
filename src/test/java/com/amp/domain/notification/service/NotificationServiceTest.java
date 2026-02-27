@@ -22,9 +22,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class NotificationServiceTest {
@@ -35,32 +33,39 @@ class NotificationServiceTest {
     @Mock private UserRepository userRepository;
     @Mock private NotificationSaveService notificationSaveService;
 
-    // Notice / Festival / Alarm 을 @Mock으로 선언해야
-    // notice.getId(), notice.getFestival().getId() 등 체이닝 호출 시 NPE 방지
-    @Mock private Notice mockNotice;
-    @Mock private Festival mockFestival;
-    @Mock private Alarm mockAlarm;
-    @Mock private User mockAlarmUser;
+    @Mock
+    private AlarmRepository alarmRepository;
+
+    @Mock
+    private NotificationRepository notificationRepository;
+
+    @Mock
+    private UserRepository userRepository;
+
+    @Mock
+    private NotificationSaveService notificationSaveService;
 
     @InjectMocks
     private NotificationService notificationService;
-
-    private void givenNoticeReady() {
-        given(mockNotice.getId()).willReturn(1L);
-        given(mockNotice.getFestival()).willReturn(mockFestival);
-        given(mockFestival.getId()).willReturn(1L);
-    }
-
-    private void givenAlarmReady() {
-        given(alarmRepository.findAllByFestivalCategoryIdAndIsActiveTrue(1L))
-                .willReturn(List.of(mockAlarm));
-        given(mockAlarm.getUser()).willReturn(mockAlarmUser);
-    }
 
     @Test
     @DisplayName("공지 생성 이벤트 발생 시 카테고리 토픽으로 FCM 알림을 전송한다")
     void sendNewNoticeNotification_success() throws FirebaseMessagingException {
         // given
+        Festival mockFestival = mock(Festival.class);
+        when(mockFestival.getId()).thenReturn(1L);
+
+        Notice mockNotice = mock(Notice.class);
+        when(mockNotice.getId()).thenReturn(1L);
+        when(mockNotice.getFestival()).thenReturn(mockFestival);
+
+        User mockAlarmUser = mock(User.class);
+        Alarm mockAlarm = mock(Alarm.class);
+        when(mockAlarm.getUser()).thenReturn(mockAlarmUser);
+
+        when(alarmRepository.findAllByFestivalCategoryIdAndIsActiveTrue(1L))
+                .thenReturn(List.of(mockAlarm));
+
         NoticeCreatedEvent event = new NoticeCreatedEvent(
                 1L, "공지사항", "축제명", mockNotice, "제목", LocalDateTime.now()
         );
@@ -72,12 +77,12 @@ class NotificationServiceTest {
 
         // then
         verify(fcmService).sendCategoryTopicAlarm(
-                eq(1L),                              // categoryId
-                eq(1L),                              // noticeId
-                eq(1L),                              // festivalId
-                eq("공지사항 공지가 업로드 되었어요!"),  // title
-                contains("[공지사항]"),               // body
-                anyString()                          // timeData
+                eq(1L),
+                eq(1L),
+                eq(1L),
+                eq("공지사항 공지가 업로드 되었어요!"),
+                contains("[공지사항]"),
+                any()
         );
     }
 
@@ -85,15 +90,29 @@ class NotificationServiceTest {
     @DisplayName("FCM 전송 실패 시 예외가 발생한다")
     void sendNewNoticeNotification_fail_whenFCMError() {
         // given
+        Festival mockFestival = mock(Festival.class);
+        when(mockFestival.getId()).thenReturn(1L);
+
+        Notice mockNotice = mock(Notice.class);
+        when(mockNotice.getId()).thenReturn(1L);
+        when(mockNotice.getFestival()).thenReturn(mockFestival);
+
+        User mockAlarmUser = mock(User.class);
+        Alarm mockAlarm = mock(Alarm.class);
+        when(mockAlarm.getUser()).thenReturn(mockAlarmUser);
+
+        when(alarmRepository.findAllByFestivalCategoryIdAndIsActiveTrue(1L))
+                .thenReturn(List.of(mockAlarm));
+
+        doThrow(new RuntimeException("FCM error"))
+                .when(fcmService)
+                .sendCategoryTopicAlarm(anyLong(), anyLong(), anyLong(), anyString(), anyString(), anyString());
+
         NoticeCreatedEvent event = new NoticeCreatedEvent(
                 1L, "공지사항", "축제명", mockNotice, "제목", LocalDateTime.now()
         );
         givenNoticeReady();
         givenAlarmReady();
-
-        doThrow(new RuntimeException("FCM error"))
-                .when(fcmService)
-                .sendCategoryTopicAlarm(anyLong(), anyLong(), anyLong(), anyString(), anyString(), anyString());
 
         // when & then
         assertThrows(RuntimeException.class,

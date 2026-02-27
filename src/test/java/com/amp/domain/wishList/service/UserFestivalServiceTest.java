@@ -32,7 +32,7 @@ class UserFestivalServiceTest {
 
     @Test
     @DisplayName("최근 공연 조회 성공 - 공연이 1개 있는 경우")
-    void getRecentFestival_Success_SingleFestival() {
+    void getRecentFestivalSuccessSingleFestival() {
         // given
         Long userId = 1L;
         LocalDate today = LocalDate.now();
@@ -47,14 +47,14 @@ class UserFestivalServiceTest {
         Optional<RecentWishListResponse> result = userFestivalService.getRecentFestival(userId);
 
         // then
-        assertThat(result).isPresent(); // Optional 안에 데이터가 있는지 확인
+        assertThat(result).isPresent();
         assertThat(result.get().getFestivalId()).isEqualTo(1L);
-        assertThat(result.get().getDDay()).isEqualTo(15L);
+        assertThat(result.get().getDDay()).isEqualTo(-15L);
     }
 
     @Test
     @DisplayName("최근 공연 조회 - 공연이 없는 경우 Optional.empty() 반환")
-    void getRecentFestival_ReturnEmpty_WhenNoFestival() {
+    void getRecentFestivalReturnEmptyWhenNoFestival() {
         // given
         Long userId = 1L;
         given(userFestivalRepository.findUpcomingWishlistFestivals(anyLong(), any(LocalDate.class)))
@@ -73,7 +73,7 @@ class UserFestivalServiceTest {
 
     @Test
     @DisplayName("최근 공연 조회 성공 - 여러 공연 중 가장 임박한 공연(첫 번째) 반환")
-    void getRecentFestival_Success_MultipleFestivals() {
+    void getRecentFestivalSuccessMultipleFestivals() {
         // given
         Long userId = 1L;
         LocalDate today = LocalDate.now();

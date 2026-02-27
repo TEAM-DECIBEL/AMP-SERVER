@@ -1,6 +1,6 @@
 package com.amp.domain.festival.entity;
 
-import com.amp.domain.user.entity.User;
+import com.amp.domain.user.entity.Audience;
 import com.amp.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Table(name = "user_festival")
-public class UserFestival extends BaseTimeEntity {
+public class AudienceFestival extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,7 +21,7 @@ public class UserFestival extends BaseTimeEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    private Audience audience;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "festival_id", nullable = false)
@@ -31,8 +31,8 @@ public class UserFestival extends BaseTimeEntity {
     private Boolean wishList = false;
 
     @Builder
-    public UserFestival(User user, Festival festival, Boolean wishList) {
-        this.user = user;
+    public AudienceFestival(Audience audience, Festival festival, Boolean wishList) {
+        this.audience = audience;
         this.festival = festival;
         this.wishList = wishList != null ? wishList : false;
     }
