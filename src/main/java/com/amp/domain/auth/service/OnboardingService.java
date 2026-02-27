@@ -40,7 +40,7 @@ public class OnboardingService {
         if (user.getUserType() != request.getUserType()) {
             log.warn("UserType mismatch - stored: {}, requested: {}",
                     user.getUserType(), request.getUserType());
-            throw new OnboardingException(OnboardingErrorCode.INVALID_USER_TYPE);
+            throw new OnboardingException(OnboardingErrorCode.USER_TYPE_MISMATCH);
         }
 
         // 사용자 타입에 따라 온보딩 처리
@@ -69,11 +69,17 @@ public class OnboardingService {
 
         // 닉네임 필수 체크
         if (request.getNickname() == null || request.getNickname().isBlank()) {
-            throw new OnboardingException(OnboardingErrorCode.INVALID_USER_TYPE);
+            throw new OnboardingException(OnboardingErrorCode.NICKNAME_REQUIRED);
+        }
+
+        // 닉네임 길이 검증
+        String nickname = request.getNickname().trim();
+        if (nickname.length() < 2 || nickname.length() > 12) {
+            throw new OnboardingException(OnboardingErrorCode.NICKNAME_LENGTH_INVALID);
         }
 
         // User 온보딩 완료
-        user.completeAudienceOnboarding(request.getNickname());
+        user.completeAudienceOnboarding(nickname);
         userRepository.save(user);
 
         log.info("Audience onboarding completed for user: {}, nickname: {}",
@@ -89,14 +95,20 @@ public class OnboardingService {
             throw new OnboardingException(OnboardingErrorCode.ORGANIZER_NAME_REQUIRED);
         }
 
-        // 주최사명 중복 체크
-        validateOrganizerNameUniqueness(request.getOrganizerName());
+        // 주최사명 길이 검증
+        String organizerName = request.getOrganizerName().trim();
+        if (organizerName.length() < 2 || organizerName.length() > 12) {
+            throw new OnboardingException(OnboardingErrorCode.ORGANIZER_NAME_LENGTH_INVALID);
+        }
 
-        ((Organizer) user).completeOrganizerOnboarding(request.getOrganizerName());
+        // 주최사명 중복 체크
+        validateOrganizerNameUniqueness(organizerName);
+
+        ((Organizer) user).completeOrganizerOnboarding(organizerName);
         userRepository.save(user);
 
         log.info("Organizer onboarding completed for user: {}, organizer: {}",
-                user.getEmail(), request.getOrganizerName());
+                user.getEmail(), organizerName);
     }
 
     @Transactional(readOnly = true)
