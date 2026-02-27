@@ -65,9 +65,13 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         // state에서 userType과 origin 추출
         String state = request.getParameter("state");
         UserType requestedUserType = extractUserTypeFromState(state);
-        String clientOrigin = extractOriginFromState(state);
+        String rawOrigin = extractOriginFromState(state);
 
-        log.info("Extracted from state - userType: {}, origin: {}", requestedUserType, clientOrigin);
+        // 보안: 허용된 도메인인지 검증 (Open Redirect 방지)
+        String clientOrigin = domainRoleMapping.getSafeOrigin(rawOrigin, requestedUserType);
+
+        log.info("Extracted from state - userType: {}, rawOrigin: {}, safeOrigin: {}",
+                requestedUserType, rawOrigin, clientOrigin);
 
         // 신규 사용자인 경우 UserType 업데이트 (DB 저장 로직 분리)
         if (user.getRegistrationStatus() == RegistrationStatus.PENDING) {
