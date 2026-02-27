@@ -24,6 +24,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.ArrayList;
+
+import static com.amp.global.security.util.DomainConstants.*;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -45,10 +47,10 @@ import java.util.stream.Collectors;
 @Configuration
 public class SwaggerConfig {
 
-    @Value("${swagger.server.local.url:http://localhost:8080}")
+    @Value("${swagger.server.local.url:" + LOCAL_BACKEND_URL + "}")
     private String localServerUrl;
 
-    @Value("${swagger.server.prod.url:https://api.ampnotice.kr}")
+    @Value("${swagger.server.prod.url:https://" + PROD_API_HOST + "}")
     private String prodServerUrl;
 
     @Bean

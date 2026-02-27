@@ -1,5 +1,6 @@
 package com.amp.global.security;
 
+import com.amp.global.security.util.DomainRoleMapping;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,6 +15,7 @@ import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequ
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
+import static com.amp.global.security.util.DomainConstants.*;
 
 @ExtendWith(MockitoExtension.class)
 class CustomOAuth2AuthorizationRequestResolverTest {
@@ -21,12 +23,14 @@ class CustomOAuth2AuthorizationRequestResolverTest {
     @Mock
     private ClientRegistrationRepository clientRegistrationRepository;
 
+    private DomainRoleMapping domainRoleMapping;
     private CustomOAuth2AuthorizationRequestResolver resolver;
     private MockHttpServletRequest request;
 
     @BeforeEach
     void setUp() {
-        resolver = new CustomOAuth2AuthorizationRequestResolver(clientRegistrationRepository);
+        domainRoleMapping = new DomainRoleMapping();
+        resolver = new CustomOAuth2AuthorizationRequestResolver(clientRegistrationRepository, domainRoleMapping);
         request = new MockHttpServletRequest();
 
         // Mock ClientRegistration
@@ -48,7 +52,7 @@ class CustomOAuth2AuthorizationRequestResolverTest {
     void testAudienceDetectionFromLocalhost5173() {
         // Given
         request.setRequestURI("/oauth2/authorization/google");
-        request.addHeader("Origin", "http://localhost:5173");
+        request.addHeader("Origin", LOCAL_AUDIENCE_URL);
 
         // When
         OAuth2AuthorizationRequest authRequest = resolver.resolve(request, "google");
@@ -63,7 +67,7 @@ class CustomOAuth2AuthorizationRequestResolverTest {
     void testOrganizerDetectionFromLocalhost5174() {
         // Given
         request.setRequestURI("/oauth2/authorization/google");
-        request.addHeader("Origin", "http://localhost:5174");
+        request.addHeader("Origin", LOCAL_ORGANIZER_URL);
 
         // When
         OAuth2AuthorizationRequest authRequest = resolver.resolve(request, "google");
@@ -74,11 +78,11 @@ class CustomOAuth2AuthorizationRequestResolverTest {
     }
 
     @Test
-    @DisplayName("ampnotice-host.kr 도메인에서 ORGANIZER 자동 감지")
+    @DisplayName("host.ampnotice.kr 도메인에서 ORGANIZER 자동 감지")
     void testOrganizerDetectionFromHostDomain() {
         // Given
         request.setRequestURI("/oauth2/authorization/google");
-        request.addHeader("Origin", "https://www.ampnotice-host.kr");
+        request.addHeader("Origin", PROD_ORGANIZER_URL);
 
         // When
         OAuth2AuthorizationRequest authRequest = resolver.resolve(request, "google");
@@ -93,7 +97,7 @@ class CustomOAuth2AuthorizationRequestResolverTest {
     void testAudienceDetectionFromMainDomain() {
         // Given
         request.setRequestURI("/oauth2/authorization/google");
-        request.addHeader("Origin", "https://www.ampnotice.kr");
+        request.addHeader("Origin", "https://" + PROD_AUDIENCE_WWW_HOST);
 
         // When
         OAuth2AuthorizationRequest authRequest = resolver.resolve(request, "google");
@@ -108,7 +112,7 @@ class CustomOAuth2AuthorizationRequestResolverTest {
     void testExplicitUserTypeParameter() {
         // Given
         request.setRequestURI("/oauth2/authorization/google");
-        request.addHeader("Origin", "http://localhost:5173"); // AUDIENCE 도메인
+        request.addHeader("Origin", LOCAL_AUDIENCE_URL); // AUDIENCE 도메인
         request.setParameter("userType", "ORGANIZER"); // 하지만 명시적으로 ORGANIZER 요청
 
         // When
@@ -124,7 +128,7 @@ class CustomOAuth2AuthorizationRequestResolverTest {
     void testUserTypeDetectionFromReferer() {
         // Given
         request.setRequestURI("/oauth2/authorization/google");
-        request.addHeader("Referer", "http://localhost:5174/login");
+        request.addHeader("Referer", LOCAL_ORGANIZER_URL + "/login");
 
         // When
         OAuth2AuthorizationRequest authRequest = resolver.resolve(request, "google");

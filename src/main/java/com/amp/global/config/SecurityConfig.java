@@ -4,7 +4,10 @@ import com.amp.global.security.*;
 import com.amp.global.security.handler.CustomAccessDeniedHandler;
 import com.amp.global.security.handler.CustomAuthenticationEntryPoint;
 import com.amp.global.security.service.CustomOAuthUserService;
+import com.amp.global.security.util.DomainRoleMapping;
 import lombok.RequiredArgsConstructor;
+
+import static com.amp.global.security.util.DomainConstants.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -12,6 +15,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -38,8 +43,10 @@ public class SecurityConfig {
     private final CustomAuthenticationEntryPoint authenticationEntryPoint;
     private final CustomAccessDeniedHandler accessDeniedHandler;
     private final OnboardingCheckFilter onboardingCheckFilter;
+    private final DomainRoleValidationFilter domainRoleValidationFilter;
     private final ClientRegistrationRepository clientRegistrationRepository;
     private final HttpCookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository;
+    private final DomainRoleMapping domainRoleMapping;
 
     @Value("${app.cors.allowed-origins}")
     private String allowedOrigins;
@@ -53,13 +60,13 @@ public class SecurityConfig {
     @Value("${app.cors.allow-credentials:true}")
     private boolean allowCredentials;
 
-    @Value("${app.oauth2.failure-redirect-uri:http://localhost:5173/login}")
+    @Value("${app.oauth2.failure-redirect-uri:" + LOCAL_AUDIENCE_URL + "/login}")
     private String failureRedirectUri;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable())
+                .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
                 .sessionManagement(session ->
@@ -67,12 +74,10 @@ public class SecurityConfig {
                 )
 
                 .headers(headers -> headers
-                        .frameOptions(frame -> frame.deny())
-                        .contentTypeOptions(contentType -> contentType.disable())
+                        .frameOptions(HeadersConfigurer.FrameOptionsConfig::deny)
                 )
 
                 .authorizeHttpRequests(auth -> auth
-                        // ✅ OPTIONS 요청 모두 허용 (CORS preflight를 위해 필수!)
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
                         .requestMatchers(
@@ -126,7 +131,8 @@ public class SecurityConfig {
                                         .baseUri("/oauth2/authorization")
                                         .authorizationRequestResolver(
                                                 new CustomOAuth2AuthorizationRequestResolver(
-                                                        clientRegistrationRepository
+                                                        clientRegistrationRepository,
+                                                        domainRoleMapping
                                                 )
                                         )
                                         .authorizationRequestRepository(cookieAuthorizationRequestRepository)
@@ -158,7 +164,8 @@ public class SecurityConfig {
                 )
 
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterAfter(onboardingCheckFilter, JwtAuthenticationFilter.class);
+                .addFilterAfter(domainRoleValidationFilter, JwtAuthenticationFilter.class)
+                .addFilterAfter(onboardingCheckFilter, DomainRoleValidationFilter.class);
 
         return http.build();
     }
@@ -170,7 +177,6 @@ public class SecurityConfig {
         List<String> origins = Arrays.asList(allowedOrigins.split(","));
         log.info("✅ CORS Allowed Origins: {}", origins);
 
-        configuration.setAllowedOrigins(origins);
         configuration.setAllowedOriginPatterns(origins);
 
         List<String> methods = Arrays.asList(allowedMethods.split(","));
