@@ -1,4 +1,4 @@
-package com.amp.support;
+package com.amp.global.support;
 
 import com.amp.domain.user.entity.Audience;
 import com.amp.domain.user.entity.AuthProvider;
