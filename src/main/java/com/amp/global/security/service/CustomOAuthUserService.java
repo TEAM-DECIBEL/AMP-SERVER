@@ -30,42 +30,36 @@ public class CustomOAuthUserService extends DefaultOAuth2UserService {
 
     private OAuth2User processOAuth2User(OAuth2User oAuth2User) {
         String email = oAuth2User.getAttribute("email");
-        String name = oAuth2User.getAttribute("name");
         String picture = oAuth2User.getAttribute("picture");
         String providerId = oAuth2User.getAttribute("sub");
 
         // 필수 값 검증
         if (email == null || email.trim().isEmpty()) {
             log.error("OAuth2 authentication failed: email is missing");
-            throw new OAuth2AuthenticationException("Email not found from OAuth2 provider"); //TODO 커스텀 예외로 처리 돌려 봐야 함
+            throw new OAuth2AuthenticationException("Email not found from OAuth2 provider");
         }
 
         if (providerId == null || providerId.trim().isEmpty()) {
             log.error("OAuth2 authentication failed: provider ID is missing");
-            throw new OAuth2AuthenticationException("Provider ID not found from OAuth2 provider"); //TODO 커스텀 예외로 처리 돌려 봐야 함
+            throw new OAuth2AuthenticationException("Provider ID not found from OAuth2 provider");
         }
 
-        User user = userRepository.findByEmail(email)
+        userRepository.findByEmail(email)
                 .map(existingUser -> {
-                    updateExistingUser(existingUser, name, picture);
+                    updateExistingUser(existingUser, picture);
                     return existingUser;
                 })
-                .orElseGet(() -> {
-                    // 신규 사용자는 PENDING 상태로 생성
-                    return createNewUser(email, name, picture, providerId);
-                });
+                .orElseGet(() -> createNewUser(email, picture, providerId));
 
         return oAuth2User;
     }
 
-    private User createNewUser(String email, String name, String picture, String providerId) {
+    private User createNewUser(String email, String picture, String providerId) {
         User user = User.builder()
                 .email(email)
-                .nickname(name)
                 .profileImageUrl(picture)
                 .provider(AuthProvider.GOOGLE)
                 .providerId(providerId)
-                .isActive(true)
                 .registrationStatus(RegistrationStatus.PENDING)
                 .build();
 
@@ -73,10 +67,8 @@ public class CustomOAuthUserService extends DefaultOAuth2UserService {
         return userRepository.save(user);
     }
 
-    private User updateExistingUser(User user, String name, String picture) {
-        user.updateExistingUser(name, picture);
+    private User updateExistingUser(User user, String picture) {
+        user.updateProfileImage(picture);
         return userRepository.save(user);
     }
-
 }
-

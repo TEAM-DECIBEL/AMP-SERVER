@@ -1,12 +1,16 @@
 package com.amp.global.exception;
 
 
+import com.amp.domain.auth.exception.AuthException;
+import com.amp.domain.auth.exception.OnboardingErrorCode;
 import com.amp.global.common.CommonErrorCode;
 import com.amp.global.common.ErrorCode;
+import com.amp.global.response.error.AuthErrorResponse;
 import com.amp.global.response.error.BaseErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.TypeMismatchException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -20,6 +24,16 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    // 인증 관련 예외 처리 (추가 정보 포함)
+    @ExceptionHandler(AuthException.class)
+    public ResponseEntity<AuthErrorResponse> handleAuthException(AuthException ex) {
+        ErrorCode errorCode = ex.getErrorCode();
+        log.error("[ERROR - AuthException] Code: {}, Msg: {}, Details: {}",
+                errorCode.getCode(), errorCode.getMsg(), ex.getDetails());
+        return ResponseEntity.status(errorCode.getHttpStatus())
+                .body(AuthErrorResponse.of(errorCode, ex.getDetails()));
+    }
 
     // 커스텀 예외 처리
     @ExceptionHandler(CustomException.class)
@@ -78,6 +92,21 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(CommonErrorCode.INVALID_INPUT_VALUE.getHttpStatus())
                 .body(BaseErrorResponse.of(CommonErrorCode.INVALID_INPUT_VALUE));
     }
+
+    // DB 제약 조건 위반
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<BaseErrorResponse> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+        log.error("[ERROR - DataIntegrityViolationException]");
+
+        if (ex.getMessage() != null && ex.getMessage().contains("uq_organizer_name")) {
+            return ResponseEntity.status(OnboardingErrorCode.DUPLICATE_ORGANIZER_NAME.getHttpStatus())
+                    .body(BaseErrorResponse.of(OnboardingErrorCode.DUPLICATE_ORGANIZER_NAME));
+        }
+
+        return ResponseEntity.status(CommonErrorCode.INTERNAL_SERVER_ERROR.getHttpStatus())
+                .body(BaseErrorResponse.of(CommonErrorCode.INTERNAL_SERVER_ERROR));
+    }
+
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<BaseErrorResponse> handleHttpRequestMethodNotSupported(HttpRequestMethodNotSupportedException ex) {

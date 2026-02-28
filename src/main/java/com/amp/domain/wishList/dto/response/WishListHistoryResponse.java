@@ -1,7 +1,7 @@
 package com.amp.domain.wishList.dto.response;
 
 import com.amp.domain.festival.entity.Festival;
-import com.amp.domain.festival.entity.UserFestival;
+import com.amp.domain.festival.entity.AudienceFestival;
 import com.amp.domain.festival.util.FestivalUtils;
 import com.amp.domain.wishList.util.WishListUtils;
 
@@ -13,7 +13,7 @@ public record WishListHistoryResponse(
         String status,
         boolean wishList
 ) {
-    public static WishListHistoryResponse from(UserFestival userFestival) {
+    public static WishListHistoryResponse from(AudienceFestival userFestival) {
         Festival festival = userFestival.getFestival();
         return new WishListHistoryResponse(
                 festival.getId(),

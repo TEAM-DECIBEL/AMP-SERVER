@@ -1,9 +1,9 @@
-package com.amp.domain.user.controller;
+package com.amp.domain.audience.controller;
 
-import com.amp.domain.user.dto.response.MyPageResponse;
-import com.amp.domain.user.dto.response.SavedNoticesResponse;
-import com.amp.domain.user.service.UserNoticesService;
-import com.amp.domain.user.service.UserService;
+import com.amp.domain.audience.dto.response.AudienceMyPageResponse;
+import com.amp.domain.audience.dto.response.SavedNoticesResponse;
+import com.amp.domain.audience.service.AudienceNoticesService;
+import com.amp.domain.audience.service.AudienceService;
 import com.amp.global.annotation.ApiErrorCodes;
 import com.amp.global.common.SuccessStatus;
 import com.amp.global.response.success.BaseResponse;
@@ -24,22 +24,22 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/users")
-@Tag(name = "User API")
+@RequestMapping("/api/v1/audience")
+@Tag(name = "Audience API")
 @Validated
 @RequiredArgsConstructor
-public class UserController {
+public class AudienceController {
 
-    private final UserService userService;
-    private final UserNoticesService userNoticesService;
+    private final AudienceService audienceService;
+    private final AudienceNoticesService audienceNoticesService;
 
     @GetMapping("/mypage")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_GET_MY_PAGE)
-    @Operation(summary = "마이페이지 조회", description = "현재 로그인한 사용자의 프로필 정보를 조회합니다.")
-    public ResponseEntity<BaseResponse<MyPageResponse>> getMyPage(
+    @Operation(summary = "마이페이지 조회", description = "현재 로그인한 관객의 프로필 정보를 조회합니다.")
+    public ResponseEntity<BaseResponse<AudienceMyPageResponse>> getMyPage(
             @AuthenticationPrincipal CustomUserPrincipal principal) {
         Long userId = principal.getUserId();
-        MyPageResponse response = userService.getMyPage(userId);
+        AudienceMyPageResponse response = audienceService.getMyPage(userId);
         return ResponseEntity
                 .status(SuccessStatus.USER_PROFILE_RETRIEVED.getHttpStatus())
                 .body(BaseResponse.of(SuccessStatus.USER_PROFILE_RETRIEVED, response));
@@ -47,7 +47,7 @@ public class UserController {
 
     @GetMapping("/me/bookmark")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_GET_BOOKMARK_NOTICE)
-    @Operation(summary = "저장한 공지 조회", description = "사용자가 저장한 공지사항 목록을 조회합니다.")
+    @Operation(summary = "저장한 공지 조회", description = "관객이 저장한 공지사항 목록을 조회합니다.")
     public ResponseEntity<BaseResponse<SavedNoticesResponse>> getSavedNotices(
             @AuthenticationPrincipal CustomUserPrincipal principal,
             @Parameter(description = "페이지 번호 (0부터 시작)")
@@ -56,10 +56,9 @@ public class UserController {
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size
     ) {
         Long userId = principal.getUserId();
-        SavedNoticesResponse response = userNoticesService.getSavedAnnouncements(userId, page, size);
+        SavedNoticesResponse response = audienceNoticesService.getSavedAnnouncements(userId, page, size);
         return ResponseEntity
                 .status(SuccessStatus.SAVED_NOTICES_RETRIEVED.getHttpStatus())
                 .body(BaseResponse.of(SuccessStatus.SAVED_NOTICES_RETRIEVED, response));
     }
-
 }

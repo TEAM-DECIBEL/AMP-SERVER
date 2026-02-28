@@ -8,10 +8,10 @@ import com.amp.domain.notice.exception.BookmarkException;
 import com.amp.domain.notice.exception.NoticeException;
 import com.amp.domain.notice.repository.BookmarkRepository;
 import com.amp.domain.notice.repository.NoticeRepository;
-import com.amp.domain.notice.service.user.BookmarkService;
-import com.amp.domain.user.entity.User;
+import com.amp.domain.notice.service.audience.BookmarkService;
+import com.amp.domain.user.entity.Audience;
 import com.amp.domain.user.exception.UserErrorCode;
-import com.amp.domain.user.repository.UserRepository;
+import com.amp.domain.user.repository.AudienceRepository;
 import com.amp.global.exception.CustomException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,7 +37,7 @@ class BookmarkServiceTest {
     private BookmarkRepository bookmarkRepository;
 
     @Mock
-    private UserRepository userRepository;
+    private AudienceRepository audienceRepository;
 
     @Mock
     private NoticeRepository noticeRepository;
@@ -45,7 +45,7 @@ class BookmarkServiceTest {
     @InjectMocks
     private BookmarkService bookmarkService;
 
-    private User loginUser;
+    private Audience loginUser;
     private Notice notice;
     private Bookmark bookmark;
 
@@ -53,18 +53,17 @@ class BookmarkServiceTest {
 
     @BeforeEach
     void setUp() {
-        loginUser = User.builder()
+        loginUser = Audience.builder()
                 .email(email)
                 .build();
 
         notice = Notice.builder()
                 .title("공지 제목")
                 .content("공지 내용")
-                .user(loginUser)
                 .build();
 
         bookmark = Bookmark.builder()
-                .user(loginUser)
+                .audience(loginUser)
                 .notice(notice)
                 .build();
 
@@ -81,15 +80,15 @@ class BookmarkServiceTest {
 
     @Test
     @DisplayName("북마크 저장 성공")
-    void bookmarkSave_success() {
+    void bookmarkSaveSuccess() {
         // given
         BookmarkRequest request = new BookmarkRequest(true);
 
-        when(userRepository.findByEmail(email))
+        when(audienceRepository.findByEmail(email))
                 .thenReturn(Optional.of(loginUser));
         when(noticeRepository.findById(1L))
                 .thenReturn(Optional.of(notice));
-        when(bookmarkRepository.findByNoticeAndUser(notice, loginUser))
+        when(bookmarkRepository.findByNoticeAndAudience(notice, loginUser))
                 .thenReturn(Optional.empty());
 
         // when
@@ -103,15 +102,15 @@ class BookmarkServiceTest {
 
     @Test
     @DisplayName("이미 북마크한 공지를 다시 저장하면 예외 발생")
-    void bookmarkAlreadyExists_shouldThrowException() {
+    void bookmarkAlreadyExistsShouldThrowException() {
         // given
         BookmarkRequest request = new BookmarkRequest(true);
 
-        when(userRepository.findByEmail(email))
+        when(audienceRepository.findByEmail(email))
                 .thenReturn(Optional.of(loginUser));
         when(noticeRepository.findById(1L))
                 .thenReturn(Optional.of(notice));
-        when(bookmarkRepository.findByNoticeAndUser(notice, loginUser))
+        when(bookmarkRepository.findByNoticeAndAudience(notice, loginUser))
                 .thenReturn(Optional.of(bookmark));
 
         // then
@@ -122,15 +121,15 @@ class BookmarkServiceTest {
 
     @Test
     @DisplayName("북마크 삭제 성공")
-    void bookmarkDelete_success() {
+    void bookmarkDeleteSuccess() {
         // given
         BookmarkRequest request = new BookmarkRequest(false);
 
-        when(userRepository.findByEmail(email))
+        when(audienceRepository.findByEmail(email))
                 .thenReturn(Optional.of(loginUser));
         when(noticeRepository.findById(1L))
                 .thenReturn(Optional.of(notice));
-        when(bookmarkRepository.findByNoticeAndUser(notice, loginUser))
+        when(bookmarkRepository.findByNoticeAndAudience(notice, loginUser))
                 .thenReturn(Optional.of(bookmark));
 
         // when
@@ -144,15 +143,15 @@ class BookmarkServiceTest {
 
     @Test
     @DisplayName("북마크가 없는데 삭제 요청하면 예외 발생")
-    void bookmarkNotExists_shouldThrowException() {
+    void bookmarkNotExistsShouldThrowException() {
         // given
         BookmarkRequest request = new BookmarkRequest(false);
 
-        when(userRepository.findByEmail(email))
+        when(audienceRepository.findByEmail(email))
                 .thenReturn(Optional.of(loginUser));
         when(noticeRepository.findById(1L))
                 .thenReturn(Optional.of(notice));
-        when(bookmarkRepository.findByNoticeAndUser(notice, loginUser))
+        when(bookmarkRepository.findByNoticeAndAudience(notice, loginUser))
                 .thenReturn(Optional.empty());
 
         // then
@@ -163,11 +162,11 @@ class BookmarkServiceTest {
 
     @Test
     @DisplayName("로그인 유저가 DB에 없으면 예외 발생")
-    void userNotFound_shouldThrowException() {
+    void userNotFoundShouldThrowException() {
         // given
         BookmarkRequest request = new BookmarkRequest(true);
 
-        when(userRepository.findByEmail(email))
+        when(audienceRepository.findByEmail(email))
                 .thenReturn(Optional.empty());
 
         // then
@@ -180,11 +179,11 @@ class BookmarkServiceTest {
 
     @Test
     @DisplayName("공지 존재하지 않으면 예외 발생")
-    void noticeNotFound_shouldThrowException() {
+    void noticeNotFoundShouldThrowException() {
         // given
         BookmarkRequest request = new BookmarkRequest(true);
 
-        when(userRepository.findByEmail(email))
+        when(audienceRepository.findByEmail(email))
                 .thenReturn(Optional.of(loginUser));
         when(noticeRepository.findById(1L))
                 .thenReturn(Optional.empty());

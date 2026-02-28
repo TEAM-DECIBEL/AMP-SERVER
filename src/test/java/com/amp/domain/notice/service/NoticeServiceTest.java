@@ -17,11 +17,14 @@ import com.amp.domain.notice.exception.NoticeException;
 import com.amp.domain.notice.repository.BookmarkRepository;
 import com.amp.domain.notice.repository.NoticeRepository;
 import com.amp.domain.notice.service.organizer.NoticeService;
-import com.amp.domain.organizer.repository.OrganizerRepository;
-import com.amp.domain.user.entity.User;
-import com.amp.domain.user.repository.UserRepository;
+import com.amp.domain.user.entity.Audience;
+import com.amp.domain.user.entity.Organizer;
+import com.amp.domain.user.exception.UserErrorCode;
+import com.amp.domain.user.repository.AudienceRepository;
+import com.amp.domain.user.repository.OrganizerRepository;
 import com.amp.global.exception.CustomException;
 import com.amp.global.s3.S3Service;
+import com.amp.global.security.service.AuthService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -30,6 +33,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -47,6 +51,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import org.springframework.test.util.ReflectionTestUtils;
@@ -58,7 +63,10 @@ class NoticeServiceTest {
     private NoticeRepository noticeRepository;
 
     @Mock
-    private UserRepository userRepository;
+    private OrganizerRepository organizerRepository;
+
+    @Mock
+    private AudienceRepository audienceRepository;
 
     @Mock
     private BookmarkRepository bookmarkRepository;
@@ -70,10 +78,13 @@ class NoticeServiceTest {
     private FestivalCategoryRepository festivalCategoryRepository;
 
     @Mock
-    private OrganizerRepository organizerRepository;
+    private S3Service s3Service;
 
     @Mock
-    private S3Service s3Service;
+    private ApplicationEventPublisher eventPublisher;
+
+    @Mock
+    private AuthService authService;
 
     @InjectMocks
     private NoticeService noticeService;
@@ -85,8 +96,8 @@ class NoticeServiceTest {
     private Category category;
     private FestivalCategory festivalCategory;
     private Notice notice;
-    private User author;
-    private User loginUser;
+    private Organizer author;
+    private Audience loginUser;
     private Bookmark bookmark;
 
     @AfterEach
@@ -120,37 +131,40 @@ class NoticeServiceTest {
 
         ReflectionTestUtils.setField(festivalCategory, "id", 1L);
 
-        loginUser = User.builder()
+        loginUser = Audience.builder()
                 .id(1L)
                 .email(email)
                 .build();
 
-        author = User.builder()
+        author = Organizer.builder()
                 .id(2L)
                 .email("author@test.com")
-                .nickname("작성자")
+                .organizerName("작성자")
                 .build();
+
+        ReflectionTestUtils.setField(festival, "organizer", author);
 
         notice = Notice.builder()
                 .title("공지 제목")
                 .content("공지 내용")
                 .festivalCategory(festivalCategory)
                 .festival(festival)
-                .user(author)
+                .organizer(author)
                 .build();
+        // @CreatedDate는 JPA 영속화 시에만 설정되므로 직접 주입
+        ReflectionTestUtils.setField(notice, "createdAt", LocalDateTime.now());
 
         bookmark = Bookmark.builder()
                 .notice(notice)
-                .user(loginUser)
+                .audience(loginUser)
                 .build();
-
     }
 
     @Test
     @DisplayName("공지 작성 - 정상적인 주최자는 공지를 작성할 수 있다")
-    void createNotice_success() {
+    void createNoticeSuccess() {
         // given
-        String email = "loginUserMail@mail.com";
+        String email = "author@test.com";
 
         Authentication auth =
                 new UsernamePasswordAuthenticationToken(email, null, List.of());
@@ -164,32 +178,29 @@ class NoticeServiceTest {
                 true
         );
 
-        when(userRepository.findByEmail(email))
-                .thenReturn(Optional.of(loginUser));
+        when(authService.isLoggedInUser(any())).thenReturn(true);
+
+        when(organizerRepository.findByEmail(email))
+                .thenReturn(Optional.of(author));
 
         when(festivalRepository.findById(1L))
                 .thenReturn(Optional.of(festival));
 
-        when(organizerRepository.existsByFestivalAndUser(festival, loginUser))
-                .thenReturn(true);
-
-        when(festivalCategoryRepository.findById(1L))
+        when(festivalCategoryRepository.findByMapping(1L, 1L))
                 .thenReturn(Optional.of(festivalCategory));
 
         when(noticeRepository.save(any(Notice.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-
         NoticeCreateResponse response =
                 noticeService.createNotice(1L, request);
 
         assertThat(response).isNotNull();
-
     }
 
     @Test
     @DisplayName("비로그인 사용자는 isSaved가 false여야 한다")
-    void notLoggedInUser_shouldHaveIsSavedFalse() {
+    void notLoggedInUserShouldHaveIsSavedFalse() {
         // given
         when(noticeRepository.findById(1L))
                 .thenReturn(Optional.of(notice));
@@ -202,36 +213,9 @@ class NoticeServiceTest {
         assertThat(response.isSaved()).isFalse();
     }
 
-/*    @Test
-    @DisplayName("로그인 사용자가 북마크한 공지는 isSaved가 true여야 한다")
-    void loggedInUser_bookmarkedNotice_shouldHaveIsSavedTrue() {
-        // given
-        String email = "loginUserMail@mail.com";
-
-*//*        User loginUser = User.builder()
-                .email(email)
-                .build();*//*
-
-        Authentication auth =
-                new UsernamePasswordAuthenticationToken(email, null);
-        SecurityContextHolder.getContext().setAuthentication(auth);
-
-        when(userRepository.findByEmail(email)).thenReturn(Optional.of(loginUser));
-
-        when(noticeRepository.findById(1L)).thenReturn(Optional.of(notice));
-        when(userSavedNoticeRepository.existsByNoticeAndUser(notice, loginUser)).thenReturn(true);
-
-        // when
-        NoticeDetailResponse response =
-                noticeService.getNoticeDetail(1L);
-
-        // then
-        assertThat(response.isSaved()).isTrue();
-    }*/
-
     @Test
     @DisplayName("공지 조회 시 존재하지 않으면 예외 발생")
-    void noticeNotFound_shouldThrowException() {
+    void noticeNotFoundShouldThrowException() {
         // given
         when(noticeRepository.findById(1L))
                 .thenReturn(Optional.empty());
@@ -246,7 +230,7 @@ class NoticeServiceTest {
 
     @Test
     @DisplayName("공지 삭제 - 존재하지 않는 공지면 예외 발생")
-    void deleteNotice_noticeNotFound_throwException() {
+    void deleteNoticeNoticeNotFoundThrowException() {
         // given
         when(noticeRepository.findById(1L))
                 .thenReturn(Optional.empty());
@@ -259,7 +243,7 @@ class NoticeServiceTest {
 
     @Test
     @DisplayName("공지 삭제 - 이미 삭제된 공지면 예외 발생")
-    void deleteNotice_alreadyDeleted_throwException() {
+    void deleteNoticeAlreadyDeletedThrowException() {
         // given
         notice.delete();
 
@@ -278,7 +262,7 @@ class NoticeServiceTest {
 
     @Test
     @DisplayName("공지 삭제 - 비로그인 사용자는 예외 발생")
-    void deleteNotice_notLoggedInUser_throwException() {
+    void deleteNoticeNotLoggedInUserThrowException() {
         // given
         SecurityContextHolder.clearContext();
 
@@ -292,23 +276,26 @@ class NoticeServiceTest {
 
     @Test
     @DisplayName("공지 삭제 - 작성자가 아닌 사용자는 삭제 불가")
-    void deleteNotice_notAuthor_throwException() {
+    void deleteNoticeNotAuthorThrowException() {
         // given
         String email = "loginUserMail@mail.com";
 
         Authentication auth =
-                new UsernamePasswordAuthenticationToken(
-                        email,
-                        null,
-                        List.of()
-                );
+                new UsernamePasswordAuthenticationToken(email, null, List.of());
         SecurityContextHolder.getContext().setAuthentication(auth);
+
+        when(authService.isLoggedInUser(any())).thenReturn(true);
 
         when(noticeRepository.findById(1L))
                 .thenReturn(Optional.of(notice));
 
-        when(userRepository.findByEmail(email))
-                .thenReturn(Optional.of(loginUser)); // loginUser ≠ author
+        Organizer otherOrganizer = Organizer.builder()
+                .id(99L)
+                .email(email)
+                .build();
+
+        when(organizerRepository.findByEmail(email))
+                .thenReturn(Optional.of(otherOrganizer));
 
         // then
         assertThatThrownBy(() -> noticeService.deleteNotice(1L))
@@ -316,26 +303,22 @@ class NoticeServiceTest {
                 .hasMessage("작성자 유저만 공지글을 삭제할 수 있습니다.");
     }
 
-
     @Test
     @DisplayName("공지 삭제 - 작성자가 삭제하면 deletedAt이 설정된다")
-    void deleteNotice_author_success() {
+    void deleteNoticeAuthorSuccess() {
         // given
         String email = "author@test.com";
 
         Authentication auth =
-                new UsernamePasswordAuthenticationToken(
-                        email,
-                        null,
-                        List.of()
-                );
+                new UsernamePasswordAuthenticationToken(email, null, List.of());
         SecurityContextHolder.getContext().setAuthentication(auth);
 
+        when(authService.isLoggedInUser(any())).thenReturn(true);
 
         when(noticeRepository.findById(1L))
                 .thenReturn(Optional.of(notice));
 
-        when(userRepository.findByEmail(email))
+        when(organizerRepository.findByEmail(email))
                 .thenReturn(Optional.of(author));
 
         // when
@@ -347,7 +330,7 @@ class NoticeServiceTest {
 
     @Test
     @DisplayName("페스티벌 공지 목록 조회 성공")
-    void getFestivalNoticeList_success() {
+    void getFestivalNoticeListSuccess() {
         // given
         Festival festival = mock(Festival.class);
 
@@ -370,11 +353,11 @@ class NoticeServiceTest {
         Page<Notice> noticePage = new PageImpl<>(List.of(notice), pageable, 1);
 
         when(festivalRepository.findById(1L)).thenReturn(Optional.of(festival));
-        when(noticeRepository.findAllByFestival(festival, pageable)).thenReturn(noticePage);
+        when(noticeRepository.findNoticesByFilter(eq(festival), any(), any(Pageable.class))).thenReturn(noticePage);
 
         // when
         NoticeListResponse response =
-                festivalNoticeService.getFestivalNoticeList(1L, 1L, 10, 20);
+                festivalNoticeService.getFestivalNoticeList(1L, 1L, 0, 10);
 
         // then
         assertThat(response.announcements()).hasSize(1);
@@ -395,7 +378,7 @@ class NoticeServiceTest {
 
     @Test
     @DisplayName("페스티벌이 존재하지 않으면 예외 발생")
-    void getFestivalNoticeList_festivalNotFound() {
+    void getFestivalNoticeListFestivalNotFound() {
         // given
         when(festivalRepository.findById(1L)).thenReturn(Optional.empty());
 
@@ -407,7 +390,7 @@ class NoticeServiceTest {
 
     @Test
     @DisplayName("비로그인 사용자일 경우 isSaved는 false")
-    void getFestivalNoticeList_notLoggedIn_isSavedFalse() {
+    void getFestivalNoticeListNotLoggedInIsSavedFalse() {
         // given
         Festival festival = mock(Festival.class);
 
@@ -424,11 +407,11 @@ class NoticeServiceTest {
         Page<Notice> noticePage = new PageImpl<>(List.of(notice), pageable, 1);
 
         when(festivalRepository.findById(1L)).thenReturn(Optional.of(festival));
-        when(noticeRepository.findAllByFestival(festival, pageable)).thenReturn(noticePage);
+        when(noticeRepository.findNoticesByFilter(eq(festival), any(), any(Pageable.class))).thenReturn(noticePage);
 
         // when
         NoticeListResponse response =
-                festivalNoticeService.getFestivalNoticeList(1L, 1L, 10, 20);
+                festivalNoticeService.getFestivalNoticeList(1L, 1L, 0, 10);
 
         // then
         assertThat(response.announcements().get(0).isSaved()).isFalse();
