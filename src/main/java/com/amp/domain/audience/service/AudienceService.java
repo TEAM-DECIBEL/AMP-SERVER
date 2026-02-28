@@ -1,8 +1,8 @@
 package com.amp.domain.audience.service;
 
 import com.amp.domain.audience.dto.response.AudienceMyPageResponse;
-import com.amp.domain.user.entity.User;
-import com.amp.domain.user.repository.UserRepository;
+import com.amp.domain.user.entity.Audience;
+import com.amp.domain.user.repository.AudienceRepository;
 import com.amp.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,11 +15,11 @@ import static com.amp.domain.user.exception.UserErrorCode.USER_NOT_FOUND;
 @Transactional(readOnly = true)
 public class AudienceService {
 
-    private final UserRepository userRepository;
+    private final AudienceRepository audienceRepository;
 
     public AudienceMyPageResponse getMyPage(Long userId) {
-        User user = userRepository.findById(userId)
+        Audience audience = audienceRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
-        return AudienceMyPageResponse.from(user);
+        return AudienceMyPageResponse.from(audience);
     }
 }

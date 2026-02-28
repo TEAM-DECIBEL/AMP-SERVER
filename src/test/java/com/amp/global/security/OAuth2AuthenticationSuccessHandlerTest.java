@@ -4,8 +4,10 @@ import com.amp.domain.user.entity.RegistrationStatus;
 import com.amp.domain.user.entity.User;
 import com.amp.domain.user.entity.UserType;
 import com.amp.domain.user.repository.UserRepository;
+import com.amp.global.security.util.DomainRoleMapping;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -17,12 +19,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -36,6 +37,9 @@ class OAuth2AuthenticationSuccessHandlerTest {
 
     @Mock
     private HttpCookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository;
+
+    @Mock
+    private DomainRoleMapping domainRoleMapping;
 
     @Mock
     private Authentication authentication;
@@ -54,161 +58,250 @@ class OAuth2AuthenticationSuccessHandlerTest {
         request = new MockHttpServletRequest();
         response = new MockHttpServletResponse();
 
-        // 기본 설정값 주입
         ReflectionTestUtils.setField(successHandler, "cookieName", "accessToken");
         ReflectionTestUtils.setField(successHandler, "cookieMaxAge", 3600);
-        ReflectionTestUtils.setField(successHandler, "cookieDomain", "localhost");
-        ReflectionTestUtils.setField(successHandler, "cookieSecure", false);
-        ReflectionTestUtils.setField(successHandler, "cookieSameSite", "Lax");
+        ReflectionTestUtils.setField(successHandler, "cookieSameSite", "None");
     }
 
-    @Test
-    @DisplayName("localhost:5173에서 AUDIENCE로 로그인 - PENDING 상태")
-    void testAudienceLoginFromLocalhost5173Pending() throws Exception {
-        // Given
-        String email = "test@example.com";
-        User user = createUser(email, RegistrationStatus.PENDING, null);
+    @Nested
+    @DisplayName("리다이렉트 URL 테스트")
+    class RedirectUrlTest {
 
-        setupMocks(email, user, "mockToken123");
+        @Test
+        @DisplayName("PENDING 유저 - /onboarding으로 리다이렉트")
+        void pendingUser_redirectsToOnboarding() throws Exception {
+            // Given
+            String email = "new@example.com";
+            String origin = "http://localhost:5173";
+            User user = createUser(email, RegistrationStatus.PENDING, null);
 
-        // Origin 헤더 설정 (localhost:5173 = AUDIENCE)
-        request.addHeader("Origin", "http://localhost:5173");
-        request.setParameter("state", "randomState|userType=AUDIENCE");
+            setupMocks(email, user, origin);
 
-        // When
-        successHandler.onAuthenticationSuccess(request, response, authentication);
+            request.setParameter("state", "abc|userType=AUDIENCE|origin=" + origin);
 
-        // Then
-        verify(userRepository).save(argThat(savedUser ->
-                savedUser.getUserType() == UserType.AUDIENCE &&
-                        savedUser.getEmail().equals(email)
-        ));
+            // When
+            successHandler.onAuthenticationSuccess(request, response, authentication);
 
-        String redirectUrl = response.getRedirectedUrl();
-        assertThat(redirectUrl).contains("http://localhost:5173/callback");
-        assertThat(redirectUrl).contains("token=mockToken123");
-        assertThat(redirectUrl).contains("status=PENDING");
+            // Then
+            String redirectUrl = response.getRedirectedUrl();
+            assertThat(redirectUrl).isEqualTo("http://localhost:5173/onboarding");
+            assertThat(redirectUrl).doesNotContain("token=");
+            assertThat(redirectUrl).doesNotContain("status=");
+        }
+
+        @Test
+        @DisplayName("COMPLETED 유저 + 도메인 일치 - 메인 페이지로 리다이렉트")
+        void completedUser_domainMatch_redirectsToMain() throws Exception {
+            // Given
+            String email = "existing@example.com";
+            String origin = "http://localhost:5173";
+            User user = createUser(email, RegistrationStatus.COMPLETED, UserType.AUDIENCE);
+
+            setupMocks(email, user, origin);
+            when(domainRoleMapping.isValidDomainForRole(UserType.AUDIENCE, origin)).thenReturn(true);
+
+            request.setParameter("state", "abc|userType=AUDIENCE|origin=" + origin);
+
+            // When
+            successHandler.onAuthenticationSuccess(request, response, authentication);
+
+            // Then
+            String redirectUrl = response.getRedirectedUrl();
+            assertThat(redirectUrl).isEqualTo("http://localhost:5173");
+            assertThat(redirectUrl).doesNotContain("token=");
+            assertThat(redirectUrl).doesNotContain("callback");
+        }
+
+        @Test
+        @DisplayName("COMPLETED 유저 + 도메인 불일치 - 올바른 도메인으로 리다이렉트")
+        void completedUser_domainMismatch_redirectsToCorrectDomain() throws Exception {
+            // Given
+            String email = "organizer@example.com";
+            String wrongOrigin = "http://localhost:5173"; // AUDIENCE 도메인
+            String correctDomain = "http://localhost:5174"; // ORGANIZER 도메인
+            User user = createUser(email, RegistrationStatus.COMPLETED, UserType.ORGANIZER);
+
+            setupMocks(email, user, wrongOrigin);
+            when(domainRoleMapping.isValidDomainForRole(UserType.ORGANIZER, wrongOrigin)).thenReturn(false);
+            when(domainRoleMapping.getCorrectDomain(UserType.ORGANIZER, wrongOrigin)).thenReturn(correctDomain);
+
+            request.setParameter("state", "abc|userType=AUDIENCE|origin=" + wrongOrigin);
+
+            // When
+            successHandler.onAuthenticationSuccess(request, response, authentication);
+
+            // Then
+            String redirectUrl = response.getRedirectedUrl();
+            assertThat(redirectUrl).isEqualTo("http://localhost:5174");
+        }
+
+        @Test
+        @DisplayName("프로덕션 - PENDING 유저 온보딩 리다이렉트")
+        void production_pendingUser_redirectsToOnboarding() throws Exception {
+            // Given
+            String email = "new@example.com";
+            String origin = "https://ampnotice.kr";
+            User user = createUser(email, RegistrationStatus.PENDING, null);
+
+            setupMocks(email, user, origin);
+
+            request.setParameter("state", "abc|userType=AUDIENCE|origin=" + origin);
+
+            // When
+            successHandler.onAuthenticationSuccess(request, response, authentication);
+
+            // Then
+            String redirectUrl = response.getRedirectedUrl();
+            assertThat(redirectUrl).isEqualTo("https://ampnotice.kr/onboarding");
+        }
+
+        @Test
+        @DisplayName("프로덕션 - COMPLETED 유저 메인 리다이렉트")
+        void production_completedUser_redirectsToMain() throws Exception {
+            // Given
+            String email = "existing@example.com";
+            String origin = "https://host.ampnotice.kr";
+            User user = createUser(email, RegistrationStatus.COMPLETED, UserType.ORGANIZER);
+
+            setupMocks(email, user, origin);
+            when(domainRoleMapping.isValidDomainForRole(UserType.ORGANIZER, origin)).thenReturn(true);
+
+            request.setParameter("state", "abc|userType=ORGANIZER|origin=" + origin);
+
+            // When
+            successHandler.onAuthenticationSuccess(request, response, authentication);
+
+            // Then
+            String redirectUrl = response.getRedirectedUrl();
+            assertThat(redirectUrl).isEqualTo("https://host.ampnotice.kr");
+        }
     }
 
-    @Test
-    @DisplayName("localhost:5174에서 ORGANIZER로 로그인 - PENDING 상태")
-    void testOrganizerLoginFromLocalhost5174Pending() throws Exception {
-        // Given
-        String email = "organizer@example.com";
-        User user = createUser(email, RegistrationStatus.PENDING, null);
+    @Nested
+    @DisplayName("쿠키 설정 테스트")
+    class CookieTest {
 
-        setupMocks(email, user, "mockToken456");
+        @Test
+        @DisplayName("로컬 환경 - SameSite=None, Secure=false")
+        void localEnvironment_cookieSettings() throws Exception {
+            // Given
+            String email = "test@example.com";
+            String origin = "http://localhost:5173";
+            User user = createUser(email, RegistrationStatus.COMPLETED, UserType.AUDIENCE);
 
-        // Origin 헤더 설정 (localhost:5174 = ORGANIZER)
-        request.addHeader("Origin", "http://localhost:5174");
-        request.setParameter("state", "randomState|userType=ORGANIZER");
+            setupMocks(email, user, origin);
+            when(domainRoleMapping.isValidDomainForRole(UserType.AUDIENCE, origin)).thenReturn(true);
+            when(domainRoleMapping.shouldCookieBeSecure(origin)).thenReturn(false);
+            when(domainRoleMapping.getCookieDomain(origin)).thenReturn(null);
 
-        // When
-        successHandler.onAuthenticationSuccess(request, response, authentication);
+            request.setParameter("state", "abc|userType=AUDIENCE|origin=" + origin);
 
-        // Then
-        verify(userRepository).save(argThat(savedUser ->
-                savedUser.getUserType() == UserType.ORGANIZER &&
-                        savedUser.getEmail().equals(email)
-        ));
+            // When
+            successHandler.onAuthenticationSuccess(request, response, authentication);
 
-        String redirectUrl = response.getRedirectedUrl();
-        assertThat(redirectUrl).contains("http://localhost:5174/callback");
-        assertThat(redirectUrl).contains("token=mockToken456");
-        assertThat(redirectUrl).contains("status=PENDING");
+            // Then
+            String setCookie = response.getHeader("Set-Cookie");
+            assertThat(setCookie).contains("accessToken=mockToken");
+            assertThat(setCookie).contains("SameSite=None");
+            assertThat(setCookie).contains("HttpOnly");
+            assertThat(setCookie).doesNotContain("Secure"); // 로컬은 Secure=false
+        }
+
+        @Test
+        @DisplayName("프로덕션 환경 - SameSite=None, Secure=true, Domain=.ampnotice.kr")
+        void productionEnvironment_cookieSettings() throws Exception {
+            // Given
+            String email = "test@example.com";
+            String origin = "https://ampnotice.kr";
+            User user = createUser(email, RegistrationStatus.COMPLETED, UserType.AUDIENCE);
+
+            setupMocks(email, user, origin);
+            when(domainRoleMapping.isValidDomainForRole(UserType.AUDIENCE, origin)).thenReturn(true);
+            when(domainRoleMapping.shouldCookieBeSecure(origin)).thenReturn(true);
+            when(domainRoleMapping.getCookieDomain(origin)).thenReturn(".ampnotice.kr");
+
+            request.setParameter("state", "abc|userType=AUDIENCE|origin=" + origin);
+
+            // When
+            successHandler.onAuthenticationSuccess(request, response, authentication);
+
+            // Then
+            String setCookie = response.getHeader("Set-Cookie");
+            assertThat(setCookie).contains("accessToken=mockToken");
+            assertThat(setCookie).contains("SameSite=None");
+            assertThat(setCookie).contains("Secure");
+            assertThat(setCookie).contains("Domain=.ampnotice.kr");
+            assertThat(setCookie).contains("HttpOnly");
+        }
+
+        @Test
+        @DisplayName("쿠키 Max-Age 설정 확인")
+        void cookie_maxAge() throws Exception {
+            // Given
+            String email = "test@example.com";
+            String origin = "http://localhost:5173";
+            User user = createUser(email, RegistrationStatus.COMPLETED, UserType.AUDIENCE);
+
+            setupMocks(email, user, origin);
+            when(domainRoleMapping.isValidDomainForRole(UserType.AUDIENCE, origin)).thenReturn(true);
+            when(domainRoleMapping.shouldCookieBeSecure(origin)).thenReturn(false);
+            when(domainRoleMapping.getCookieDomain(origin)).thenReturn(null);
+
+            request.setParameter("state", "abc|userType=AUDIENCE|origin=" + origin);
+
+            // When
+            successHandler.onAuthenticationSuccess(request, response, authentication);
+
+            // Then
+            String setCookie = response.getHeader("Set-Cookie");
+            assertThat(setCookie).contains("Max-Age=3600");
+        }
     }
 
-    @Test
-    @DisplayName("ampnotice-host.kr에서 ORGANIZER로 로그인 - COMPLETED 상태")
-    void testOrganizerLoginFromProductionDomainCompleted() throws Exception {
-        // Given
-        String email = "organizer@example.com";
-        User user = createUser(email, RegistrationStatus.COMPLETED, UserType.ORGANIZER);
+    @Nested
+    @DisplayName("UserType 저장 테스트")
+    class UserTypeSaveTest {
 
-        setupMocks(email, user, "mockToken789");
+        @Test
+        @DisplayName("PENDING 유저 - userType 저장됨")
+        void pendingUser_userTypeSaved() throws Exception {
+            // Given
+            String email = "new@example.com";
+            String origin = "http://localhost:5174";
+            User user = createUser(email, RegistrationStatus.PENDING, null);
 
-        // Origin 헤더 설정
-        request.addHeader("Origin", "https://www.ampnotice-host.kr");
-        request.setParameter("state", "randomState|userType=ORGANIZER");
+            setupMocks(email, user, origin);
 
-        // When
-        successHandler.onAuthenticationSuccess(request, response, authentication);
+            request.setParameter("state", "abc|userType=ORGANIZER|origin=" + origin);
 
-        // Then
-        verify(userRepository, never()).save(any()); // COMPLETED 상태라서 save 안 됨
+            // When
+            successHandler.onAuthenticationSuccess(request, response, authentication);
 
-        String redirectUrl = response.getRedirectedUrl();
-        assertThat(redirectUrl).contains("https://www.ampnotice-host.kr/callback");
-        assertThat(redirectUrl).contains("token=mockToken789");
-        assertThat(redirectUrl).contains("status=COMPLETED");
-    }
+            // Then
+            verify(userRepository).save(argThat(savedUser ->
+                    savedUser.getUserType() == UserType.ORGANIZER
+            ));
+        }
 
-    @Test
-    @DisplayName("ampnotice.kr에서 AUDIENCE로 로그인 - COMPLETED 상태")
-    void testAudienceLoginFromProductionDomainCompleted() throws Exception {
-        // Given
-        String email = "audience@example.com";
-        User user = createUser(email, RegistrationStatus.COMPLETED, UserType.AUDIENCE);
+        @Test
+        @DisplayName("COMPLETED 유저 - userType 저장 안됨")
+        void completedUser_userTypeNotSaved() throws Exception {
+            // Given
+            String email = "existing@example.com";
+            String origin = "http://localhost:5173";
+            User user = createUser(email, RegistrationStatus.COMPLETED, UserType.AUDIENCE);
 
-        setupMocks(email, user, "mockToken000");
+            setupMocks(email, user, origin);
+            when(domainRoleMapping.isValidDomainForRole(UserType.AUDIENCE, origin)).thenReturn(true);
 
-        // Origin 헤더 설정
-        request.addHeader("Origin", "https://www.ampnotice.kr");
-        request.setParameter("state", "randomState|userType=AUDIENCE");
+            request.setParameter("state", "abc|userType=AUDIENCE|origin=" + origin);
 
-        // When
-        successHandler.onAuthenticationSuccess(request, response, authentication);
+            // When
+            successHandler.onAuthenticationSuccess(request, response, authentication);
 
-        // Then
-        verify(userRepository, never()).save(any());
-
-        String redirectUrl = response.getRedirectedUrl();
-        assertThat(redirectUrl).contains("https://www.ampnotice.kr/callback");
-        assertThat(redirectUrl).contains("token=mockToken000");
-        assertThat(redirectUrl).contains("status=COMPLETED");
-    }
-
-    @Test
-    @DisplayName("Referer 헤더로 Origin 추출 테스트")
-    void testExtractCallbackFromReferer() throws Exception {
-        // Given
-        String email = "test@example.com";
-        User user = createUser(email, RegistrationStatus.PENDING, null);
-
-        setupMocks(email, user, "mockToken111");
-
-        // Origin이 없고 Referer만 있는 경우
-        request.addHeader("Referer", "http://localhost:5173/login");
-        request.setParameter("state", "randomState|userType=AUDIENCE");
-
-        // When
-        successHandler.onAuthenticationSuccess(request, response, authentication);
-
-        // Then
-        String redirectUrl = response.getRedirectedUrl();
-        assertThat(redirectUrl).contains("http://localhost:5173/callback");
-    }
-
-    @Test
-    @DisplayName("www 도메인 처리 테스트 (www 제거)")
-    void testWwwDomainHandling() throws Exception {
-        // Given
-        String email = "test@example.com";
-        User user = createUser(email, RegistrationStatus.COMPLETED, UserType.ORGANIZER);
-
-        setupMocks(email, user, "mockToken222");
-
-        // www가 포함된 도메인
-        request.addHeader("Origin", "https://www.ampnotice-host.kr");
-        request.setParameter("state", "randomState|userType=ORGANIZER");
-
-        // When
-        successHandler.onAuthenticationSuccess(request, response, authentication);
-
-        // Then
-        String redirectUrl = response.getRedirectedUrl();
-        // www가 제거되고 ampnotice-host.kr로 리다이렉트
-        assertThat(redirectUrl).contains("https://www.ampnotice-host.kr/callback");
+            // Then
+            verify(userRepository, never()).save(any());
+        }
     }
 
     // Helper methods
@@ -222,15 +315,18 @@ class OAuth2AuthenticationSuccessHandlerTest {
         return user;
     }
 
-    private void setupMocks(String email, User user, String token) {
-        Map<String, Object> attributes = new HashMap<>();
-        attributes.put("email", email);
-
+    private void setupMocks(String email, User user, String origin) {
         when(authentication.getPrincipal()).thenReturn(oAuth2User);
         when(oAuth2User.getAttribute("email")).thenReturn(email);
         when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
-        when(jwtUtil.generateToken(email)).thenReturn(token);
+        when(jwtUtil.generateToken(email)).thenReturn("mockToken");
         doNothing().when(cookieAuthorizationRequestRepository)
                 .removeAuthorizationRequestCookies(any(), any());
+
+        // DomainRoleMapping 기본 설정
+        lenient().when(domainRoleMapping.getCookieDomain(origin)).thenReturn(null);
+        lenient().when(domainRoleMapping.shouldCookieBeSecure(origin)).thenReturn(false);
+        // 보안 검증: origin이 허용된 도메인이면 그대로 반환
+        lenient().when(domainRoleMapping.getSafeOrigin(eq(origin), any())).thenReturn(origin);
     }
 }

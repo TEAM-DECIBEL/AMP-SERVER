@@ -31,8 +31,6 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
-    private String nickname;
-
     @Column(nullable = false, name = "profile_image_url")
     private String profileImageUrl;
 
@@ -43,22 +41,25 @@ public class User {
     @Column(nullable = false, name = "provider_id")
     private String providerId;
 
-    private boolean isActive;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default
     private RegistrationStatus registrationStatus = RegistrationStatus.PENDING;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "user_type")
     private UserType userType;
 
-    public void updateExistingUser(String username, String profileImageUrl) {
-        this.nickname = username;
+    /**
+     * 기존 사용자 프로필 이미지 업데이트 (OAuth2 로그인 시)
+     */
+    public void updateProfileImage(String profileImageUrl) {
         this.profileImageUrl = profileImageUrl;
     }
 
-    // 온보딩 중 UserType 임시 설정
+    /**
+     * 온보딩 중 UserType 설정 (PENDING 상태에서만 가능)
+     */
     public void updateUserType(UserType userType) {
         if (this.registrationStatus == RegistrationStatus.COMPLETED &&
                 this.userType != null &&
@@ -68,16 +69,10 @@ public class User {
         this.userType = userType;
     }
 
-    // 공통 온보딩 완료 처리 (서브클래스에서 호출)
+    /**
+     * 온보딩 완료 처리 (서브클래스에서 호출)
+     */
     protected void finishOnboarding() {
         this.registrationStatus = RegistrationStatus.COMPLETED;
-        this.isActive = true;
     }
-
-    // 관객 온보딩 완료
-    public void completeAudienceOnboarding(String nickname) {
-        this.nickname = nickname;
-        finishOnboarding();
-    }
-
 }
