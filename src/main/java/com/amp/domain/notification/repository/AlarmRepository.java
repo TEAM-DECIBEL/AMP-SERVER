@@ -2,6 +2,7 @@ package com.amp.domain.notification.repository;
 
 import com.amp.domain.category.entity.FestivalCategory;
 import com.amp.domain.notification.entity.Alarm;
+import com.amp.domain.user.entity.Audience;
 import com.amp.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -21,4 +22,7 @@ public interface AlarmRepository extends JpaRepository<Alarm, Long> {
     List<Alarm> findAllByFestivalCategoryIdAndIsActiveTrue(
             @Param("festivalCategoryId") Long festivalCategoryId
     );
+
+    @Query("SELECT a FROM Alarm a WHERE a.user = :audience AND a.isActive = true")
+    List<Alarm> findAllByAudienceAndIsActiveTrue(@Param("audience") Audience audience);
 }
