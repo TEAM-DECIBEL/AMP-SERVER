@@ -118,7 +118,6 @@ public class CategorySubscribeService {
         eventPublisher.publishEvent(new CategorySubscribeEvent(festivalCategory.getId(), fcmToken, false));
     }
 
-    @Transactional
     public void registerToken(String fcmToken) {
         if (fcmToken == null || fcmToken.isBlank()) {
             throw new CustomException(FCMErrorCode.INVALID_FCM_TOKEN);
