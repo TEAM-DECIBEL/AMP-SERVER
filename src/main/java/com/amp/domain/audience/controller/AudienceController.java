@@ -1,6 +1,7 @@
 package com.amp.domain.audience.controller;
 
 import com.amp.domain.audience.dto.response.AudienceMyPageResponse;
+import com.amp.domain.audience.dto.response.NicknameResponse;
 import com.amp.domain.audience.dto.response.SavedNoticesResponse;
 import com.amp.domain.audience.service.AudienceNoticesService;
 import com.amp.domain.audience.service.AudienceService;
@@ -8,6 +9,7 @@ import com.amp.global.annotation.ApiErrorCodes;
 import com.amp.global.common.SuccessStatus;
 import com.amp.global.response.success.BaseResponse;
 import com.amp.global.security.CustomUserPrincipal;
+import com.amp.global.security.service.AuthService;
 import com.amp.global.swagger.SwaggerResponseDescription;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -32,6 +34,7 @@ public class AudienceController {
 
     private final AudienceService audienceService;
     private final AudienceNoticesService audienceNoticesService;
+    private final AuthService authService;
 
     @GetMapping("/mypage")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_GET_MY_PAGE)
@@ -61,4 +64,14 @@ public class AudienceController {
                 .status(SuccessStatus.SAVED_NOTICES_RETRIEVED.getHttpStatus())
                 .body(BaseResponse.of(SuccessStatus.SAVED_NOTICES_RETRIEVED, response));
     }
+
+    @GetMapping("/nickname")
+    @Operation(summary = "닉네임 조회", description = "로그인한 관객의 닉네임 반환, 미로그인 시 '관객' 반환")
+    public ResponseEntity<BaseResponse<NicknameResponse>> getAudienceNickname(){
+        NicknameResponse nicknameResponse = new NicknameResponse(authService.getDisplayNickname());
+        return ResponseEntity
+                .status(SuccessStatus.USER_NICKNAME_RETRIEVED.getHttpStatus())
+                .body(BaseResponse.of(SuccessStatus.USER_NICKNAME_RETRIEVED, nicknameResponse));
+    }
+
 }
