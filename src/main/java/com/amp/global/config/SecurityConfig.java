@@ -83,7 +83,7 @@ public class SecurityConfig {
                                 "/api/v1/common/festivals/*",
                                 "/api/v1/common/festivals/*/notices",
                                 "/api/v1/common/festivals/*/congestion",
-                                "/api/v1/audience/festivals"
+                                "/api/v1/users/festivals"
                         ).permitAll()
 
                         .requestMatchers(
@@ -108,13 +108,13 @@ public class SecurityConfig {
 
                         .requestMatchers("/api/v1/organizer/**").hasRole("ORGANIZER")
                         .requestMatchers("/api/auth/onboarding/**").authenticated()
-                        .requestMatchers("/api/v1/audience/me/**").hasRole("AUDIENCE")
-                        .requestMatchers("/api/v1/audience/mypage").hasRole("AUDIENCE")
-                        .requestMatchers("/api/v1/audience/stages/**").hasRole("AUDIENCE")
-                        .requestMatchers("/api/v1/audience/notifications/**").hasRole("AUDIENCE")
-                        .requestMatchers("/api/v1/audience/festivals/*/notifications/**").hasRole("AUDIENCE")
+                        .requestMatchers("/api/v1/users/me/**").hasRole("AUDIENCE")
+                        .requestMatchers("/api/v1/users/mypage").hasRole("AUDIENCE")
+                        .requestMatchers("/api/v1/users/stages/**").hasRole("AUDIENCE")
+                        .requestMatchers("/api/v1/users/notifications/**").hasRole("AUDIENCE")
+                        .requestMatchers("/api/v1/users/festivals/*/notifications/**").hasRole("AUDIENCE")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/v1/audience/notices/*/bookmark").hasRole("AUDIENCE")
+                        .requestMatchers("/api/v1/users/notices/*/bookmark").hasRole("AUDIENCE")
                         .anyRequest().authenticated()
                 )
 
