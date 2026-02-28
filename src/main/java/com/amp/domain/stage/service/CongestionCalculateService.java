@@ -1,5 +1,7 @@
 package com.amp.domain.stage.service;
 
+import com.amp.domain.festival.entity.FestivalSchedule;
+import com.amp.domain.festival.repository.FestivalScheduleRepository;
 import com.amp.domain.stage.entity.AudienceCongestionReport;
 import com.amp.domain.stage.entity.CongestionLevel;
 import com.amp.domain.stage.entity.Stage;
@@ -14,9 +16,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -26,12 +30,37 @@ public class CongestionCalculateService {
     private final AudienceCongestionReportRepository audienceCongestionReportRepository;
     private final StageCongestionRepository stageCongestionRepository;
     private final StageRepository stageRepository;
+    private final FestivalScheduleRepository festivalScheduleRepository;
 
     @Transactional
     public void calculateAndSave(Long stageId) {
         Stage stage = stageRepository.findById(stageId).orElseThrow(
                 () -> new CustomException(StageErrorCode.STAGE_NOT_FOUND));
         LocalDateTime now = LocalDateTime.now();
+        LocalDate today = now.toLocalDate();
+
+        Optional<FestivalSchedule> todaySchedule = festivalScheduleRepository
+                .findByFestivalIdAndFestivalDate(stage.getFestival().getId(), today);
+
+        if (todaySchedule.isPresent()) {
+            LocalDateTime todayStart = today.atTime(todaySchedule.get().getFestivalTime());
+            if (now.isBefore(todayStart.minusHours(8))) {
+                return;
+            }
+        } else {
+            Optional<FestivalSchedule> tomorrowSchedule = festivalScheduleRepository
+                    .findByFestivalIdAndFestivalDate(stage.getFestival().getId(), today.plusDays(1));
+
+            if (tomorrowSchedule.isEmpty()) {
+                return;
+            }
+
+            LocalDateTime tomorrowStart = today.plusDays(1).atTime(tomorrowSchedule.get().getFestivalTime());
+            if (now.isBefore(tomorrowStart.minusHours(8))) {
+                return;
+            }
+        }
+
         List<AudienceCongestionReport> reports = audienceCongestionReportRepository.findRecentReports(stageId, now.minusHours(1));
 
         if (reports.isEmpty()) {
