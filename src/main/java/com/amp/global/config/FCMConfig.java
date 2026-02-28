@@ -3,6 +3,7 @@ package com.amp.global.config;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
+import com.google.firebase.messaging.FirebaseMessaging;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -45,6 +46,7 @@ public class FCMConfig {
                     .build();
 
             FirebaseApp.initializeApp(options);
+            FirebaseMessaging.getInstance();
             log.info("파이어베이스 서버 연결");
         } catch (IOException e) {
             log.error("파이어베이스 연결 실패: {}", e.getMessage());
