@@ -5,19 +5,19 @@ import com.amp.domain.auth.dto.OnboardingResponse;
 import com.amp.domain.auth.dto.OnboardingStatusResponse;
 import com.amp.domain.auth.exception.OnboardingErrorCode;
 import com.amp.domain.auth.exception.OnboardingException;
-import com.amp.domain.organizer.entity.Organizer;
-import com.amp.domain.organizer.repository.OrganizerRepository;
+import com.amp.domain.user.entity.Audience;
+import com.amp.domain.user.entity.Organizer;
 import com.amp.domain.user.entity.RegistrationStatus;
 import com.amp.domain.user.entity.User;
 import com.amp.domain.user.entity.UserType;
+import com.amp.domain.user.repository.OrganizerRepository;
 import com.amp.domain.user.repository.UserRepository;
+import com.amp.global.common.CommonErrorCode;
 import com.amp.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import static com.amp.global.common.CommonErrorCode.USER_NOT_FOUND;
 
 @Slf4j
 @Service
@@ -28,10 +28,9 @@ public class OnboardingService {
     private final UserRepository userRepository;
     private final OrganizerRepository organizerRepository;
 
-
     public OnboardingResponse completeOnboarding(String email, OnboardingRequest request) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(CommonErrorCode.USER_NOT_FOUND));
 
         // 이미 온보딩 완료된 경우
         if (user.getRegistrationStatus() == RegistrationStatus.COMPLETED) {
@@ -42,50 +41,52 @@ public class OnboardingService {
         if (user.getUserType() != request.getUserType()) {
             log.warn("UserType mismatch - stored: {}, requested: {}",
                     user.getUserType(), request.getUserType());
-            throw new OnboardingException(OnboardingErrorCode.INVALID_USER_TYPE);
+            throw new OnboardingException(OnboardingErrorCode.USER_TYPE_MISMATCH);
         }
 
         // 사용자 타입에 따라 온보딩 처리
         if (request.getUserType() == UserType.AUDIENCE) {
-            completeAudienceOnboarding(user, request);
+            return completeAudienceOnboarding(user, request);
         } else if (request.getUserType() == UserType.ORGANIZER) {
-            completeOrganizerOnboarding(user, request);
+            return completeOrganizerOnboarding(user, request);
         } else {
             throw new OnboardingException(OnboardingErrorCode.INVALID_USER_TYPE);
         }
-
-        return OnboardingResponse.builder()
-                .userId(user.getId())
-                .email(user.getEmail())
-                .nickname(user.getNickname())
-                .userType(user.getUserType())
-                .registrationStatus(user.getRegistrationStatus())
-                .message("온보딩이 완료되었습니다.")
-                .build();
     }
 
-
-    private void completeAudienceOnboarding(User user, OnboardingRequest request) {
+    private OnboardingResponse completeAudienceOnboarding(User user, OnboardingRequest request) {
         log.info("Completing audience onboarding for user: {}", user.getEmail());
 
         // 닉네임 필수 체크
         if (request.getNickname() == null || request.getNickname().isBlank()) {
-            throw new OnboardingException(OnboardingErrorCode.INVALID_USER_TYPE);
+            throw new OnboardingException(OnboardingErrorCode.NICKNAME_REQUIRED);
         }
 
-        // 닉네임 중복 체크
-        //validateNicknameUniqueness(request.getNickname());
+        // 닉네임 길이 검증
+        String nickname = request.getNickname().trim();
+        if (nickname.length() < 2 || nickname.length() > 12) {
+            throw new OnboardingException(OnboardingErrorCode.NICKNAME_LENGTH_INVALID);
+        }
 
-        // User 온보딩 완료
-        user.completeAudienceOnboarding(request.getNickname());
-        userRepository.save(user);
+        // Audience로 캐스팅하여 온보딩 완료
+        Audience audience = (Audience) user;
+        audience.completeAudienceOnboarding(nickname);
+        userRepository.save(audience);
 
         log.info("Audience onboarding completed for user: {}, nickname: {}",
-                user.getEmail(), user.getNickname());
+                user.getEmail(), audience.getNickname());
+
+        return OnboardingResponse.builder()
+                .userId(audience.getId())
+                .email(audience.getEmail())
+                .nickname(audience.getNickname())
+                .userType(audience.getUserType())
+                .registrationStatus(audience.getRegistrationStatus())
+                .message("온보딩이 완료되었습니다.")
+                .build();
     }
 
-
-    private void completeOrganizerOnboarding(User user, OnboardingRequest request) {
+    private OnboardingResponse completeOrganizerOnboarding(User user, OnboardingRequest request) {
         log.info("Completing organizer onboarding for user: {}", user.getEmail());
 
         // 주최사명 필수 체크
@@ -93,36 +94,37 @@ public class OnboardingService {
             throw new OnboardingException(OnboardingErrorCode.ORGANIZER_NAME_REQUIRED);
         }
 
+        // 주최사명 길이 검증
+        String organizerName = request.getOrganizerName().trim();
+        if (organizerName.length() < 2 || organizerName.length() > 12) {
+            throw new OnboardingException(OnboardingErrorCode.ORGANIZER_NAME_LENGTH_INVALID);
+        }
+
         // 주최사명 중복 체크
-        validateOrganizerNameUniqueness(request.getOrganizerName());
+        validateOrganizerNameUniqueness(organizerName);
 
-        // 기존 Organizer 조회 또는 생성
-        Organizer organizer = organizerRepository.findByUser(user)
-                .orElseGet(() -> {
-                    log.info("Creating new organizer for user: {}", user.getEmail());
-                    Organizer newOrganizer = Organizer.builder()
-                            .user(user)
-                            .organizerName(request.getOrganizerName())
-                            .contactEmail(request.getContactEmail())
-                            .contactPhone(request.getContactPhone())
-                            .description(request.getDescription())
-                            .build();
-                    return organizerRepository.save(newOrganizer);
-                });
-
-
-        user.completeOrganizerOnboarding();
-        userRepository.save(user);
+        // Organizer로 캐스팅하여 온보딩 완료
+        Organizer organizer = (Organizer) user;
+        organizer.completeOrganizerOnboarding(organizerName);
+        userRepository.save(organizer);
 
         log.info("Organizer onboarding completed for user: {}, organizer: {}",
-                user.getEmail(), organizer.getOrganizerName());
-    }
+                user.getEmail(), organizerName);
 
+        return OnboardingResponse.builder()
+                .userId(organizer.getId())
+                .email(organizer.getEmail())
+                .userType(organizer.getUserType())
+                .registrationStatus(organizer.getRegistrationStatus())
+                .organizerName(organizer.getOrganizerName())
+                .message("온보딩이 완료되었습니다.")
+                .build();
+    }
 
     @Transactional(readOnly = true)
     public OnboardingStatusResponse getOnboardingStatus(String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(CommonErrorCode.USER_NOT_FOUND));
 
         return OnboardingStatusResponse.builder()
                 .email(user.getEmail())
@@ -131,14 +133,6 @@ public class OnboardingService {
                 .needsOnboarding(user.getRegistrationStatus() == RegistrationStatus.PENDING)
                 .build();
     }
-
-
-    private void validateNicknameUniqueness(String nickname) {
-        if (userRepository.existsByNickname(nickname)) {
-            throw new OnboardingException(OnboardingErrorCode.DUPLICATE_NICKNAME);
-        }
-    }
-
 
     private void validateOrganizerNameUniqueness(String organizerName) {
         if (organizerRepository.existsByOrganizerName(organizerName)) {

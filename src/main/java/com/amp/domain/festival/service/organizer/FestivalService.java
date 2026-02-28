@@ -15,11 +15,10 @@ import com.amp.domain.festival.exception.FestivalErrorCode;
 import com.amp.domain.festival.repository.FestivalRepository;
 import com.amp.domain.festival.repository.FestivalScheduleRepository;
 import com.amp.domain.festival.scheduler.FestivalScheduleService;
-import com.amp.domain.organizer.entity.Organizer;
-import com.amp.domain.organizer.repository.OrganizerRepository;
 import com.amp.domain.stage.dto.request.StageRequest;
 import com.amp.domain.stage.repository.StageRepository;
 import com.amp.domain.stage.service.StageService;
+import com.amp.domain.user.entity.Organizer;
 import com.amp.domain.user.entity.User;
 import com.amp.global.annotation.LogExecutionTime;
 import com.amp.global.common.CommonErrorCode;
@@ -48,7 +47,6 @@ import java.util.function.Function;
 public class FestivalService {
 
     private final FestivalRepository festivalRepository;
-    private final OrganizerRepository organizerRepository;
     private final StageRepository stageRepository;
     private final FestivalScheduleRepository festivalScheduleRepository;
     private final FestivalCategoryRepository festivalCategoryRepository;
@@ -65,8 +63,10 @@ public class FestivalService {
     public FestivalCreateResponse createFestival(FestivalCreateRequest request) {
         User user = authService.getCurrentUser();
 
-        Organizer organizer = organizerRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new CustomException(CommonErrorCode.FORBIDDEN));
+        if (!(user instanceof Organizer)) {
+            throw new CustomException(CommonErrorCode.FORBIDDEN);
+        }
+        Organizer organizer = (Organizer) user;
 
         List<ScheduleRequest> schedules = parseJson(
                 request.schedules(),
@@ -242,8 +242,7 @@ public class FestivalService {
 
 
     private void validateOrganizer(Festival festival, User user) {
-        Long ownerUserId = festival.getOrganizer().getUser().getId();
-        if (!ownerUserId.equals(user.getId())) {
+        if (!festival.getOrganizer().getId().equals(user.getId())) {
             throw new CustomException(CommonErrorCode.FORBIDDEN);
         }
     }

@@ -6,15 +6,22 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.DiscriminatorFormula;
 
 import static com.amp.domain.user.exception.UserErrorCode.USER_TYPE_UNCHANGEABLE;
 
 @Entity
-@Table(name = "users")
+@Table(name = "users", uniqueConstraints = {
+        @UniqueConstraint(name = "uq_organizer_name", columnNames = "organizer_name")
+})
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorFormula("COALESCE(user_type, 'PENDING')")
+@DiscriminatorValue("PENDING")
 public class User {
 
     @Id
@@ -44,16 +51,19 @@ public class User {
     private RegistrationStatus registrationStatus = RegistrationStatus.PENDING;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "user_type")
     private UserType userType;
 
-    public void updateExistingUser(String username, String profileImageUrl) {
-        if (this.registrationStatus == RegistrationStatus.PENDING) {
-            this.nickname = username;
-        }
+    /**
+     * 기존 사용자 프로필 이미지 업데이트 (OAuth2 로그인 시)
+     */
+    public void updateProfileImage(String profileImageUrl) {
         this.profileImageUrl = profileImageUrl;
     }
 
-    // 온보딩 중 UserType 임시 설정
+    /**
+     * 온보딩 중 UserType 설정 (PENDING 상태에서만 가능)
+     */
     public void updateUserType(UserType userType) {
         if (this.registrationStatus == RegistrationStatus.COMPLETED &&
                 this.userType != null &&
@@ -63,9 +73,10 @@ public class User {
         this.userType = userType;
     }
 
-    // 관객 온보딩 완료
-    public void completeAudienceOnboarding(String nickname) {
-        this.nickname = nickname;
+    /**
+     * 온보딩 완료 처리 (서브클래스에서 호출)
+     */
+    protected void finishOnboarding() {
         this.registrationStatus = RegistrationStatus.COMPLETED;
         this.isActive = true;
     }

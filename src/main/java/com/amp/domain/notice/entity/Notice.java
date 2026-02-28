@@ -2,7 +2,7 @@ package com.amp.domain.notice.entity;
 
 import com.amp.domain.category.entity.FestivalCategory;
 import com.amp.domain.festival.entity.Festival;
-import com.amp.domain.user.entity.User;
+import com.amp.domain.user.entity.Organizer;
 import com.amp.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -34,7 +34,7 @@ public class Notice extends BaseTimeEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    private Organizer organizer;
 
     @Column(nullable = false, length = 255)
     private String title;
@@ -52,11 +52,11 @@ public class Notice extends BaseTimeEntity {
     private LocalDateTime deletedAt;
 
     @Builder
-    public Notice(Festival festival, FestivalCategory festivalCategory, User user,
+    public Notice(Festival festival, FestivalCategory festivalCategory, Organizer organizer,
                   String title, String content, String imageUrl, Boolean isPinned) {
         this.festival = festival;
         this.festivalCategory = festivalCategory;
-        this.user = user;
+        this.organizer = organizer;
         this.title = title;
         this.content = content;
         this.imageUrl = imageUrl;

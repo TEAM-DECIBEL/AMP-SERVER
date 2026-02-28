@@ -1,5 +1,6 @@
 package com.amp.global.security;
 
+import com.amp.global.security.util.DomainRoleMapping;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,12 +22,14 @@ class CustomOAuth2AuthorizationRequestResolverTest {
     @Mock
     private ClientRegistrationRepository clientRegistrationRepository;
 
+    private DomainRoleMapping domainRoleMapping;
     private CustomOAuth2AuthorizationRequestResolver resolver;
     private MockHttpServletRequest request;
 
     @BeforeEach
     void setUp() {
-        resolver = new CustomOAuth2AuthorizationRequestResolver(clientRegistrationRepository);
+        domainRoleMapping = new DomainRoleMapping();
+        resolver = new CustomOAuth2AuthorizationRequestResolver(clientRegistrationRepository, domainRoleMapping);
         request = new MockHttpServletRequest();
 
         // Mock ClientRegistration
@@ -74,11 +77,11 @@ class CustomOAuth2AuthorizationRequestResolverTest {
     }
 
     @Test
-    @DisplayName("ampnotice-host.kr 도메인에서 ORGANIZER 자동 감지")
+    @DisplayName("host.ampnotice.kr 도메인에서 ORGANIZER 자동 감지")
     void testOrganizerDetectionFromHostDomain() {
         // Given
         request.setRequestURI("/oauth2/authorization/google");
-        request.addHeader("Origin", "https://www.ampnotice-host.kr");
+        request.addHeader("Origin", "https://host.ampnotice.kr");
 
         // When
         OAuth2AuthorizationRequest authRequest = resolver.resolve(request, "google");
