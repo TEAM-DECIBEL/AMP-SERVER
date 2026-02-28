@@ -37,6 +37,7 @@ public enum SuccessStatus implements SuccessCode {
     // USER
     USER_PROFILE_RETRIEVED(HttpStatus.OK, "USE", "001", "사용자 프로필 조회가 완료되었습니다."),
     SAVED_NOTICES_RETRIEVED(HttpStatus.OK, "USE", "002", "저장한 공지 조회가 완료되었습니다."),
+    USER_NICKNAME_RETRIEVED(HttpStatus.OK, "USE", "003", "닉네임 조회가 완료되었습니다."),
 
     // NOTICE
     NOTICE_DETAIL_GET_SUCCESS(HttpStatus.OK, "NOT", "001", "공지 상세 조회되었습니다."),
