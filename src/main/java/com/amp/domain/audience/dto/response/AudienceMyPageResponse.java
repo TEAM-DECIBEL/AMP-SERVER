@@ -1,6 +1,6 @@
 package com.amp.domain.audience.dto.response;
 
-import com.amp.domain.user.entity.User;
+import com.amp.domain.user.entity.Audience;
 import com.amp.domain.user.entity.UserType;
 import lombok.Builder;
 
@@ -11,12 +11,12 @@ public record AudienceMyPageResponse(
         String profileImageUrl,
         UserType userType
 ) {
-    public static AudienceMyPageResponse from(User user) {
+    public static AudienceMyPageResponse from(Audience audience) {
         return AudienceMyPageResponse.builder()
-                .userId(user.getId())
-                .nickname(user.getNickname())
-                .profileImageUrl(user.getProfileImageUrl())
-                .userType(user.getUserType())
+                .userId(audience.getId())
+                .nickname(audience.getNickname())
+                .profileImageUrl(audience.getProfileImageUrl())
+                .userType(audience.getUserType())
                 .build();
     }
 }

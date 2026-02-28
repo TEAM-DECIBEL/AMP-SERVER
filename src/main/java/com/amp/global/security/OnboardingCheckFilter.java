@@ -1,8 +1,11 @@
 package com.amp.global.security;
 
+import com.amp.domain.auth.exception.AuthErrorCode;
 import com.amp.domain.user.entity.RegistrationStatus;
 import com.amp.domain.user.entity.User;
 import com.amp.domain.user.repository.UserRepository;
+import com.amp.global.response.error.AuthErrorResponse;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,6 +27,7 @@ import java.util.List;
 public class OnboardingCheckFilter extends OncePerRequestFilter {
 
     private final UserRepository userRepository;
+    private final ObjectMapper objectMapper;
 
     private static final List<String> SKIP_PATHS = Arrays.asList(
             "/api/v1/auth/onboarding",
@@ -65,13 +69,13 @@ public class OnboardingCheckFilter extends OncePerRequestFilter {
             log.warn("Onboarding not completed for user: {}", email);
             response.setContentType("application/json;charset=UTF-8");
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            response.getWriter().write("""
-                    {
-                        "error": "OnboardingRequired",
-                        "message": "온보딩을 완료해주세요.",
-                        "onboardingUrl": "/api/auth/onboarding/complete"
-                    }
-                    """);
+
+            AuthErrorResponse errorResponse = AuthErrorResponse.onboardingRequired(
+                    AuthErrorCode.ONBOARDING_REQUIRED,
+                    "/api/v1/auth/onboarding/complete"
+            );
+
+            response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
             return;
         }
 
