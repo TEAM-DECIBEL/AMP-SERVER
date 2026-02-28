@@ -17,8 +17,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FCMService {
 
-    private final ObjectMapper objectMapper;
-    private final AuthService authService;
     private final FirebaseMessaging firebaseMessaging;
 
     @Value("${fcm.key.path}")
