@@ -32,14 +32,14 @@ public class FCMService {
                     response.getSuccessCount(), topic(categoryId));
 
             if (response.getFailureCount() > 0) {
-                log.error("### [긴급] 구독 실패! FailureCount: {}", response.getFailureCount());
+                log.error("[구독 실패] FailureCount: {}", response.getFailureCount());
                 response.getErrors().forEach(error -> {
-                    log.error("### [긴급] 실패 상세 - index: {}, reason: {}",
+                    log.error("[실패 상세] index: {}, reason: {}",
                             error.getIndex(),
                             error.getReason());
                 });
 
-                log.error("### [긴급] 전체 에러 정보: {}", response.getErrors());
+                log.error("[전체 에러 정보] {}", response.getErrors());
             }
 
         } catch (FirebaseMessagingException e) {
@@ -63,10 +63,6 @@ public class FCMService {
         try {
             Message message = Message.builder()
                     .setTopic(topic)
-                    .setNotification(Notification.builder()
-                            .setTitle(title)
-                            .setBody(noticeBody)
-                            .build())
                     .putData("title", title)
                     .putData("message", noticeBody)
                     .putData("time", timeData)
