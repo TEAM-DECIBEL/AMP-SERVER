@@ -16,15 +16,17 @@ public class CategorySubscribeEventListener {
 
     private final FCMService fcmService;
 
-
     @Async("categorySubscribeExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handle(CategorySubscribeEvent event) {
-        log.info("[이벤트 수신] 토픽: {}, 구독여부: {}", event.categoryId(), event.subscribe());
-        if (event.subscribe()) {
-            fcmService.subscribeCategory(event.categoryId(), event.fcmToken());
-        } else {
-            fcmService.unsubscribeCategory(event.categoryId(), event.fcmToken());
+        try {
+            if (event.subscribe()) {
+                fcmService.subscribeCategory(event.categoryId(), event.fcmToken());
+            } else {
+                fcmService.unsubscribeCategory(event.categoryId(), event.fcmToken());
+            }
+        } catch (Exception e) {
+            log.error("[FCM 처리 실패] categoryId={}, error={}", event.categoryId(), e.getMessage());
         }
     }
 }

@@ -80,12 +80,7 @@ public class CategorySubscribeService {
         alarmRepository.save(alarm);
 
         log.info("[구독 요청 시작] 토픽ID: {}, 토큰: {}", festivalCategory.getId(), fcmToken);
-        try {
-            eventPublisher.publishEvent(new CategorySubscribeEvent(festivalCategory.getId(), fcmToken, true));
-            log.info("구글 명단 등록 요청 완료");
-        } catch (Exception e) {
-            log.error("구글 명단 등록 실패: {}", e.getMessage());
-        }
+        eventPublisher.publishEvent(new CategorySubscribeEvent(festivalCategory.getId(), fcmToken, true));
     }
 
     @Transactional
@@ -120,12 +115,7 @@ public class CategorySubscribeService {
         alarmRepository.save(alarm);
 
         log.info("[구독 해지] 토픽ID: {}, 토큰: {}", festivalCategory.getId(), fcmToken);
-        try {
-            eventPublisher.publishEvent(new CategorySubscribeEvent(festivalCategory.getId(), fcmToken, false));
-            log.info("구글 명단 해지 요청 완료");
-        } catch (Exception e) {
-            log.error("구글 명단 해지 실패: {}", e.getMessage());
-        }
+        eventPublisher.publishEvent(new CategorySubscribeEvent(festivalCategory.getId(), fcmToken, false));
     }
 
     @Transactional
