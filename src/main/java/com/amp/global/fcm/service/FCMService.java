@@ -19,13 +19,14 @@ public class FCMService {
 
     private final ObjectMapper objectMapper;
     private final AuthService authService;
+    private final FirebaseMessaging firebaseMessaging;
 
     @Value("${fcm.key.path}")
     private String serviceAccountJson;
 
     public void subscribeCategory(Long categoryId, String token) {
         try {
-            TopicManagementResponse response = FirebaseMessaging.getInstance()
+            TopicManagementResponse response = firebaseMessaging
                     .subscribeToTopic(List.of(token), topic(categoryId));
 
             log.info("{} tokens were subscribed successfully from topic {}",
@@ -50,8 +51,7 @@ public class FCMService {
 
     public void unsubscribeCategory(Long categoryId, String token) {
         try {
-            FirebaseMessaging.getInstance()
-                    .unsubscribeFromTopic(List.of(token), topic(categoryId));
+            firebaseMessaging.unsubscribeFromTopic(List.of(token), topic(categoryId));
         } catch (FirebaseMessagingException e) {
             log.error("FCM unsubscribe error: {}", e.getMessage());
             throw new CustomException(FCMErrorCode.FAIL_TO_SEND_PUSH_ALARM);
@@ -69,7 +69,7 @@ public class FCMService {
                     .putData("festivalId", String.valueOf(festivalId))
                     .putData("noticeId", String.valueOf(noticeId))
                     .build();
-            FirebaseMessaging.getInstance().send(message);
+            firebaseMessaging.send(message);
             log.info("FCM 메시지 전송 성공: {}", topic);
         } catch (FirebaseMessagingException e) {
             log.error("FCM send error: {}", e.getMessage());
