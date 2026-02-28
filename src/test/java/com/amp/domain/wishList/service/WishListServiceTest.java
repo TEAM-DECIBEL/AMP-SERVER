@@ -50,7 +50,7 @@ class WishListServiceTest {
 
         @Test
         @DisplayName("오늘 날짜(LocalDate.now())를 today 파라미터로 전달한다")
-        void passesLocalDateNow_AsTodayParam() {
+        void passesLocalDateNowAsTodayParam() {
             // given
             User user = createUser(1L);
             given(authService.getCurrentUser()).willReturn(user);
@@ -84,7 +84,7 @@ class WishListServiceTest {
             // when
             wishListService.getMyWishList(PageRequest.of(0, 10));
 
-            // then - 사용자 ID 42L로 조회 확인
+            // then
             then(wishListRepository).should().findAllByUserIdAndWishListTrue(
                     eq(42L), any(Pageable.class), any(LocalDate.class));
         }
@@ -117,27 +117,24 @@ class WishListServiceTest {
                     anyLong(), any(Pageable.class), any(LocalDate.class)))
                     .willReturn(Page.empty());
 
-            Pageable pageable = PageRequest.of(2, 5); // page=2, size=5
+            Pageable pageable = PageRequest.of(2, 5);
 
             // when
             wishListService.getMyWishList(pageable);
 
-            // then - 정확한 Pageable 객체가 전달됨
+            // then
             then(wishListRepository).should().findAllByUserIdAndWishListTrue(
                     anyLong(), eq(pageable), any(LocalDate.class));
         }
     }
 
-    // ===== 헬퍼 메서드 =====
 
     private User createUser(Long id) {
         User user = User.builder()
                 .email("user" + id + "@test.com")
-                .nickname("테스트유저")
                 .profileImageUrl("https://example.com/profile.jpg")
                 .provider(AuthProvider.GOOGLE)
                 .providerId("google_user" + id)
-                .isActive(true)
                 .registrationStatus(RegistrationStatus.COMPLETED)
                 .userType(UserType.AUDIENCE)
                 .build();

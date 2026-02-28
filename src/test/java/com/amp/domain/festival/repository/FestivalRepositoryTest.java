@@ -2,10 +2,7 @@ package com.amp.domain.festival.repository;
 
 import com.amp.domain.festival.entity.Festival;
 import com.amp.domain.festival.entity.FestivalStatus;
-import com.amp.domain.user.entity.AuthProvider;
-import com.amp.domain.user.entity.RegistrationStatus;
-import com.amp.domain.user.entity.User;
-import com.amp.domain.user.entity.UserType;
+import com.amp.domain.user.entity.*;
 import com.amp.global.config.JpaAuditConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -46,12 +43,17 @@ class FestivalRepositoryTest {
     @Autowired
     private TestEntityManager em;
 
-    private User organizer;
+    private Audience audience;
+    private Organizer organizer;
 
     @BeforeEach
     void setUp() {
         organizer = createOrganizer("organizer@test.com");
         em.persist(organizer);
+
+        audience = createAudience("audience@test.com");
+        em.persist(audience);
+
         em.flush();
         em.clear();
     }
@@ -125,7 +127,7 @@ class FestivalRepositoryTest {
             em.persist(festival);
             em.flush();
 
-            festival.delete(); // deletedAt 설정
+            festival.delete();
             em.flush();
             em.clear();
 
@@ -133,7 +135,7 @@ class FestivalRepositoryTest {
             Page<Festival> result = festivalRepository.findActiveFestivals(
                     PageRequest.of(0, 10), LocalDate.now());
 
-            // then - @SQLRestriction("deleted_at IS NULL")으로 자동 필터링
+            // then
             assertThat(result.getContent()).isEmpty();
         }
 
@@ -163,7 +165,7 @@ class FestivalRepositoryTest {
         @Test
         @DisplayName("startDate ASC, startTime ASC, title ASC 순으로 정렬된다")
         void sortedByStartDateAscStartTimeAscTitleAsc() {
-            // given - 다양한 startDate / startTime / title 조합
+            // given
             Festival festivalC = Festival.builder()
                     .title("C페스티벌")
                     .mainImageUrl("img.jpg")
@@ -229,16 +231,23 @@ class FestivalRepositoryTest {
                 .build();
     }
 
-    private User createOrganizer(String email) {
-        return User.builder()
+    private Audience createAudience(String email) {
+        return Audience.builder()
                 .email(email)
-                .nickname("주최자_" + email.split("@")[0])
                 .profileImageUrl("https://example.com/profile.jpg")
                 .provider(AuthProvider.GOOGLE)
                 .providerId("google_" + email)
-                .isActive(true)
                 .registrationStatus(RegistrationStatus.COMPLETED)
-                .userType(UserType.ORGANIZER)
+                .build();
+    }
+
+    private Organizer createOrganizer(String email) {
+        return Organizer.builder()
+                .email(email)
+                .profileImageUrl("https://example.com/profile.jpg")
+                .provider(AuthProvider.GOOGLE)
+                .providerId("google_" + email)
+                .registrationStatus(RegistrationStatus.COMPLETED)
                 .build();
     }
 }
