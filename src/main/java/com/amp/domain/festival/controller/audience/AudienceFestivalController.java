@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @Validated
-@RequestMapping("/api/v1/audience/festivals")
+@RequestMapping("/api/v1/users/festivals")
 @Tag(name = "Audience API")
 @RequiredArgsConstructor
 public class AudienceFestivalController {
