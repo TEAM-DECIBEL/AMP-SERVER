@@ -7,10 +7,11 @@ import com.amp.domain.category.exception.FestivalCategoryErrorCode;
 import com.amp.domain.category.repository.CategoryRepository;
 import com.amp.domain.category.repository.FestivalCategoryRepository;
 import com.amp.domain.notification.entity.Alarm;
-import com.amp.domain.notification.entity.CategorySubscribeEvent;
 import com.amp.domain.notification.repository.AlarmRepository;
+import com.amp.domain.user.entity.Audience;
 import com.amp.domain.user.entity.User;
 import com.amp.domain.user.exception.UserErrorCode;
+import com.amp.domain.user.repository.AudienceRepository;
 import com.amp.domain.user.repository.UserRepository;
 import com.amp.global.exception.CustomException;
 import com.amp.global.fcm.exception.FCMErrorCode;
@@ -18,6 +19,9 @@ import com.amp.global.fcm.service.FCMService;
 import com.amp.global.security.service.AuthService;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -32,6 +36,7 @@ public class CategorySubscribeService {
     private final FCMService fcmService;
     private final AlarmRepository alarmRepository;
     private final UserRepository userRepository;
+    private final AudienceRepository audienceRepository;
     private final FestivalCategoryRepository festivalCategoryRepository;
     private final AuthService authService;
     private final CategoryRepository categoryRepository;
@@ -40,7 +45,7 @@ public class CategorySubscribeService {
     public void subscribe(Long festivalId, String categoryCode, String fcmToken) {
 
         log.info(
-                "[CategorySubscribeService.subscribe] 카테고리 구독 요청 수신 - festivalId={}, categoryCode={}, fcmToken={}",
+                "[카테고리 구독 요청 수신] - festivalId={}, categoryCode={}, fcmToken={}",
                 festivalId,
                 categoryCode,
                 fcmToken
@@ -74,13 +79,12 @@ public class CategorySubscribeService {
 
         alarmRepository.save(alarm);
 
-        log.info("### [긴급] 직접 구독 요청 시작. 토픽ID: {}, 토큰: {}", festivalCategory.getId(), fcmToken);
+        log.info("### [구독 요청 시작] 토픽ID: {}, 토큰: {}", festivalCategory.getId(), fcmToken);
         try {
             fcmService.subscribeCategory(festivalCategory.getId(), fcmToken);
-            log.info("### [긴급] 구글 명단 등록 요청 완료!");
+            log.info("### 구글 명단 등록 요청 완료");
         } catch (Exception e) {
-            log.error("### [긴급] 구글 명단 등록 실패: {}", e.getMessage());
-            // 트랜잭션 롤백을 원하시면 여기서 throw e;를 하시면 됩니다.
+            log.error("### 구글 명단 등록 실패: {}", e.getMessage());
         }
     }
 
@@ -100,7 +104,7 @@ public class CategorySubscribeService {
 
 
         log.info(
-                "[CategorySubscribeService.subscribe] FCM 토픽 구독 요청 - topicId={}, token={}",
+                "[FCM 토픽 구독 요청] - topicId={}, token={}",
                 festivalCategory.getId(),
                 fcmToken
         );
@@ -115,12 +119,34 @@ public class CategorySubscribeService {
         alarm.setActive(false);
         alarmRepository.save(alarm);
 
-        log.info("### [긴급] 직접 구독 해지 시작. 토픽ID: {}, 토큰: {}", festivalCategory.getId(), fcmToken);
+        log.info("### [구독 해지] 토픽ID: {}, 토큰: {}", festivalCategory.getId(), fcmToken);
         try {
             fcmService.unsubscribeCategory(festivalCategory.getId(), fcmToken);
-            log.info("### [긴급] 구글 명단 해지 요청 완료!");
+            log.info("### 구글 명단 해지 요청 완료!");
         } catch (Exception e) {
-            log.error("### [긴급] 구글 명단 해지 실패: {}", e.getMessage());
+            log.error("### 구글 명단 해지 실패: {}", e.getMessage());
+        }
+    }
+
+    @Transactional
+    public void registerToken(String fcmToken) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (!authService.isLoggedInUser(authentication)) {
+            throw new CustomException(UserErrorCode.USER_NOT_FOUND);
+        }
+        Audience audience = audienceRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
+
+        List<Alarm> activeAlarms = alarmRepository.findAllByAudienceAndIsActiveTrue(audience);
+
+        for (Alarm alarm : activeAlarms) {
+            try {
+                fcmService.subscribeCategory(alarm.getFestivalCategory().getId(), fcmToken);
+                log.info("[FCM 토큰 등록] audienceId={}, categoryId={}", audience.getId(), alarm.getFestivalCategory().getId());
+            } catch (Exception e) {
+                log.error("[FCM 토큰 등록 실패] audienceId={}, categoryId={}, error={}",
+                        audience.getId(), alarm.getFestivalCategory().getId(), e.getMessage());
+            }
         }
     }
 }
