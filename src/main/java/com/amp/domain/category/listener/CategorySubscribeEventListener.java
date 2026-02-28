@@ -17,7 +17,7 @@ public class CategorySubscribeEventListener {
     private final FCMService fcmService;
 
 
-    @Async
+    @Async("categorySubscribeExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handle(CategorySubscribeEvent event) {
         log.info("[이벤트 수신] 토픽: {}, 구독여부: {}", event.categoryId(), event.subscribe());
