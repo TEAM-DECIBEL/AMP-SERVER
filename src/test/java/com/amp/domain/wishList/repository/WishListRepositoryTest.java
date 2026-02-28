@@ -1,12 +1,12 @@
 package com.amp.domain.wishList.repository;
 
+import com.amp.domain.festival.entity.AudienceFestival;
 import com.amp.domain.festival.entity.Festival;
 import com.amp.domain.festival.entity.FestivalStatus;
-import com.amp.domain.festival.entity.UserFestival;
+import com.amp.domain.user.entity.Audience;
 import com.amp.domain.user.entity.AuthProvider;
+import com.amp.domain.user.entity.Organizer;
 import com.amp.domain.user.entity.RegistrationStatus;
-import com.amp.domain.user.entity.User;
-import com.amp.domain.user.entity.UserType;
 import com.amp.global.config.JpaAuditConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -46,15 +46,15 @@ class WishListRepositoryTest {
     @Autowired
     private TestEntityManager em;
 
-    private User audience;
-    private User organizer;
+    private Audience audience;
+    private Organizer organizer;
 
     @BeforeEach
     void setUp() {
-        organizer = createUser("organizer@test.com", UserType.ORGANIZER);
+        organizer = createOrganizer("organizer@test.com");
         em.persist(organizer);
 
-        audience = createUser("audience@test.com", UserType.AUDIENCE);
+        audience = createAudience("audience@test.com");
         em.persist(audience);
 
         em.flush();
@@ -73,8 +73,8 @@ class WishListRepositoryTest {
                     LocalDate.now().minusDays(1), LocalDate.now().plusDays(2));
             em.persist(festival);
 
-            UserFestival userFestival = UserFestival.builder()
-                    .user(audience)
+            AudienceFestival userFestival = AudienceFestival.builder()
+                    .audience(audience)
                     .festival(festival)
                     .wishList(true)
                     .build();
@@ -83,7 +83,7 @@ class WishListRepositoryTest {
             em.clear();
 
             // when
-            Page<UserFestival> result = wishListRepository.findAllByUserIdAndWishListTrue(
+            Page<AudienceFestival> result = wishListRepository.findAllByUserIdAndWishListTrue(
                     audience.getId(), PageRequest.of(0, 10), LocalDate.now());
 
             // then
@@ -99,17 +99,17 @@ class WishListRepositoryTest {
                     LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));
             em.persist(festival);
 
-            UserFestival userFestival = UserFestival.builder()
-                    .user(audience)
+            AudienceFestival userFestival = AudienceFestival.builder()
+                    .audience(audience)
                     .festival(festival)
-                    .wishList(false) // wishList = false
+                    .wishList(false)
                     .build();
             em.persist(userFestival);
             em.flush();
             em.clear();
 
             // when
-            Page<UserFestival> result = wishListRepository.findAllByUserIdAndWishListTrue(
+            Page<AudienceFestival> result = wishListRepository.findAllByUserIdAndWishListTrue(
                     audience.getId(), PageRequest.of(0, 10), LocalDate.now());
 
             // then
@@ -118,14 +118,14 @@ class WishListRepositoryTest {
 
         @Test
         @DisplayName("endDate가 today보다 이전인 종료된 페스티벌은 조회되지 않는다")
-        void endedFestival_Excluded() {
+        void endedFestivalExcluded() {
             // given
             Festival endedFestival = createFestival("종료된 위시 페스티벌",
-                    LocalDate.now().minusDays(5), LocalDate.now().minusDays(1)); // 어제 종료
+                    LocalDate.now().minusDays(5), LocalDate.now().minusDays(1));
             em.persist(endedFestival);
 
-            UserFestival userFestival = UserFestival.builder()
-                    .user(audience)
+            AudienceFestival userFestival = AudienceFestival.builder()
+                    .audience(audience)
                     .festival(endedFestival)
                     .wishList(true)
                     .build();
@@ -134,7 +134,7 @@ class WishListRepositoryTest {
             em.clear();
 
             // when
-            Page<UserFestival> result = wishListRepository.findAllByUserIdAndWishListTrue(
+            Page<AudienceFestival> result = wishListRepository.findAllByUserIdAndWishListTrue(
                     audience.getId(), PageRequest.of(0, 10), LocalDate.now());
 
             // then
@@ -143,45 +143,45 @@ class WishListRepositoryTest {
 
         @Test
         @DisplayName("soft delete된 페스티벌의 UserFestival은 조회되지 않는다")
-        void softDeletedFestival_Excluded() {
+        void softDeletedFestivalExcluded() {
             // given
             Festival festival = createFestival("삭제 예정 페스티벌",
                     LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));
             em.persist(festival);
 
-            UserFestival userFestival = UserFestival.builder()
-                    .user(audience)
+            AudienceFestival userFestival = AudienceFestival.builder()
+                    .audience(audience)
                     .festival(festival)
                     .wishList(true)
                     .build();
             em.persist(userFestival);
             em.flush();
 
-            festival.delete(); // soft delete
+            festival.delete();
             em.flush();
             em.clear();
 
             // when
-            Page<UserFestival> result = wishListRepository.findAllByUserIdAndWishListTrue(
+            Page<AudienceFestival> result = wishListRepository.findAllByUserIdAndWishListTrue(
                     audience.getId(), PageRequest.of(0, 10), LocalDate.now());
 
-            // then - f.deletedAt IS NULL 조건으로 필터링됨
+            // then
             assertThat(result.getContent()).isEmpty();
         }
 
         @Test
         @DisplayName("다른 사용자의 위시리스트는 조회되지 않는다")
-        void otherUserWishList_Excluded() {
+        void otherUserWishListExcluded() {
             // given
-            User otherUser = createUser("other@test.com", UserType.AUDIENCE);
+            Audience otherUser = createAudience("other@test.com");
             em.persist(otherUser);
 
             Festival festival = createFestival("다른 유저 위시 페스티벌",
                     LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));
             em.persist(festival);
 
-            UserFestival otherUserFestival = UserFestival.builder()
-                    .user(otherUser)
+            AudienceFestival otherUserFestival = AudienceFestival.builder()
+                    .audience(otherUser)
                     .festival(festival)
                     .wishList(true)
                     .build();
@@ -189,8 +189,8 @@ class WishListRepositoryTest {
             em.flush();
             em.clear();
 
-            // when - audience(다른 유저)로 조회
-            Page<UserFestival> result = wishListRepository.findAllByUserIdAndWishListTrue(
+            // when
+            Page<AudienceFestival> result = wishListRepository.findAllByUserIdAndWishListTrue(
                     audience.getId(), PageRequest.of(0, 10), LocalDate.now());
 
             // then
@@ -199,14 +199,14 @@ class WishListRepositoryTest {
 
         @Test
         @DisplayName("today 파라미터로 과거 날짜를 전달하면 종료된 페스티벌도 조회된다")
-        void pastDateParam_IncludesEndedFestivals() {
+        void pastDateParamIncludesEndedFestivals() {
             // given
             Festival endedFestival = createFestival("지난 페스티벌",
                     LocalDate.now().minusDays(5), LocalDate.now().minusDays(1));
             em.persist(endedFestival);
 
-            UserFestival userFestival = UserFestival.builder()
-                    .user(audience)
+            AudienceFestival userFestival = AudienceFestival.builder()
+                    .audience(audience)
                     .festival(endedFestival)
                     .wishList(true)
                     .build();
@@ -214,41 +214,40 @@ class WishListRepositoryTest {
             em.flush();
             em.clear();
 
-            // when - today를 1주일 전으로 전달
-            Page<UserFestival> result = wishListRepository.findAllByUserIdAndWishListTrue(
+            // when
+            Page<AudienceFestival> result = wishListRepository.findAllByUserIdAndWishListTrue(
                     audience.getId(), PageRequest.of(0, 10), LocalDate.now().minusWeeks(1));
 
-            // then - 파라미터로 날짜를 직접 제어 가능함을 검증
+            // then
             assertThat(result.getContent()).hasSize(1);
         }
 
         @Test
         @DisplayName("여러 조건을 동시에 만족하는 경우만 조회된다")
-        void multipleConditions_OnlyMatchingReturned() {
+        void multipleConditionsOnlyMatchingReturned() {
             // given
-            // 조회 대상: wishList=true, 종료 안됨
             Festival activeFestival = createFestival("활성 위시 페스티벌",
                     LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));
             em.persist(activeFestival);
-            em.persist(UserFestival.builder().user(audience).festival(activeFestival).wishList(true).build());
+            em.persist(AudienceFestival.builder().audience(audience).festival(activeFestival).wishList(true).build());
 
             // 제외 대상 1: wishList=false
             Festival festival2 = createFestival("위시 미등록",
                     LocalDate.now().plusDays(1), LocalDate.now().plusDays(3));
             em.persist(festival2);
-            em.persist(UserFestival.builder().user(audience).festival(festival2).wishList(false).build());
+            em.persist(AudienceFestival.builder().audience(audience).festival(festival2).wishList(false).build());
 
             // 제외 대상 2: 종료됨
             Festival endedFestival = createFestival("종료된 페스티벌",
                     LocalDate.now().minusDays(5), LocalDate.now().minusDays(1));
             em.persist(endedFestival);
-            em.persist(UserFestival.builder().user(audience).festival(endedFestival).wishList(true).build());
+            em.persist(AudienceFestival.builder().audience(audience).festival(endedFestival).wishList(true).build());
 
             em.flush();
             em.clear();
 
             // when
-            Page<UserFestival> result = wishListRepository.findAllByUserIdAndWishListTrue(
+            Page<AudienceFestival> result = wishListRepository.findAllByUserIdAndWishListTrue(
                     audience.getId(), PageRequest.of(0, 10), LocalDate.now());
 
             // then
@@ -257,7 +256,6 @@ class WishListRepositoryTest {
         }
     }
 
-    // ===== 헬퍼 메서드 =====
 
     private Festival createFestival(String title, LocalDate startDate, LocalDate endDate) {
         return Festival.builder()
@@ -272,16 +270,23 @@ class WishListRepositoryTest {
                 .build();
     }
 
-    private User createUser(String email, UserType userType) {
-        return User.builder()
+    private Audience createAudience(String email) {
+        return Audience.builder()
                 .email(email)
-                .nickname("유저_" + email.split("@")[0])
                 .profileImageUrl("https://example.com/profile.jpg")
                 .provider(AuthProvider.GOOGLE)
                 .providerId("google_" + email)
-                .isActive(true)
                 .registrationStatus(RegistrationStatus.COMPLETED)
-                .userType(userType)
+                .build();
+    }
+
+    private Organizer createOrganizer(String email) {
+        return Organizer.builder()
+                .email(email)
+                .profileImageUrl("https://example.com/profile.jpg")
+                .provider(AuthProvider.GOOGLE)
+                .providerId("google_" + email)
+                .registrationStatus(RegistrationStatus.COMPLETED)
                 .build();
     }
 }

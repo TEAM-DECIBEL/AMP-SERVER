@@ -62,7 +62,6 @@ class CongestionReportServiceTest {
         testUser = User.builder()
                 .id(1L)
                 .email("test@test.com")
-                .nickname("tester")
                 .profileImageUrl("https://example.com/img.png")
                 .provider(AuthProvider.GOOGLE)
                 .providerId("google_123")
@@ -133,10 +132,6 @@ class CongestionReportServiceTest {
                     .isEqualTo(StageErrorCode.STAGE_NOT_FOUND);
         }
     }
-
-    // ─────────────────────────────────────────────────────────
-    // 시간 검증 - 오늘 공연
-    // ─────────────────────────────────────────────────────────
 
     @Nested
     @DisplayName("시간 검증 - 오늘 공연")
