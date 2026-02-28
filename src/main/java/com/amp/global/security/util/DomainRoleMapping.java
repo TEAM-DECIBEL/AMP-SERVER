@@ -2,6 +2,7 @@ package com.amp.global.security.util;
 
 import com.amp.domain.user.entity.UserType;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.net.URI;
@@ -20,6 +21,9 @@ import static com.amp.global.security.util.DomainConstants.*;
 @Slf4j
 @Component
 public class DomainRoleMapping {
+
+    @Value("${spring.profiles.active:local}")
+    private String activeProfile;
 
     // 허용된 도메인 목록 (보안: 리다이렉트 허용 도메인)
     private static final Set<String> ALLOWED_HOSTS = Set.of(
@@ -143,13 +147,19 @@ public class DomainRoleMapping {
 
     /**
      * 쿠키 Secure 플래그 결정
-     * - 프로덕션: true (HTTPS 필수)
-     * - 로컬: false
+     * - 프로덕션 환경(prod 프로파일): 항상 true (HTTPS 백엔드에서 cross-site 쿠키 필요)
+     * - 로컬 환경: origin 기반으로 판단
      *
      * @param origin 요청 origin
      * @return Secure 플래그 값
      */
     public boolean shouldCookieBeSecure(String origin) {
+        // 프로덕션 환경이면 origin과 관계없이 항상 Secure=true
+        // (localhost 프론트에서 HTTPS 백엔드로 요청 시에도 SameSite=None + Secure=true 필요)
+        if ("prod".equals(activeProfile)) {
+            log.debug("Production profile detected, setting Secure=true regardless of origin: {}", origin);
+            return true;
+        }
         return isProductionOrigin(origin);
     }
 
