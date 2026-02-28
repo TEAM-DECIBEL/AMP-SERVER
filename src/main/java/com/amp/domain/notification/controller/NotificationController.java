@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "Audience API")
-@RequestMapping("/api/v1/audience/festivals/{festivalId}/notifications")
+@RequestMapping("/api/v1/festivals/{festivalId}/users/notifications")
 public class NotificationController {
 
     private final CategorySubscribeService categorySubscribeService;
