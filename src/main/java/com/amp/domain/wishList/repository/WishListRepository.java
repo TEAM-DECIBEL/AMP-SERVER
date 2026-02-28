@@ -48,7 +48,7 @@ public interface WishListRepository extends JpaRepository<AudienceFestival, Long
             "AND f.deletedAt IS NULL " +
             "AND f.endDate >= :today " +
             "ORDER BY f.startDate ASC, f.startTime ASC, f.title ASC")
-    Page<AudienceFestival> findAllByUserIdAndWishListTrue(@Param("userId") Long userId, Pageable pageable);
+    Page<AudienceFestival> findAllByUserIdAndWishListTrue(@Param("userId") Long userId, Pageable pageable, @Param("today") LocalDate today);
 
     @Query("SELECT uf FROM AudienceFestival uf JOIN FETCH uf.festival f " +
             "WHERE uf.audience.id = :userId AND uf.wishList = true " +
