@@ -70,7 +70,7 @@ public class WishListService {
     public PageResponse<MyUpcomingResponse> getMyWishList(Pageable pageable) {
         User user = authService.getCurrentUser();
 
-        Page<AudienceFestival> audienceFestivals = wishListRepository.findAllByUserIdAndWishListTrue(user.getId(), pageable);
+        Page<AudienceFestival> audienceFestivals = wishListRepository.findAllByUserIdAndWishListTrue(user.getId(), pageable, LocalDate.now());
         Page<MyUpcomingResponse> responsePage = audienceFestivals.map(MyUpcomingResponse::of);
 
         return PageResponse.of(responsePage);

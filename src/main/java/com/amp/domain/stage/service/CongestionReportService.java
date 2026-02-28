@@ -73,7 +73,7 @@ public class CongestionReportService {
                 user.getId(), stageId, level);
     }
 
-    private void validateReportTime(Stage stage, LocalDateTime now) {
+    void validateReportTime(Stage stage, LocalDateTime now) {
 
         LocalDate today = now.toLocalDate();
 
@@ -100,23 +100,30 @@ public class CongestionReportService {
     }
 
     private static LocalDateTime getEnableInputTime(FestivalSchedule todaySchedule, List<FestivalSchedule> schedules, LocalDate today) {
+
         if (todaySchedule == null) {
 
             LocalDate firstDate = schedules.getFirst().getFestivalDate();
-            if (today.isBefore(firstDate)) {
-                throw new CustomException(StageErrorCode.TOO_EARLY_TO_REPORT);
-            }
-
             LocalDate lastDate = schedules.getLast().getFestivalDate();
+
             if (today.isAfter(lastDate)) {
                 throw new CustomException(StageErrorCode.FESTIVAL_ENDED);
+            }
+
+            if (today.equals(firstDate.minusDays(1))) {
+                FestivalSchedule firstSchedule = schedules.getFirst();
+                return firstDate.atTime(firstSchedule.getFestivalTime()).minusHours(8);
+            }
+
+            // 그 외 오늘 스케줄이 없는 날
+            if (today.isBefore(firstDate)) {
+                throw new CustomException(StageErrorCode.TOO_EARLY_TO_REPORT);
             }
 
             throw new CustomException(StageErrorCode.NO_SCHEDULE_TODAY);
         }
 
-        LocalDateTime todayStart = today.atTime(todaySchedule.getFestivalTime());
-        return todayStart.minusHours(8);
+        return today.atTime(todaySchedule.getFestivalTime()).minusHours(8);
     }
 
 }
