@@ -73,6 +73,10 @@ app:
     cookie-max-age: ${APP_JWT_COOKIE_MAX_AGE:3600}
     cookie-same-site: ${APP_JWT_COOKIE_SAME_SITE:None}
 
+springdoc:
+  swagger-ui:
+    with-credentials: true
+
 server:
   port: 8080
 
