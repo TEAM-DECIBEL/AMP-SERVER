@@ -7,6 +7,7 @@ import com.amp.global.swagger.ExampleHolder;
 import com.amp.global.swagger.SwaggerResponseDescription;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.info.Info;
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -37,10 +38,10 @@ import java.util.stream.Collectors;
         )
 )
 @SecurityScheme(
-        name = "Bearer Authentication",
-        type = SecuritySchemeType.HTTP,
-        bearerFormat = "JWT",
-        scheme = "bearer"
+        name = "accessToken",
+        type = SecuritySchemeType.APIKEY,
+        in = SecuritySchemeIn.COOKIE,
+        paramName = "accessToken"
 )
 @Configuration
 public class SwaggerConfig {
@@ -69,7 +70,7 @@ public class SwaggerConfig {
 
         SecurityRequirement securityRequirement =
                 new SecurityRequirement()
-                        .addList("Bearer Authentication");
+                        .addList("accessToken");
 
         return new OpenAPI()
                 .servers(servers)
