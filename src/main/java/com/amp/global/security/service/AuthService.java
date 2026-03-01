@@ -1,6 +1,5 @@
 package com.amp.global.security.service;
 
-import com.amp.domain.user.entity.Audience;
 import com.amp.domain.user.entity.User;
 import com.amp.domain.user.exception.UserErrorCode;
 import com.amp.domain.user.repository.UserRepository;
@@ -34,12 +33,11 @@ public class AuthService {
         if (!isLoggedInUser(authentication)) {
             return "관객";
         }
-        User user = getCurrentUserOrNull();
-        if (!(user instanceof Audience audience)) {
-            return "관객";
-        }
-        return audience.getNickname() != null ? audience.getNickname() : "관객";
+        String email = authentication.getName();
+        return userRepository.findNicknameByEmail(email)
+                .orElse("관객");
     }
+
 
     public boolean isLoggedInUser(Authentication authentication) {
         return authentication != null &&
