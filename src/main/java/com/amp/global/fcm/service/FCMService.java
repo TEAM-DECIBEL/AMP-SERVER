@@ -17,29 +17,28 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FCMService {
 
-    private final ObjectMapper objectMapper;
-    private final AuthService authService;
+    private final FirebaseMessaging firebaseMessaging;
 
     @Value("${fcm.key.path}")
     private String serviceAccountJson;
 
     public void subscribeCategory(Long categoryId, String token) {
         try {
-            TopicManagementResponse response = FirebaseMessaging.getInstance()
+            TopicManagementResponse response = firebaseMessaging
                     .subscribeToTopic(List.of(token), topic(categoryId));
 
             log.info("{} tokens were subscribed successfully from topic {}",
                     response.getSuccessCount(), topic(categoryId));
 
             if (response.getFailureCount() > 0) {
-                log.error("### [긴급] 구독 실패! FailureCount: {}", response.getFailureCount());
+                log.error("[구독 실패] FailureCount: {}", response.getFailureCount());
                 response.getErrors().forEach(error -> {
-                    log.error("### [긴급] 실패 상세 - index: {}, reason: {}",
+                    log.error("[실패 상세] index: {}, reason: {}",
                             error.getIndex(),
                             error.getReason());
                 });
 
-                log.error("### [긴급] 전체 에러 정보: {}", response.getErrors());
+                log.error("[전체 에러 정보] {}", response.getErrors());
             }
 
         } catch (FirebaseMessagingException e) {
@@ -50,8 +49,7 @@ public class FCMService {
 
     public void unsubscribeCategory(Long categoryId, String token) {
         try {
-            FirebaseMessaging.getInstance()
-                    .unsubscribeFromTopic(List.of(token), topic(categoryId));
+            firebaseMessaging.unsubscribeFromTopic(List.of(token), topic(categoryId));
         } catch (FirebaseMessagingException e) {
             log.error("FCM unsubscribe error: {}", e.getMessage());
             throw new CustomException(FCMErrorCode.FAIL_TO_SEND_PUSH_ALARM);
@@ -63,17 +61,13 @@ public class FCMService {
         try {
             Message message = Message.builder()
                     .setTopic(topic)
-                    .setNotification(Notification.builder()
-                            .setTitle(title)
-                            .setBody(noticeBody)
-                            .build())
                     .putData("title", title)
                     .putData("message", noticeBody)
                     .putData("time", timeData)
                     .putData("festivalId", String.valueOf(festivalId))
                     .putData("noticeId", String.valueOf(noticeId))
                     .build();
-            FirebaseMessaging.getInstance().send(message);
+            firebaseMessaging.send(message);
             log.info("FCM 메시지 전송 성공: {}", topic);
         } catch (FirebaseMessagingException e) {
             log.error("FCM send error: {}", e.getMessage());

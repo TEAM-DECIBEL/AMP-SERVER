@@ -7,6 +7,7 @@ import com.amp.domain.category.exception.FestivalCategoryErrorCode;
 import com.amp.domain.category.repository.CategoryRepository;
 import com.amp.domain.category.repository.FestivalCategoryRepository;
 import com.amp.domain.notification.entity.Alarm;
+import com.amp.domain.notification.entity.CategorySubscribeEvent;
 import com.amp.domain.notification.repository.AlarmRepository;
 import com.amp.domain.user.entity.Audience;
 import com.amp.domain.user.exception.UserErrorCode;
@@ -15,6 +16,7 @@ import com.amp.global.exception.CustomException;
 import com.amp.global.fcm.exception.FCMErrorCode;
 import com.amp.global.fcm.service.FCMService;
 import com.amp.global.security.service.AuthService;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -30,6 +32,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class CategorySubscribeService {
 
+    private final ApplicationEventPublisher eventPublisher;
     private final FCMService fcmService;
     private final AlarmRepository alarmRepository;
     private final AudienceRepository audienceRepository;
@@ -77,12 +80,7 @@ public class CategorySubscribeService {
         alarmRepository.save(alarm);
 
         log.info("[구독 요청 시작] 토픽ID: {}, 토큰: {}", festivalCategory.getId(), fcmToken);
-        try {
-            fcmService.subscribeCategory(festivalCategory.getId(), fcmToken);
-            log.info("구글 명단 등록 요청 완료");
-        } catch (Exception e) {
-            log.error("구글 명단 등록 실패: {}", e.getMessage());
-        }
+        eventPublisher.publishEvent(new CategorySubscribeEvent(festivalCategory.getId(), fcmToken, true));
     }
 
     @Transactional
@@ -117,15 +115,9 @@ public class CategorySubscribeService {
         alarmRepository.save(alarm);
 
         log.info("[구독 해지] 토픽ID: {}, 토큰: {}", festivalCategory.getId(), fcmToken);
-        try {
-            fcmService.unsubscribeCategory(festivalCategory.getId(), fcmToken);
-            log.info("구글 명단 해지 요청 완료");
-        } catch (Exception e) {
-            log.error("구글 명단 해지 실패: {}", e.getMessage());
-        }
+        eventPublisher.publishEvent(new CategorySubscribeEvent(festivalCategory.getId(), fcmToken, false));
     }
 
-    @Transactional
     public void registerToken(String fcmToken) {
         if (fcmToken == null || fcmToken.isBlank()) {
             throw new CustomException(FCMErrorCode.INVALID_FCM_TOKEN);
