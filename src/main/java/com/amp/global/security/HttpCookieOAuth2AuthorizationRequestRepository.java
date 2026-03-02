@@ -97,8 +97,10 @@ public class HttpCookieOAuth2AuthorizationRequestRepository
      */
     private void addCookie(HttpServletResponse response, HttpServletRequest request,
                            String name, String value, int maxAge) {
-        boolean isHttps = "https".equals(request.getHeader("X-Forwarded-Proto"))
-                || "https".equals(request.getScheme());
+
+        String serverName = request.getServerName();
+        boolean isProdDomain = serverName != null && serverName.endsWith(".ampnotice.kr");
+        boolean isHttps = isProdDomain || "https".equals(request.getScheme());
 
         ResponseCookie.ResponseCookieBuilder builder = ResponseCookie.from(name, value)
                 .path("/")
@@ -107,6 +109,7 @@ public class HttpCookieOAuth2AuthorizationRequestRepository
 
         if (isHttps) {
             // 프로덕션: SameSite=None + Secure + Domain 으로 cross-site OAuth 콜백 보장
+            // api.host.ampnotice.kr에서 설정한 쿠키가 api.ampnotice.kr 콜백에서도 전달되려면 필수
             builder.secure(true)
                     .sameSite("None")
                     .domain(".ampnotice.kr");
@@ -118,8 +121,8 @@ public class HttpCookieOAuth2AuthorizationRequestRepository
 
         ResponseCookie cookie = builder.build();
         response.addHeader("Set-Cookie", cookie.toString());
-        log.debug("Added cookie: {} (maxAge: {}, secure: {}, sameSite: {})",
-                name, maxAge, isHttps, isHttps ? "None" : "Lax");
+        log.debug("Added cookie: {} (maxAge: {}, secure: {}, sameSite: {}, serverName: {})",
+                name, maxAge, isHttps, isHttps ? "None" : "Lax", serverName);
     }
 
     private void deleteCookie(HttpServletRequest request, HttpServletResponse response, String name) {
