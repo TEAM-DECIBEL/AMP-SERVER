@@ -14,12 +14,15 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
+
+import java.time.Instant;
 
 @Slf4j
 @RestControllerAdvice
@@ -85,12 +88,26 @@ public class GlobalExceptionHandler {
                 .body(BaseErrorResponse.of(CommonErrorCode.INVALID_JSON));
     }
 
-    // @Valid 검증 실패
+    // @Valid + @RequestBody / @ModelAttribute 검증 실패
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<BaseErrorResponse> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
-        log.error("[ERROR - MethodArgumentNotValidException] {}", ex.getMessage());
-        return ResponseEntity.status(CommonErrorCode.INVALID_INPUT_VALUE.getHttpStatus())
-                .body(BaseErrorResponse.of(CommonErrorCode.INVALID_INPUT_VALUE));
+        String message = ex.getBindingResult().getFieldErrors().stream()
+                .findFirst()
+                .map(FieldError::getDefaultMessage)
+                .orElse(CommonErrorCode.INVALID_INPUT_VALUE.getMsg());
+
+        log.error("[ERROR - MethodArgumentNotValidException] field: {}, message: {}",
+                ex.getBindingResult().getFieldErrors().stream()
+                        .findFirst().map(FieldError::getField).orElse("unknown"),
+                message);
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new BaseErrorResponse(
+                        HttpStatus.BAD_REQUEST.value(),
+                        CommonErrorCode.INVALID_INPUT_VALUE.getCode(),
+                        message,
+                        Instant.now()
+                ));
     }
 
     // DB 제약 조건 위반
