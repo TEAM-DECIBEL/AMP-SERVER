@@ -92,6 +92,9 @@ public class FestivalService {
         if (schedules == null || schedules.isEmpty()) {
             throw new CustomException(FestivalErrorCode.SCHEDULES_REQUIRED);
         }
+        if (stages == null || stages.isEmpty()) {
+            throw new CustomException(FestivalErrorCode.STAGES_REQUIRED);
+        }
         if (activeCategoryIds == null || activeCategoryIds.isEmpty()) {
             throw new CustomException(CategoryErrorCode.CATEGORY_REQUIRED);
         }
