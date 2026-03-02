@@ -79,6 +79,8 @@ springdoc:
 
 server:
   port: 8080
+  # Nginx 등 리버스 프록시 뒤에서 X-Forwarded-Proto 헤더를 항상 반영
+  forward-headers-strategy: framework
 
 management:
   endpoints:
