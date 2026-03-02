@@ -38,6 +38,12 @@ public class WishListController {
     public ResponseEntity<BaseResponse<RecentWishListResponse>> getRecentFestival(
             @AuthenticationPrincipal CustomUserPrincipal principal) {
 
+        if (principal == null) {
+            return ResponseEntity
+                    .status(SuccessStatus.USER_FESTIVAL_RECENT_UNAUTHENTICATED.getHttpStatus())
+                    .body(BaseResponse.of(SuccessStatus.USER_FESTIVAL_RECENT_UNAUTHENTICATED, null));
+        }
+
         Long userId = principal.getUserId();
         RecentWishListResponse response = wishListService.getRecentFestival(userId).orElse(null);
 

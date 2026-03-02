@@ -84,7 +84,8 @@ public class SecurityConfig {
                                 "/api/v1/common/festivals/*/notices",
                                 "/api/v1/common/festivals/*/congestion",
                                 "/api/v1/users/festivals",
-                                "/api/v1/users/nickname"
+                                "/api/v1/users/nickname",
+                                "/api/v1/users/me/festivals/recent"
                         ).permitAll()
 
                         .requestMatchers(
