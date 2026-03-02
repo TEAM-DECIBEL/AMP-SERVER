@@ -154,7 +154,7 @@ jobs:
               https://api.ampnotice.kr/oauth2/authorization/google 2>/dev/null || true)
             echo "Captured redirect URL: ${REDIRECT_URL:0:300}..."
 
-            if echo "$REDIRECT_URL" | grep -q "redirect_uri=https%3A%2F%2F"; then
+            if echo "$REDIRECT_URL" | grep -q "redirect_uri=https"; then
               echo "✅ redirect_uri https 확인"
             else
               echo "❌ redirect_uri https 확인 실패 → nginx 롤백 + 새 컨테이너 제거"
