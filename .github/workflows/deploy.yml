@@ -10,30 +10,25 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      # 1. 레포 체크아웃
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 2. JDK 21 세팅
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '21'
 
-      # 3. Gradle 빌드
       - name: Build with Gradle
         run: |
           chmod +x gradlew
           ./gradlew clean build -x test
 
-      # 도커 로그인
       - name: Docker login
         run: |
           echo "${{ secrets.DOCKER_PASSWORD }}" | docker login \
           -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-      # 브랜치별 태그 설정
       - name: Set Docker tag
         id: tag
         run: |
@@ -43,12 +38,10 @@ jobs:
             echo "tag=develop" >> $GITHUB_OUTPUT
           fi
 
-      # 도커 이미지 빌드
       - name: Build Docker image
         run: |
           docker build -t ${{ secrets.DOCKER_USERNAME }}/amp-server:${{ steps.tag.outputs.tag }} .
 
-      # 도커 이미지 푸시
       - name: Push Docker image
         run: |
           docker push ${{ secrets.DOCKER_USERNAME }}/amp-server:${{ steps.tag.outputs.tag }}
@@ -59,7 +52,6 @@ jobs:
     if: github.ref == 'refs/heads/main'
 
     steps:
-      # Ec2에 배포
       - name: EC2에 무중단 배포 진행
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -68,10 +60,13 @@ jobs:
           key: ${{ secrets.EC2_KEY }}
           script: |
             set -euo pipefail
-            
+
             IMAGE=${{ secrets.DOCKER_USERNAME }}/amp-server:latest
 
-            # 현재 운영 컨테이너 확인
+            echo "🔎 현재 실행 중인 컨테이너 및 포트 확인"
+            docker ps --format "table {{.Names}}\t{{.Ports}}\t{{.Status}}" || true
+
+            # 현재 운영 컨테이너 확인 (8080이 운영이면 CURRENT_PORT=8080, 아니면 8081)
             if docker ps --format '{{.Names}} {{.Ports}}' | grep -q 'amp-server-blue.*0.0.0.0:8080->8080'; then
               CURRENT_PORT=8080
             else
@@ -87,6 +82,10 @@ jobs:
             NEW_NAME=amp-server-$(if [ "$NEW_PORT" = "8080" ]; then echo "blue"; else echo "green"; fi)
             OLD_NAME=amp-server-$(if [ "$CURRENT_PORT" = "8080" ]; then echo "blue"; else echo "green"; fi)
 
+            echo "✅ CURRENT_PORT=$CURRENT_PORT / NEW_PORT=$NEW_PORT"
+            echo "✅ OLD_NAME=$OLD_NAME / NEW_NAME=$NEW_NAME"
+            echo "✅ IMAGE=$IMAGE"
+
             echo "📦 Docker image pull 시도"
             for i in 1 2 3; do
               docker pull $IMAGE && break
@@ -100,12 +99,14 @@ jobs:
             fi
 
             echo "🚀 새 컨테이너 실행: $NEW_NAME (포트: $NEW_PORT)"
-            docker stop $NEW_NAME || true
-            docker rm $NEW_NAME || true
+            docker stop "$NEW_NAME" || true
+            docker rm "$NEW_NAME" || true
+
             docker run -d \
-              --name $NEW_NAME \
-              -p $NEW_PORT:8080 \
+              --name "$NEW_NAME" \
+              -p "$NEW_PORT":8080 \
               -e SPRING_PROFILES_ACTIVE=prod \
+              -e SERVER_FORWARD_HEADERS_STRATEGY=framework \
               -e DB_URL=${{ secrets.DB_URL }} \
               -e DB_USERNAME=${{ secrets.DB_USERNAME }} \
               -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
@@ -119,9 +120,10 @@ jobs:
               -e S3_SECRET_KEY=${{ secrets.S3_SECRET_KEY }} \
               -e S3_REGION=${{ secrets.S3_REGION }} \
               -e REDIS_HOST=172.17.0.1 \
-              $IMAGE
+              "$IMAGE"
 
             echo "❤️ 헬스체크 진행 중"
+            PASSED=0
             for i in $(seq 1 40); do
               STATUS=$(curl -s http://localhost:$NEW_PORT/actuator/health || true)
               echo "[$i] health: $STATUS"
@@ -129,7 +131,7 @@ jobs:
               sleep 3
             done
 
-            if [ "${PASSED:-0}" -ne 1 ]; then
+            if [ "$PASSED" -ne 1 ]; then
               echo "❌ 헬스체크 실패 → 새 컨테이너 로그 확인"
               docker logs "$NEW_NAME" | tail -n 200
               docker stop "$NEW_NAME" || true
@@ -138,11 +140,30 @@ jobs:
             fi
             echo "✅ 헬스체크 통과"
 
+            echo "🔎 OAuth redirect_uri https 검증"
+            # 내부 포트로 직접 authorization endpoint 호출 → Location 헤더의 redirect_uri 검증
+            LOC=$(curl -sI http://localhost:$NEW_PORT/oauth2/authorization/google | tr -d '\r' | grep -i '^location:' || true)
+            echo "$LOC"
+
+            # api.ampnotice.kr 또는 api.ampnotice-host.kr 둘 중 하나로 https redirect_uri가 나오는지 확인
+            echo "$LOC" | grep -Eq "redirect_uri=https%3A%2F%2F(api\.ampnotice\.kr|api\.ampnotice-host\.kr)%2Flogin%2Foauth2%2Fcode%2Fgoogle" || {
+              echo "❌ redirect_uri가 https가 아님 → 롤백"
+              docker logs "$NEW_NAME" | tail -n 200
+              docker stop "$NEW_NAME" || true
+              docker rm "$NEW_NAME" || true
+              exit 1
+            }
+
+            echo "✅ redirect_uri https 확인"
+
             echo "🔄 Nginx 포트 전환"
-            sudo sed -i "s/server 127\.0\.0\.1:[0-9][0-9]*/server 127.0.0.1:$NEW_PORT/" /etc/nginx/conf.d/app-upstream.conf
+            # upstream 파일의 포트(세미콜론 포함)를 정확히 치환
+            sudo sed -i "s/server 127\.0\.0\.1:[0-9]\{2,5\};/server 127.0.0.1:$NEW_PORT;/" /etc/nginx/conf.d/app-upstream.conf
             sudo nginx -t
             sudo systemctl reload nginx
 
             echo "🛑 이전 컨테이너 종료: $OLD_NAME"
-            docker stop $OLD_NAME || true
-            docker rm $OLD_NAME || true
+            docker stop "$OLD_NAME" || true
+            docker rm "$OLD_NAME" || true
+
+            echo "🎉 배포 완료"
