@@ -23,6 +23,13 @@ spring:
       stack:
         auto: false
 
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            redirect-uri: "https://api.ampnotice.kr/login/oauth2/code/{registrationId}"
+
 jwt:
   cookie-secure: true
   cookie-domain: ""
@@ -32,7 +39,6 @@ app:
     failure-redirect-uri: https://ampnotice.kr/login
 
   cors:
-    # ✅ 프로덕션 + 로컬 개발 환경 모두 허용
     allowed-origins: https://www.ampnotice.kr,https://ampnotice.kr,https://www.ampnotice-host.kr,https://ampnotice-host.kr,http://localhost:5173,http://localhost:5174
     allowed-methods: GET,POST,PUT,DELETE,PATCH,OPTIONS
     allowed-headers: "*"
@@ -46,6 +52,8 @@ springdoc:
 
 server:
   port: 8080
+  # Nginx 뒤에서 X-Forwarded-Proto=https 반영
+  forward-headers-strategy: framework
 
 swagger:
   server:
