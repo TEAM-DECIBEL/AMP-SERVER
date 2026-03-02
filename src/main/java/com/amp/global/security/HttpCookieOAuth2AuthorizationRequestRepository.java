@@ -89,22 +89,37 @@ public class HttpCookieOAuth2AuthorizationRequestRepository
         return java.util.Optional.empty();
     }
 
+    /**
+     * OAuth2 인증 요청 쿠키 설정
+     * - 프로덕션(HTTPS): SameSite=None; Secure; Domain=.ampnotice.kr
+     *   → Google OAuth 콜백(cross-site)에서 반드시 쿠키가 전달되어야 함
+     * - 로컬(HTTP): SameSite=Lax (SameSite=None은 Secure 없이 사용 불가)
+     */
     private void addCookie(HttpServletResponse response, HttpServletRequest request,
                            String name, String value, int maxAge) {
-        // HTTPS 여부를 X-Forwarded-Proto 헤더 또는 request scheme으로 판단
-        boolean secure = "https".equals(request.getHeader("X-Forwarded-Proto"))
+        boolean isHttps = "https".equals(request.getHeader("X-Forwarded-Proto"))
                 || "https".equals(request.getScheme());
 
-        ResponseCookie cookie = ResponseCookie.from(name, value)
+        ResponseCookie.ResponseCookieBuilder builder = ResponseCookie.from(name, value)
                 .path("/")
                 .httpOnly(true)
-                .maxAge(maxAge)
-                .secure(secure)
-                .sameSite("Lax") // Google OAuth 콜백(cross-site top-level GET)에서 전송 허용
-                .build();
+                .maxAge(maxAge);
 
+        if (isHttps) {
+            // 프로덕션: SameSite=None + Secure + Domain 으로 cross-site OAuth 콜백 보장
+            builder.secure(true)
+                    .sameSite("None")
+                    .domain(".ampnotice.kr");
+        } else {
+            // 로컬: SameSite=None은 Secure 없이 불가하므로 Lax 사용
+            builder.secure(false)
+                    .sameSite("Lax");
+        }
+
+        ResponseCookie cookie = builder.build();
         response.addHeader("Set-Cookie", cookie.toString());
-        log.debug("Added cookie: {} (maxAge: {}, secure: {}, sameSite: Lax)", name, maxAge, secure);
+        log.debug("Added cookie: {} (maxAge: {}, secure: {}, sameSite: {})",
+                name, maxAge, isHttps, isHttps ? "None" : "Lax");
     }
 
     private void deleteCookie(HttpServletRequest request, HttpServletResponse response, String name) {
