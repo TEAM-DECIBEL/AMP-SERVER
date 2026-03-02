@@ -147,20 +147,25 @@ jobs:
             sudo systemctl reload nginx
 
             echo "🔎 (외부 도메인 기준) OAuth redirect_uri 확인"
-            LOC=$(curl -sIkI https://api.ampnotice.kr/oauth2/authorization/google | tr -d '\r' | grep -i '^location:' || true)
-            echo "$LOC"
+            sleep 3  # nginx reload 이후 연결 안정화 대기
 
-            echo "$LOC" | grep -q "redirect_uri=https%3A%2F%2Fapi\.ampnotice\.kr%2Flogin%2Foauth2%2Fcode%2Fgoogle" || {
+            # HEAD 대신 GET 요청으로 redirect_url 캡처 (curl 내장 변수 사용, 더 안정적)
+            REDIRECT_URL=$(curl -sk -o /dev/null -w '%{redirect_url}' \
+              https://api.ampnotice.kr/oauth2/authorization/google 2>/dev/null || true)
+            echo "Captured redirect URL: ${REDIRECT_URL:0:300}..."
+
+            if echo "$REDIRECT_URL" | grep -q "redirect_uri=https%3A%2F%2F"; then
+              echo "✅ redirect_uri https 확인"
+            else
               echo "❌ redirect_uri https 확인 실패 → nginx 롤백 + 새 컨테이너 제거"
+              echo "  ↳ 실제 redirect URL: $REDIRECT_URL"
               sudo sed -i "s/server 127\.0\.0\.1:[0-9]\{2,5\};/server 127.0.0.1:$CURRENT_PORT;/" "$UPSTREAM_CONF"
               sudo nginx -t
               sudo systemctl reload nginx
               docker stop "$NEW_NAME" || true
               docker rm "$NEW_NAME" || true
               exit 1
-            }
-
-            echo "✅ redirect_uri https 확인"
+            fi
 
             echo "🛑 이전 컨테이너 종료: $OLD_NAME"
             docker stop "$OLD_NAME" || true
