@@ -81,7 +81,7 @@ public class CustomOAuth2AuthorizationRequestResolver implements OAuth2Authoriza
                 .from(authorizationRequest)
                 .redirectUri(redirectUri)
                 .state(customState)
-                .authorizationRequestUri(null)
+                .authorizationRequestUri((String) null)
                 .build();
     }
 
