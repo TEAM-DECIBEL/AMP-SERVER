@@ -5,6 +5,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.stereotype.Component;
@@ -48,12 +49,12 @@ public class HttpCookieOAuth2AuthorizationRequestRepository
         log.debug("Redirect URI: {}", authorizationRequest.getRedirectUri());
         log.debug("State: {}", authorizationRequest.getState());
 
-        addCookie(response, OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME,
+        addCookie(response, request, OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME,
                 serialize(authorizationRequest), COOKIE_EXPIRE_SECONDS);
 
         String redirectUriAfterLogin = request.getParameter(REDIRECT_URI_PARAM_COOKIE_NAME);
         if (StringUtils.isNotBlank(redirectUriAfterLogin)) {
-            addCookie(response, REDIRECT_URI_PARAM_COOKIE_NAME,
+            addCookie(response, request, REDIRECT_URI_PARAM_COOKIE_NAME,
                     redirectUriAfterLogin, COOKIE_EXPIRE_SECONDS);
         }
     }
@@ -88,16 +89,22 @@ public class HttpCookieOAuth2AuthorizationRequestRepository
         return java.util.Optional.empty();
     }
 
-    private void addCookie(HttpServletResponse response, String name, String value, int maxAge) {
-        Cookie cookie = new Cookie(name, value);
-        cookie.setPath("/");
-        cookie.setHttpOnly(true);
-        cookie.setMaxAge(maxAge);
-        // ✅ 프로덕션에서는 true로 설정
-        cookie.setSecure(false); // 로컬 개발: false, 프로덕션: true
+    private void addCookie(HttpServletResponse response, HttpServletRequest request,
+                           String name, String value, int maxAge) {
+        // HTTPS 여부를 X-Forwarded-Proto 헤더 또는 request scheme으로 판단
+        boolean secure = "https".equals(request.getHeader("X-Forwarded-Proto"))
+                || "https".equals(request.getScheme());
 
-        response.addCookie(cookie);
-        log.debug("Added cookie: {} (maxAge: {})", name, maxAge);
+        ResponseCookie cookie = ResponseCookie.from(name, value)
+                .path("/")
+                .httpOnly(true)
+                .maxAge(maxAge)
+                .secure(secure)
+                .sameSite("Lax") // Google OAuth 콜백(cross-site top-level GET)에서 전송 허용
+                .build();
+
+        response.addHeader("Set-Cookie", cookie.toString());
+        log.debug("Added cookie: {} (maxAge: {}, secure: {}, sameSite: Lax)", name, maxAge, secure);
     }
 
     private void deleteCookie(HttpServletRequest request, HttpServletResponse response, String name) {
