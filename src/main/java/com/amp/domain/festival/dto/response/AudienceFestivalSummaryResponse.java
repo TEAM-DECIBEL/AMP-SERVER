@@ -19,7 +19,7 @@ public record AudienceFestivalSummaryResponse(
                 festival.getTitle(),
                 festival.getMainImageUrl(),
                 FestivalUtils.formatPeriod(festival.getStartDate(), festival.getEndDate()),
-                festival.getStatus().getKoreanName(),
+                "관람 예정",
                 isWishList,
                 FestivalUtils.calculateDDay(festival.getStartDate(), festival.getEndDate())
         );
