@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/stages/{stageId}/congestion")
-@Tag(name = "Stage")
+@Tag(name = "Congestion")
 public class CongestionController {
 
     private final CongestionReportService congestionReportService;
