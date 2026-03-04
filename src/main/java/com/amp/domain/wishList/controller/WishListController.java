@@ -25,8 +25,8 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @Validated
-@RequestMapping("/api/v1/users/me/festivals")
-@Tag(name = "Audience API")
+@RequestMapping("/api/v1/wishlists")
+@Tag(name = "WishList")
 @RequiredArgsConstructor
 public class WishListController {
 
@@ -58,7 +58,7 @@ public class WishListController {
                 .body(BaseResponse.of(SuccessStatus.USER_FESTIVAL_RECENT_FOUND, response));
     }
 
-    @PutMapping("/{festivalId}/wishList")
+    @PutMapping("/{festivalId}")
     @Operation(summary = "관람 예정 공연 등록/해제")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_ADD_WISHLIST)
     public ResponseEntity<BaseResponse<UpdateWishListResponse>> toggleWishList(

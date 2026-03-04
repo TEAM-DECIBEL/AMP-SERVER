@@ -18,8 +18,8 @@ import org.springframework.web.bind.annotation.*;
 @Validated
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/users/stages/{stageId}/congestion")
-@Tag(name = "Audience API")
+@RequestMapping("/api/v1/stages/{stageId}/congestion")
+@Tag(name = "Stage")
 public class StageCongestionController {
 
     private final CongestionReportService congestionReportService;

@@ -26,8 +26,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @Validated
-@RequestMapping("/api/v1/organizer/me/festivals")
-@Tag(name = "Organizer API")
+@RequestMapping("/api/v1/festivals/me")
+@Tag(name = "Festival")
 @RequiredArgsConstructor
 public class OrganizerFestivalController {
 

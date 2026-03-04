@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@Tag(name = "Audience API")
-@RequestMapping("/api/v1/audience/notifications")
+@Tag(name = "Notification")
+@RequestMapping("/api/v1/notifications")
 public class FcmTokenController {
 
     private final CategorySubscribeService categorySubscribeService;

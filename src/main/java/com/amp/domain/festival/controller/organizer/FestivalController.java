@@ -19,8 +19,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/organizer/festivals")
-@Tag(name = "Organizer API")
+@RequestMapping("/api/v1/festivals")
+@Tag(name = "Festival")
 @RequiredArgsConstructor
 public class FestivalController {
 
@@ -39,7 +39,7 @@ public class FestivalController {
 
     @Operation(summary = "공연 상세 조회 - 수정용")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_GET_FESTIVAL_DETAIL)
-    @GetMapping("/{festivalId}")
+    @GetMapping("/{festivalId}/manage")
     public ResponseEntity<BaseResponse<FestivalDetailResponse>> getFestivalDetail(
             @PathVariable Long festivalId) {
         FestivalDetailResponse response = festivalService.getFestivalDetail(festivalId);

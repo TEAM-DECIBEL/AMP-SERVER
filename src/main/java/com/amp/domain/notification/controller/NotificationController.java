@@ -16,8 +16,8 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@Tag(name = "Audience API")
-@RequestMapping("/api/v1/festivals/{festivalId}/users/notifications")
+@Tag(name = "Notification")
+@RequestMapping("/api/v1/festivals/{festivalId}/notifications")
 public class NotificationController {
 
     private final CategorySubscribeService categorySubscribeService;
@@ -25,7 +25,7 @@ public class NotificationController {
 
     @Operation(summary = "카테고리 구독")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_SUBSCRIBE)
-    @PostMapping("/{categoryCode}/subscribe")
+    @PostMapping("/{categoryCode}/subscriptions")
     public ResponseEntity<BaseResponse<Void>> subscribeCategory(
             @PathVariable Long festivalId,
             @PathVariable String categoryCode,
@@ -40,7 +40,7 @@ public class NotificationController {
 
     @Operation(summary = "카테고리 구독 취소")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_UNSUBSCRIBE)
-    @DeleteMapping("/{categoryCode}/subscribe")
+    @DeleteMapping("/{categoryCode}/subscriptions")
     public ResponseEntity<BaseResponse<Void>> unsubscribeCategory(
             @PathVariable Long festivalId,
             @PathVariable String categoryCode,
