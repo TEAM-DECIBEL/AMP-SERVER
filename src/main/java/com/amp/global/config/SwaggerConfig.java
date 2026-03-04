@@ -20,6 +20,7 @@ import io.swagger.v3.oas.models.responses.ApiResponses;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.servers.Server;
 import org.springdoc.core.customizers.OperationCustomizer;
+import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -46,7 +47,7 @@ import java.util.stream.Collectors;
 @Configuration
 public class SwaggerConfig {
 
-    @Value("${swagger.server.local.url:http://localhost:8080}")
+    @Value("${swagger.server.local.url:}")
     private String localServerUrl;
 
     @Value("${swagger.server.prod.url:https://api.ampnotice.kr}")
@@ -76,6 +77,41 @@ public class SwaggerConfig {
                 .servers(servers)
                 .addSecurityItem(securityRequirement);
     }
+
+    @Bean
+    public GroupedOpenApi organizerGroup() {
+        return GroupedOpenApi.builder()
+                .group("Organizer")
+                .packagesToScan(
+                        "com.amp.domain.festival.controller.organizer",
+                        "com.amp.domain.festival.controller.common",
+                        "com.amp.domain.notice.controller.organizer",
+                        "com.amp.domain.notice.controller.common",
+                        "com.amp.domain.organizer.controller",
+                        "com.amp.domain.auth.controller"
+                )
+                .build();
+    }
+
+    @Bean
+    public GroupedOpenApi audienceGroup() {
+        return GroupedOpenApi.builder()
+                .group("Audience")
+                .packagesToScan(
+                        "com.amp.domain.festival.controller.audience",
+                        "com.amp.domain.festival.controller.common",
+                        "com.amp.domain.notice.controller.audience",
+                        "com.amp.domain.notice.controller.common",
+                        "com.amp.domain.notification.controller",
+                        "com.amp.domain.wishList.controller",
+                        "com.amp.domain.stage.controller",
+                        "com.amp.domain.audience.controller",
+                        "com.amp.domain.auth.controller"
+                )
+                .build();
+    }
+
+    // ─── OperationCustomizer ────────────────────────────────────────────────────
 
     @Bean
     public OperationCustomizer customize() {
