@@ -33,7 +33,7 @@ public class WishListController {
     private final WishListService wishListService;
 
     @GetMapping("/recent")
-    @Operation(summary = "관람 예정 공연 중 가장 임박한 공연 조회")
+    @Operation(summary = "관람 예정 공연 중 가장 임박한 공연 조회", description = "사용자가 관람 예정으로 등록한 공연 중 일자가 가장 임박한 공연 조회 api")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_GET_RECENT_WISHLIST)
     public ResponseEntity<BaseResponse<RecentWishListResponse>> getRecentFestival(
             @AuthenticationPrincipal CustomUserPrincipal principal) {
@@ -59,7 +59,7 @@ public class WishListController {
     }
 
     @PutMapping("/{festivalId}")
-    @Operation(summary = "관람 예정 공연 등록/해제")
+    @Operation(summary = "관람 예정 공연 등록/해제", description = "관람 예정 공연 등록 및 해제 api")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_ADD_WISHLIST)
     public ResponseEntity<BaseResponse<UpdateWishListResponse>> toggleWishList(
             @PathVariable Long festivalId,
@@ -77,7 +77,7 @@ public class WishListController {
     }
 
     @GetMapping()
-    @Operation(summary = "홈 화면 관람 예정 공연 리스트 조회")
+    @Operation(summary = "관람 예정 공연 리스트 조회", description = "관객의 홈 화면 관람 예정 공연 리스트 조회 api")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_GET_WISHLISTS)
     public ResponseEntity<BaseResponse<PageResponse<MyUpcomingResponse>>> getMyWishList(
             @Parameter(description = "페이지 번호 (0부터 시작)")
@@ -99,7 +99,7 @@ public class WishListController {
     }
 
     @GetMapping("/all")
-    @Operation(summary = "마이 페이지 내 관람 공연 조회")
+    @Operation(summary = "내 관람 예정 공연 조회", description = "관객 마이페이지 내 관람 예정 공연 조회 api")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_GET_WISHLISTS)
     public ResponseEntity<BaseResponse<PageResponse<WishListHistoryResponse>>> getHistoryWishLists(
             @Parameter(description = "페이지 번호 (0부터 시작)")

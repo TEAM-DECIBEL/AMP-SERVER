@@ -19,7 +19,7 @@ public class NotificationGetController {
     private final NotificationService notificationService;
 
     @GetMapping
-    @Operation(summary = "알림 스테이션")
+    @Operation(summary = "알림 스테이션", description = "전체 알람 조회 api")
     public ResponseEntity<BaseResponse<NotificationListResponse>> myNotifications() {
 
         NotificationListResponse response = notificationService.getMyNotifications();
@@ -29,7 +29,7 @@ public class NotificationGetController {
     }
 
     @PatchMapping("/{notificationId}/read")
-    @Operation(summary = "알림 읽음 여부 처리")
+    @Operation(summary = "알림 읽음 여부 처리", description = "알림 창에 있는 알람 읽음 여부 api")
     public ResponseEntity<BaseResponse<Void>> read(@PathVariable Long notificationId) {
 
         notificationService.readNotification(notificationId);
