@@ -37,5 +37,4 @@ public class StageCongestionController {
                 .status(SuccessStatus.CONGESTION_INPUT_SUCCESS.getHttpStatus())
                 .body(BaseResponse.ok(SuccessStatus.CONGESTION_INPUT_SUCCESS.getMsg(), null));
     }
-
 }
