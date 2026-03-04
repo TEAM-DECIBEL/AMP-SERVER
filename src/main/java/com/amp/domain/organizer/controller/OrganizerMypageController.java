@@ -17,7 +17,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 
 @Tag(name = "Organizer")
 @RestController
-@RequestMapping("/api/v1/users/organizer/mypage")
+@RequestMapping("/api/v1/organizer/mypage")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ORGANIZER')")
 public class OrganizerMypageController {
