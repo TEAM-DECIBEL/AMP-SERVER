@@ -15,12 +15,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @Validated
 @Tag(name = "Notice")
 @RequiredArgsConstructor
 @RequestMapping("/api/v1")
+@PreAuthorize("hasRole('AUDIENCE')")
 public class BookmarkController {
 
     private final BookmarkService bookmarkService;

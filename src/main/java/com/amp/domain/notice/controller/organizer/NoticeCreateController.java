@@ -16,12 +16,14 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/api/v1/festivals")
 @Tag(name = "Notice")
 @RequiredArgsConstructor
 @Validated
+@PreAuthorize("hasRole('ORGANIZER')")
 public class NoticeCreateController {
 
     private final NoticeService noticeService;

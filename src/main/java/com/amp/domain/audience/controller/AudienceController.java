@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -39,6 +40,7 @@ public class AudienceController {
     @GetMapping("/mypage")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_GET_MY_PAGE)
     @Operation(summary = "마이페이지 조회", description = "현재 로그인한 관객의 프로필 정보 조회 api.")
+    @PreAuthorize("hasRole('AUDIENCE')")
     public ResponseEntity<BaseResponse<AudienceMyPageResponse>> getMyPage(
             @AuthenticationPrincipal CustomUserPrincipal principal) {
         Long userId = principal.getUserId();
@@ -60,6 +62,7 @@ public class AudienceController {
     @GetMapping("/bookmarks")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_GET_BOOKMARK_NOTICE)
     @Operation(summary = "저장한 공지 조회", description = "관객이 저장한 공지사항 목록 조회 api")
+    @PreAuthorize("hasRole('AUDIENCE')")
     public ResponseEntity<BaseResponse<SavedNoticesResponse>> getSavedNotices(
             @AuthenticationPrincipal CustomUserPrincipal principal,
             @Parameter(description = "페이지 번호 (0부터 시작)")
