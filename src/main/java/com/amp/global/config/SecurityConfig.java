@@ -88,7 +88,7 @@ public class SecurityConfig {
                                 "/api/v1/festivals/*/congestion"
                         ).permitAll()
                         .requestMatchers(
-                                "/api/v1/users/nickname",
+                                "/api/v1/audience/nickname",
                                 "/api/v1/wishlists/recent"
                         ).permitAll()
 

@@ -27,8 +27,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @Validated
-@RequestMapping("/api/v1/festivals/me")
-@Tag(name = "Festival")
+@RequestMapping("/api/v1/organizer/festivals")
+@Tag(name = "Organizer")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ORGANIZER')")
 public class OrganizerFestivalController {
