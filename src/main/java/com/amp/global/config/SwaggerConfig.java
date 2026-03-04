@@ -88,6 +88,7 @@ public class SwaggerConfig {
                         "com.amp.domain.notice.controller.organizer",
                         "com.amp.domain.notice.controller.common",
                         "com.amp.domain.organizer.controller",
+                        "com.amp.domain.stage.controller.common",
                         "com.amp.domain.auth.controller"
                 )
                 .build();
@@ -104,7 +105,8 @@ public class SwaggerConfig {
                         "com.amp.domain.notice.controller.common",
                         "com.amp.domain.notification.controller",
                         "com.amp.domain.wishList.controller",
-                        "com.amp.domain.stage.controller",
+                        "com.amp.domain.stage.controller.audience",
+                        "com.amp.domain.stage.controller.common",
                         "com.amp.domain.audience.controller",
                         "com.amp.domain.auth.controller"
                 )
