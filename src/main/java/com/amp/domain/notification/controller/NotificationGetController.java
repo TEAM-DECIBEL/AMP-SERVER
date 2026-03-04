@@ -12,8 +12,8 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@Tag(name = "Audience API")
-@RequestMapping("/api/v1/users/notifications")
+@Tag(name = "Notification")
+@RequestMapping("/api/v1/notifications")
 public class NotificationGetController {
 
     private final NotificationService notificationService;

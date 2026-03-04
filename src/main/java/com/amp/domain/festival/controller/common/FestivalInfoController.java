@@ -18,15 +18,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @Validated
-@RequestMapping("/api/v1/common/festivals")
-@Tag(name = "Audience API")
-@Tag(name = "Organizer API")
+@RequestMapping("/api/v1/festivals")
+@Tag(name = "Festival")
 @RequiredArgsConstructor
 public class FestivalInfoController {
 
     private final FestivalInfoService festivalInfoService;
 
-    @Operation(summary = "공지 상단 공연 정보 조회", description = "공지 리스트 상단 표시되는 공연 정보")
+    @Operation(summary = "공연 정보 조회", description = "공지 리스트 상단에 표시되는 공연 정보")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_GET_FESTIVAL_DETAIL)
     @GetMapping("/{festivalId}")
     public ResponseEntity<BaseResponse<FestivalInfoResponse>> getFestivalInfo(

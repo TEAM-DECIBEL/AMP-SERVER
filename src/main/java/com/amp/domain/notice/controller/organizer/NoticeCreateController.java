@@ -18,8 +18,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/organizer/festivals")
-@Tag(name = "Organizer API")
+@RequestMapping("/api/v1/festivals")
+@Tag(name = "Notice")
 @RequiredArgsConstructor
 @Validated
 public class NoticeCreateController {

@@ -21,9 +21,8 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @Validated
-@RequestMapping("/api/v1/common/festivals")
-@Tag(name = "Audience API")
-@Tag(name = "Organizer API")
+@RequestMapping("/api/v1/festivals")
+@Tag(name = "Festival")
 @RequiredArgsConstructor
 public class FestivalCongestionController {
 

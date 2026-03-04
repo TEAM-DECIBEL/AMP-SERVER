@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/auth/onboarding")
-@Tag(name = "Auth API")
+@Tag(name = "Auth")
 @RequiredArgsConstructor
 @Slf4j
 public class OnboardingController {
