@@ -25,8 +25,7 @@ public class NoticeUpdateController {
     private final NoticeUpdateService noticeUpdateService;
     private final NoticeService noticeService;
 
-    // 공지 수정/상단고정 수정
-    @Operation(summary = "공지 수정/상단고정")
+    @Operation(summary = "공지 수정/상단고정", description = "공지 수정 및 상단 고정 여부 선택 api")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_UPDATE_NOTICE)
     @PutMapping(path = "/{noticeId}",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

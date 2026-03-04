@@ -37,7 +37,7 @@ public class FestivalController {
                 .body(BaseResponse.create(SuccessStatus.FESTIVAL_CREATE_SUCCESS.getMsg(), response));
     }
 
-    @Operation(summary = "공연 상세 조회 - 수정용")
+    @Operation(summary = "공연 상세 조회 - 수정용", description = "공연 수정 시 필요한 정보 호출 api")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_GET_FESTIVAL_DETAIL)
     @GetMapping("/{festivalId}/manage")
     public ResponseEntity<BaseResponse<FestivalDetailResponse>> getFestivalDetail(

@@ -31,7 +31,7 @@ public class AudienceController {
 
     @GetMapping("/mypage")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_GET_MY_PAGE)
-    @Operation(summary = "마이페이지 조회", description = "현재 로그인한 관객의 프로필 정보를 조회합니다.")
+    @Operation(summary = "마이페이지 조회", description = "현재 로그인한 관객의 프로필 정보 조회 api.")
     public ResponseEntity<BaseResponse<AudienceMyPageResponse>> getMyPage(
             @AuthenticationPrincipal CustomUserPrincipal principal) {
         Long userId = principal.getUserId();
@@ -42,7 +42,7 @@ public class AudienceController {
     }
 
     @GetMapping("/nickname")
-    @Operation(summary = "닉네임 조회", description = "로그인한 관객의 닉네임 반환, 미로그인 시 '관객' 반환")
+    @Operation(summary = "닉네임 조회", description = "로그인한 관객의 닉네임 반환, 미로그인 시 '관객' 반환 api")
     public ResponseEntity<BaseResponse<NicknameResponse>> getAudienceNickname(){
         NicknameResponse nicknameResponse = new NicknameResponse(authService.getDisplayNickname());
         return ResponseEntity

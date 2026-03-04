@@ -29,7 +29,7 @@ public class FestivalCongestionController {
     private final CongestionQueryService congestionQueryService;
 
     @GetMapping("/{festivalId}/congestion")
-    @Operation(summary = "공연 별 전체 혼잡도 조회")
+    @Operation(summary = "공연 별 전체 혼잡도 조회", description = "공연에 등록되어 있는 무대/부스 전체 혼잡도 조회 api")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_GET_CONGESTION)
     public ResponseEntity<BaseResponse<FestivalCongestionResponse>> getFestivalCongestion(
             @PathVariable @Positive Long festivalId,

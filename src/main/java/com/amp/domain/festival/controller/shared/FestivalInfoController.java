@@ -25,7 +25,7 @@ public class FestivalInfoController {
 
     private final FestivalInfoService festivalInfoService;
 
-    @Operation(summary = "공연 정보 조회", description = "공지 리스트 상단에 표시되는 공연 정보")
+    @Operation(summary = "공연 정보 조회", description = "공지 리스트 상단에 표시되는 공연 정보 api")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_GET_FESTIVAL_DETAIL)
     @GetMapping("/{festivalId}")
     public ResponseEntity<BaseResponse<FestivalInfoResponse>> getFestivalInfo(

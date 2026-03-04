@@ -23,7 +23,7 @@ public class NotificationController {
     private final CategorySubscribeService categorySubscribeService;
     private final NotificationService notificationService;
 
-    @Operation(summary = "카테고리 구독")
+    @Operation(summary = "카테고리 구독", description = "알람을 받고 싶은 카테고리 구독 api")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_SUBSCRIBE)
     @PostMapping("/{categoryCode}/subscriptions")
     public ResponseEntity<BaseResponse<Void>> subscribeCategory(
@@ -38,7 +38,7 @@ public class NotificationController {
 
     }
 
-    @Operation(summary = "카테고리 구독 취소")
+    @Operation(summary = "카테고리 구독 취소", description = "알람 등록한 카테고리 구독 취소 api")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_UNSUBSCRIBE)
     @DeleteMapping("/{categoryCode}/subscriptions")
     public ResponseEntity<BaseResponse<Void>> unsubscribeCategory(

@@ -27,14 +27,15 @@ import org.springframework.web.bind.annotation.*;
 @Validated
 @Tag(name = "Notice")
 @RequiredArgsConstructor
+@RequestMapping("/api/v1")
 public class BookmarkController {
 
     private final BookmarkService bookmarkService;
     private final AudienceNoticesService audienceNoticesService;
 
-    @Operation(summary = "공지 북마크 업데이트")
+    @Operation(summary = "공지 저장 및 해제", description = "공연의 공지 저장 및 저장 해제 api")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_UPDATE_BOOKMARK)
-    @PostMapping("/api/v1/notices/{noticeId}/bookmark")
+    @PostMapping("/notices/{noticeId}/bookmark")
     public ResponseEntity<BaseResponse<BookmarkResponse>> updateBookmark(
             @PathVariable @Positive Long noticeId,
             @RequestBody @Valid BookmarkRequest bookmarkRequest
@@ -47,9 +48,9 @@ public class BookmarkController {
                 .body(BaseResponse.create(SuccessStatus.BOOKMARK_UPDATE_SUCCESS.getMsg(), response));
     }
 
-    @GetMapping("/api/v1/bookmarks")
+    @GetMapping("/bookmarks")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_GET_BOOKMARK_NOTICE)
-    @Operation(summary = "저장한 공지 조회", description = "관객이 저장한 공지사항 목록을 조회합니다.")
+    @Operation(summary = "저장한 공지 조회", description = "관객이 저장한 공지사항 목록 조회 api")
     public ResponseEntity<BaseResponse<SavedNoticesResponse>> getSavedNotices(
             @AuthenticationPrincipal CustomUserPrincipal principal,
             @Parameter(description = "페이지 번호 (0부터 시작)")

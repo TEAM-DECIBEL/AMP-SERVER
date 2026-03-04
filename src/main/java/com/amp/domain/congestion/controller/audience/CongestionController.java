@@ -25,7 +25,7 @@ public class CongestionController {
     private final CongestionReportService congestionReportService;
 
     @PostMapping
-    @Operation(summary = "현장 혼잡도 입력")
+    @Operation(summary = "현장 혼잡도 입력", description = "등록된 무대/부스에 대한 혼잡도 입력 api")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_INPUT_CONGESTION)
     public ResponseEntity<BaseResponse<Void>> reportCongestion(
             @PathVariable @Positive Long stageId,
