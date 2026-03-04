@@ -110,16 +110,17 @@ public class SecurityConfig {
                                 "/actuator/**"
                         ).permitAll()
 
+                        .requestMatchers("/api/v1/festivals/*/notifications/**").hasRole("AUDIENCE")
                         .requestMatchers("/api/v1/festivals/**").hasRole("ORGANIZER")
                         .requestMatchers("/api/v1/festivals/me/**").hasRole("ORGANIZER")
                         .requestMatchers(HttpMethod.PUT, "/api/v1/notices/{noticeId}").hasRole("ORGANIZER")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/notices/{noticeId}").hasRole("ORGANIZER")
+                        .requestMatchers("/api/v1/users/organizer/**").hasRole("ORGANIZER")
                         .requestMatchers("/api/auth/onboarding/**").authenticated()
                         .requestMatchers("/api/v1/users/mypage/**").hasRole("AUDIENCE")
                         .requestMatchers("/api/v1/wishlists/**").hasRole("AUDIENCE")
                         .requestMatchers("/api/v1/stages/**").hasRole("AUDIENCE")
                         .requestMatchers("/api/v1/notifications/**").hasRole("AUDIENCE")
-                        .requestMatchers("/api/v1/festivals/*/notifications/**").hasRole("AUDIENCE")
                         .requestMatchers("/api/v1/notices/*/bookmark").hasRole("AUDIENCE")
                         .requestMatchers("/api/v1/users/bookmarks").hasRole("AUDIENCE")
                         .anyRequest().authenticated()
