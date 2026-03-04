@@ -6,9 +6,9 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum FestivalStatus {
-    UPCOMING("관람 예정"),
-    ONGOING("관람 예정"),
-    COMPLETED("관람 예정");
+    UPCOMING("진행 예정"),
+    ONGOING("진행 중"),
+    COMPLETED("진행 완료");
 
     private final String koreanName;
 }

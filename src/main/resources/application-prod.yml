@@ -51,8 +51,6 @@ swagger:
   server:
     prod:
       url: https://api.ampnotice.kr
-    local:
-      url: http://localhost:8080
 
 logging:
   level:
