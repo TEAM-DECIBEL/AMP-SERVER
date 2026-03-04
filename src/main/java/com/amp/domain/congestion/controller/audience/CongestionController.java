@@ -14,12 +14,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @Validated
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/stages/{stageId}/congestion")
 @Tag(name = "Congestion")
+@PreAuthorize("hasRole('AUDIENCE')")
 public class CongestionController {
 
     private final CongestionReportService congestionReportService;

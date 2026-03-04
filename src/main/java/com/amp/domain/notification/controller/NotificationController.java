@@ -13,11 +13,13 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "Notification")
 @RequestMapping("/api/v1/festivals/{festivalId}/notifications")
+@PreAuthorize("hasRole('AUDIENCE')")
 public class NotificationController {
 
     private final CategorySubscribeService categorySubscribeService;

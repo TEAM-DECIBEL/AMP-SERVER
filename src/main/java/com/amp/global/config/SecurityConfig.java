@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
@@ -32,6 +33,7 @@ import java.util.List;
 @Slf4j
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -110,19 +112,6 @@ public class SecurityConfig {
                                 "/actuator/**"
                         ).permitAll()
 
-                        .requestMatchers("/api/v1/festivals/*/notifications/**").hasRole("AUDIENCE")
-                        .requestMatchers("/api/v1/festivals/**").hasRole("ORGANIZER")
-                        .requestMatchers("/api/v1/festivals/me/**").hasRole("ORGANIZER")
-                        .requestMatchers(HttpMethod.PUT, "/api/v1/notices/{noticeId}").hasRole("ORGANIZER")
-                        .requestMatchers(HttpMethod.DELETE, "/api/v1/notices/{noticeId}").hasRole("ORGANIZER")
-                        .requestMatchers("/api/v1/users/organizer/**").hasRole("ORGANIZER")
-                        .requestMatchers("/api/auth/onboarding/**").authenticated()
-                        .requestMatchers("/api/v1/users/mypage/**").hasRole("AUDIENCE")
-                        .requestMatchers("/api/v1/wishlists/**").hasRole("AUDIENCE")
-                        .requestMatchers("/api/v1/stages/**").hasRole("AUDIENCE")
-                        .requestMatchers("/api/v1/notifications/**").hasRole("AUDIENCE")
-                        .requestMatchers("/api/v1/notices/*/bookmark").hasRole("AUDIENCE")
-                        .requestMatchers("/api/v1/users/bookmarks").hasRole("AUDIENCE")
                         .anyRequest().authenticated()
                 )
 

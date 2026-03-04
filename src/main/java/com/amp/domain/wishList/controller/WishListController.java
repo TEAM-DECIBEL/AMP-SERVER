@@ -22,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @Validated
@@ -61,6 +62,7 @@ public class WishListController {
     @PutMapping("/{festivalId}")
     @Operation(summary = "관람 예정 공연 등록/해제", description = "관람 예정 공연 등록 및 해제 api")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_ADD_WISHLIST)
+    @PreAuthorize("hasRole('AUDIENCE')")
     public ResponseEntity<BaseResponse<UpdateWishListResponse>> toggleWishList(
             @PathVariable Long festivalId,
             @RequestBody @Valid WishListRequest request
@@ -79,6 +81,7 @@ public class WishListController {
     @GetMapping()
     @Operation(summary = "관람 예정 공연 리스트 조회", description = "관객의 홈 화면 관람 예정 공연 리스트 조회 api")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_GET_WISHLISTS)
+    @PreAuthorize("hasRole('AUDIENCE')")
     public ResponseEntity<BaseResponse<PageResponse<MyUpcomingResponse>>> getMyWishList(
             @Parameter(description = "페이지 번호 (0부터 시작)")
             @RequestParam(defaultValue = "0") @Min(0) int page,
@@ -101,6 +104,7 @@ public class WishListController {
     @GetMapping("/all")
     @Operation(summary = "내 관람 예정 공연 조회", description = "관객 마이페이지 내 관람 예정 공연 조회 api")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_GET_WISHLISTS)
+    @PreAuthorize("hasRole('AUDIENCE')")
     public ResponseEntity<BaseResponse<PageResponse<WishListHistoryResponse>>> getHistoryWishLists(
             @Parameter(description = "페이지 번호 (0부터 시작)")
             @RequestParam(defaultValue = "0") @Min(0) int page,

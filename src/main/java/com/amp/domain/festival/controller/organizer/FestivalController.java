@@ -17,11 +17,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/api/v1/festivals")
 @Tag(name = "Festival")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('ORGANIZER')")
 public class FestivalController {
 
     private final FestivalService festivalService;
