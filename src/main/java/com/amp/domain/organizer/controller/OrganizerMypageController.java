@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.security.access.prepost.PreAuthorize;
 
-@Tag(name = "User")
+@Tag(name = "Organizer")
 @RestController
 @RequestMapping("/api/v1/users/organizer/mypage")
 @RequiredArgsConstructor

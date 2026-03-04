@@ -27,8 +27,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
-@RequestMapping("/api/v1/users")
-@Tag(name = "User")
+@RequestMapping("/api/v1/audience")
+@Tag(name = "Audience")
 @Validated
 @RequiredArgsConstructor
 public class AudienceController {
@@ -39,7 +39,7 @@ public class AudienceController {
 
     @GetMapping("/mypage")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_GET_MY_PAGE)
-    @Operation(summary = "마이페이지 조회", description = "현재 로그인한 관객의 프로필 정보 조회 api.")
+    @Operation(summary = "마이페이지 조회", description = "현재 로그인한 관객의 프로필 정보 조회 api")
     @PreAuthorize("hasRole('AUDIENCE')")
     public ResponseEntity<BaseResponse<AudienceMyPageResponse>> getMyPage(
             @AuthenticationPrincipal CustomUserPrincipal principal) {
