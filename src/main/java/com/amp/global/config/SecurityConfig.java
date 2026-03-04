@@ -78,14 +78,16 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/v1/notices/*",
+                                "/api/v1/festivals",
+                                "/api/v1/festivals/{festivalId}",
+                                "/api/v1/festivals/*/notices",
+                                "/api/v1/festivals/*/congestion"
+                        ).permitAll()
                         .requestMatchers(
-                                "/api/v1/common/notices/*",
-                                "/api/v1/common/festivals/*",
-                                "/api/v1/common/festivals/*/notices",
-                                "/api/v1/common/festivals/*/congestion",
-                                "/api/v1/users/festivals",
                                 "/api/v1/users/nickname",
-                                "/api/v1/users/me/festivals/recent"
+                                "/api/v1/wishlists/recent"
                         ).permitAll()
 
                         .requestMatchers(
@@ -108,15 +110,18 @@ public class SecurityConfig {
                                 "/actuator/**"
                         ).permitAll()
 
-                        .requestMatchers("/api/v1/organizer/**").hasRole("ORGANIZER")
+                        .requestMatchers("/api/v1/festivals/**").hasRole("ORGANIZER")
+                        .requestMatchers("/api/v1/festivals/me/**").hasRole("ORGANIZER")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/notices/{noticeId}").hasRole("ORGANIZER")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/notices/{noticeId}").hasRole("ORGANIZER")
                         .requestMatchers("/api/auth/onboarding/**").authenticated()
-                        .requestMatchers("/api/v1/users/me/**").hasRole("AUDIENCE")
-                        .requestMatchers("/api/v1/users/mypage").hasRole("AUDIENCE")
-                        .requestMatchers("/api/v1/users/stages/**").hasRole("AUDIENCE")
-                        .requestMatchers("/api/v1/users/notifications/**").hasRole("AUDIENCE")
-                        .requestMatchers("/api/v1/users/festivals/*/notifications/**").hasRole("AUDIENCE")
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/v1/users/notices/*/bookmark").hasRole("AUDIENCE")
+                        .requestMatchers("/api/v1/users/mypage/**").hasRole("AUDIENCE")
+                        .requestMatchers("/api/v1/wishlists/**").hasRole("AUDIENCE")
+                        .requestMatchers("/api/v1/stages/**").hasRole("AUDIENCE")
+                        .requestMatchers("/api/v1/notifications/**").hasRole("AUDIENCE")
+                        .requestMatchers("/api/v1/festivals/*/notifications/**").hasRole("AUDIENCE")
+                        .requestMatchers("/api/v1/notices/*/bookmark").hasRole("AUDIENCE")
+                        .requestMatchers("/api/v1/users/bookmarks").hasRole("AUDIENCE")
                         .anyRequest().authenticated()
                 )
 
