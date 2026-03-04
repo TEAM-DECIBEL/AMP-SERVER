@@ -1,6 +1,6 @@
 package com.amp.domain.festival.dto.request;
 
-import com.amp.domain.stage.dto.request.StageRequest;
+import com.amp.domain.congestion.dto.request.StageRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;

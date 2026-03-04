@@ -15,18 +15,19 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
-@RequestMapping("/api/v1/organizer/notices")
-@Tag(name = "Organizer API")
+@RequestMapping("/api/v1/notices")
+@Tag(name = "Notice")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('ORGANIZER')")
 public class NoticeUpdateController {
 
     private final NoticeUpdateService noticeUpdateService;
     private final NoticeService noticeService;
 
-    // 공지 수정/상단고정 수정
-    @Operation(summary = "공지 수정/상단고정")
+    @Operation(summary = "공지 수정/상단고정", description = "공지 수정 및 상단 고정 여부 선택 api")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_UPDATE_NOTICE)
     @PutMapping(path = "/{noticeId}",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
