@@ -2,6 +2,8 @@ package com.amp.domain.audience.controller;
 
 import com.amp.domain.audience.dto.response.AudienceMyPageResponse;
 import com.amp.domain.audience.dto.response.NicknameResponse;
+import com.amp.domain.audience.dto.response.SavedNoticesResponse;
+import com.amp.domain.audience.service.AudienceNoticesService;
 import com.amp.domain.audience.service.AudienceService;
 import com.amp.global.annotation.ApiErrorCodes;
 import com.amp.global.common.SuccessStatus;
@@ -10,13 +12,17 @@ import com.amp.global.security.CustomUserPrincipal;
 import com.amp.global.security.service.AuthService;
 import com.amp.global.swagger.SwaggerResponseDescription;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -28,6 +34,7 @@ public class AudienceController {
 
     private final AudienceService audienceService;
     private final AuthService authService;
+    private final AudienceNoticesService audienceNoticesService;
 
     @GetMapping("/mypage")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_GET_MY_PAGE)
@@ -48,6 +55,23 @@ public class AudienceController {
         return ResponseEntity
                 .status(SuccessStatus.USER_NICKNAME_RETRIEVED.getHttpStatus())
                 .body(BaseResponse.of(SuccessStatus.USER_NICKNAME_RETRIEVED, nicknameResponse));
+    }
+
+    @GetMapping("/bookmarks")
+    @ApiErrorCodes(SwaggerResponseDescription.FAIL_GET_BOOKMARK_NOTICE)
+    @Operation(summary = "저장한 공지 조회", description = "관객이 저장한 공지사항 목록 조회 api")
+    public ResponseEntity<BaseResponse<SavedNoticesResponse>> getSavedNotices(
+            @AuthenticationPrincipal CustomUserPrincipal principal,
+            @Parameter(description = "페이지 번호 (0부터 시작)")
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @Parameter(description = "페이지 크기 (최대 100)")
+            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size
+    ) {
+        Long userId = principal.getUserId();
+        SavedNoticesResponse response = audienceNoticesService.getSavedAnnouncements(userId, page, size);
+        return ResponseEntity
+                .status(SuccessStatus.SAVED_NOTICES_RETRIEVED.getHttpStatus())
+                .body(BaseResponse.of(SuccessStatus.SAVED_NOTICES_RETRIEVED, response));
     }
 
 }
