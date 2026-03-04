@@ -10,16 +10,18 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequiredArgsConstructor
-@Tag(name = "Audience API")
-@RequestMapping("/api/v1/audience/notifications")
+@Tag(name = "Notification")
+@RequestMapping("/api/v1/notifications")
+@PreAuthorize("hasRole('AUDIENCE')")
 public class FcmTokenController {
 
     private final CategorySubscribeService categorySubscribeService;
 
-    @Operation(summary = "FCM 토큰 기기 동기화", description = "로그인한 기기의 FCM 토큰을 현재 구독 중인 모든 카테고리 토픽에 등록합니다.")
+    @Operation(summary = "FCM 토큰 기기 동기화", description = "로그인한 기기의 FCM 토큰을 현재 구독 중인 모든 카테고리 토픽에 등록 api")
     @PostMapping("/fcm-token")
     public ResponseEntity<BaseResponse<Void>> registerFcmToken(
             @RequestBody @Valid FcmTopicSubscribeRequest fcmTopicSubscribeRequest

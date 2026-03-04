@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,14 +23,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @Validated
-@RequestMapping("/api/v1/users/festivals")
-@Tag(name = "Audience API")
+@RequestMapping("/api/v1/festivals")
+@Tag(name = "Festival")
 @RequiredArgsConstructor
 public class AudienceFestivalController {
     private final AudienceFestivalService audienceFestivalService;
 
     @GetMapping
-    @Operation(summary = "전체 공연 목록 조회")
+    @Operation(summary = "전체 공연 목록 조회", description = "홈 화면에서 공연 기간이 지나지 않은 공연 목록 조회 api")
     public ResponseEntity<BaseResponse<PageResponse<AudienceFestivalSummaryResponse>>> getAllFestivals(
             @Parameter(description = "페이지 번호 (0부터 시작)")
             @RequestParam(defaultValue = "0") @Min(0) int page,

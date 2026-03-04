@@ -13,20 +13,23 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
-@RequestMapping("/api/v1/users/notices")
-@Tag(name = "Audience API")
+@Validated
+@Tag(name = "Notice")
 @RequiredArgsConstructor
+@RequestMapping("/api/v1")
+@PreAuthorize("hasRole('AUDIENCE')")
 public class BookmarkController {
 
     private final BookmarkService bookmarkService;
 
-    // 공지 북마크 업데이트
-    @Operation(summary = "공지 북마크 업데이트")
+    @Operation(summary = "공지 저장 및 해제", description = "공연의 공지 저장 및 저장 해제 api")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_UPDATE_BOOKMARK)
-    @PostMapping("/{noticeId}/bookmark")
+    @PostMapping("/notices/{noticeId}/bookmark")
     public ResponseEntity<BaseResponse<BookmarkResponse>> updateBookmark(
             @PathVariable @Positive Long noticeId,
             @RequestBody @Valid BookmarkRequest bookmarkRequest
@@ -38,4 +41,5 @@ public class BookmarkController {
                 .status(SuccessStatus.BOOKMARK_UPDATE_SUCCESS.getHttpStatus())
                 .body(BaseResponse.create(SuccessStatus.BOOKMARK_UPDATE_SUCCESS.getMsg(), response));
     }
+
 }
