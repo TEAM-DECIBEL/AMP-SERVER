@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @OpenAPIDefinition(
         info = @Info(
@@ -46,6 +47,13 @@ import java.util.stream.Collectors;
 )
 @Configuration
 public class SwaggerConfig {
+
+    private static final List<String> SHARED_PACKAGES = List.of(
+            "com.amp.domain.festival.controller.shared",
+            "com.amp.domain.notice.controller.shared",
+            "com.amp.domain.congestion.controller.shared",
+            "com.amp.domain.auth.controller"
+    );
 
     @Value("${swagger.server.local.url:}")
     private String localServerUrl;
@@ -82,15 +90,11 @@ public class SwaggerConfig {
     public GroupedOpenApi organizerGroup() {
         return GroupedOpenApi.builder()
                 .group("Organizer")
-                .packagesToScan(
+                .packagesToScan(mergeWithShared(
                         "com.amp.domain.festival.controller.organizer",
-                        "com.amp.domain.festival.controller.shared",
                         "com.amp.domain.notice.controller.organizer",
-                        "com.amp.domain.notice.controller.shared",
-                        "com.amp.domain.organizer.controller",
-                        "com.amp.domain.congestion.controller.shared",
-                        "com.amp.domain.auth.controller"
-                )
+                        "com.amp.domain.organizer.controller"
+                ))
                 .build();
     }
 
@@ -98,22 +102,21 @@ public class SwaggerConfig {
     public GroupedOpenApi audienceGroup() {
         return GroupedOpenApi.builder()
                 .group("Audience")
-                .packagesToScan(
+                .packagesToScan(mergeWithShared(
                         "com.amp.domain.festival.controller.audience",
-                        "com.amp.domain.festival.controller.shared",
                         "com.amp.domain.notice.controller.audience",
-                        "com.amp.domain.notice.controller.shared",
                         "com.amp.domain.notification.controller",
                         "com.amp.domain.wishList.controller",
                         "com.amp.domain.congestion.controller.audience",
-                        "com.amp.domain.congestion.controller.shared",
-                        "com.amp.domain.audience.controller",
-                        "com.amp.domain.auth.controller"
-                )
+                        "com.amp.domain.audience.controller"
+                ))
                 .build();
     }
 
-    // ─── OperationCustomizer ────────────────────────────────────────────────────
+    private String[] mergeWithShared(String... specific) {
+        return Stream.concat(Stream.of(specific), SHARED_PACKAGES.stream())
+                .toArray(String[]::new);
+    }
 
     @Bean
     public OperationCustomizer customize() {
