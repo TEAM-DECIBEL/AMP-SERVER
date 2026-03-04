@@ -5,7 +5,7 @@ import com.amp.domain.festival.entity.FestivalStatus;
 import com.amp.domain.festival.util.FestivalUtils;
 
 public record OrganizerFestivalListResponse(
-        String imageUrl,
+        String mainImageUrl,
         String title,
         String period,
         String status
