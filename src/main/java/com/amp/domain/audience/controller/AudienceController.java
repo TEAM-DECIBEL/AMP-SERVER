@@ -24,21 +24,23 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
-@RequestMapping("/api/v1/users")
-@Tag(name = "Audience API")
+@RequestMapping("/api/v1/audience")
+@Tag(name = "Audience")
 @Validated
 @RequiredArgsConstructor
 public class AudienceController {
 
     private final AudienceService audienceService;
-    private final AudienceNoticesService audienceNoticesService;
     private final AuthService authService;
+    private final AudienceNoticesService audienceNoticesService;
 
     @GetMapping("/mypage")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_GET_MY_PAGE)
-    @Operation(summary = "마이페이지 조회", description = "현재 로그인한 관객의 프로필 정보를 조회합니다.")
+    @Operation(summary = "마이페이지 조회", description = "현재 로그인한 관객의 프로필 정보 조회 api")
+    @PreAuthorize("hasRole('AUDIENCE')")
     public ResponseEntity<BaseResponse<AudienceMyPageResponse>> getMyPage(
             @AuthenticationPrincipal CustomUserPrincipal principal) {
         Long userId = principal.getUserId();
@@ -48,9 +50,19 @@ public class AudienceController {
                 .body(BaseResponse.of(SuccessStatus.USER_PROFILE_RETRIEVED, response));
     }
 
-    @GetMapping("/me/bookmark")
+    @GetMapping("/nickname")
+    @Operation(summary = "닉네임 조회", description = "로그인한 관객의 닉네임 반환, 미로그인 시 '관객' 반환 api")
+    public ResponseEntity<BaseResponse<NicknameResponse>> getAudienceNickname(){
+        NicknameResponse nicknameResponse = new NicknameResponse(authService.getDisplayNickname());
+        return ResponseEntity
+                .status(SuccessStatus.USER_NICKNAME_RETRIEVED.getHttpStatus())
+                .body(BaseResponse.of(SuccessStatus.USER_NICKNAME_RETRIEVED, nicknameResponse));
+    }
+
+    @GetMapping("/bookmarks")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_GET_BOOKMARK_NOTICE)
-    @Operation(summary = "저장한 공지 조회", description = "관객이 저장한 공지사항 목록을 조회합니다.")
+    @Operation(summary = "저장한 공지 조회", description = "관객이 저장한 공지사항 목록 조회 api")
+    @PreAuthorize("hasRole('AUDIENCE')")
     public ResponseEntity<BaseResponse<SavedNoticesResponse>> getSavedNotices(
             @AuthenticationPrincipal CustomUserPrincipal principal,
             @Parameter(description = "페이지 번호 (0부터 시작)")
@@ -63,15 +75,6 @@ public class AudienceController {
         return ResponseEntity
                 .status(SuccessStatus.SAVED_NOTICES_RETRIEVED.getHttpStatus())
                 .body(BaseResponse.of(SuccessStatus.SAVED_NOTICES_RETRIEVED, response));
-    }
-
-    @GetMapping("/nickname")
-    @Operation(summary = "닉네임 조회", description = "로그인한 관객의 닉네임 반환, 미로그인 시 '관객' 반환")
-    public ResponseEntity<BaseResponse<NicknameResponse>> getAudienceNickname(){
-        NicknameResponse nicknameResponse = new NicknameResponse(authService.getDisplayNickname());
-        return ResponseEntity
-                .status(SuccessStatus.USER_NICKNAME_RETRIEVED.getHttpStatus())
-                .body(BaseResponse.of(SuccessStatus.USER_NICKNAME_RETRIEVED, nicknameResponse));
     }
 
 }

@@ -1,6 +1,6 @@
 package com.amp.domain.festival.dto.request;
 
-import com.amp.domain.stage.dto.request.StageRequest;
+import com.amp.domain.congestion.dto.request.StageRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
