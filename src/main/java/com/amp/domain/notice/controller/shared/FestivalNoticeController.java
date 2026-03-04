@@ -1,4 +1,4 @@
-package com.amp.domain.notice.controller.common;
+package com.amp.domain.notice.controller.shared;
 
 import com.amp.domain.notice.dto.response.NoticeListResponse;
 import com.amp.domain.notice.service.common.FestivalNoticeService;

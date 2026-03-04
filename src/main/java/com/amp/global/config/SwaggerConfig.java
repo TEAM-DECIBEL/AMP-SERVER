@@ -84,11 +84,11 @@ public class SwaggerConfig {
                 .group("Organizer")
                 .packagesToScan(
                         "com.amp.domain.festival.controller.organizer",
-                        "com.amp.domain.festival.controller.common",
+                        "com.amp.domain.festival.controller.shared",
                         "com.amp.domain.notice.controller.organizer",
-                        "com.amp.domain.notice.controller.common",
+                        "com.amp.domain.notice.controller.shared",
                         "com.amp.domain.organizer.controller",
-                        "com.amp.domain.stage.controller.common",
+                        "com.amp.domain.congestion.controller.shared",
                         "com.amp.domain.auth.controller"
                 )
                 .build();
@@ -100,13 +100,13 @@ public class SwaggerConfig {
                 .group("Audience")
                 .packagesToScan(
                         "com.amp.domain.festival.controller.audience",
-                        "com.amp.domain.festival.controller.common",
+                        "com.amp.domain.festival.controller.shared",
                         "com.amp.domain.notice.controller.audience",
-                        "com.amp.domain.notice.controller.common",
+                        "com.amp.domain.notice.controller.shared",
                         "com.amp.domain.notification.controller",
                         "com.amp.domain.wishList.controller",
-                        "com.amp.domain.stage.controller.audience",
-                        "com.amp.domain.stage.controller.common",
+                        "com.amp.domain.congestion.controller.audience",
+                        "com.amp.domain.congestion.controller.shared",
                         "com.amp.domain.audience.controller",
                         "com.amp.domain.auth.controller"
                 )

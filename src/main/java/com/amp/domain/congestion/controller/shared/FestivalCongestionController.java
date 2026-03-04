@@ -1,4 +1,4 @@
-package com.amp.domain.congestion.controller.common;
+package com.amp.domain.congestion.controller.shared;
 
 import com.amp.domain.congestion.dto.response.FestivalCongestionResponse;
 import com.amp.domain.congestion.service.CongestionQueryService;
@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/festivals")
-@Tag(name = "Stage")
+@Tag(name = "Congestion")
 public class FestivalCongestionController {
 
     private final CongestionQueryService congestionQueryService;

@@ -1,4 +1,4 @@
-package com.amp.domain.festival.controller.common;
+package com.amp.domain.festival.controller.shared;
 
 import com.amp.domain.festival.dto.response.FestivalInfoResponse;
 import com.amp.domain.festival.service.common.FestivalInfoService;

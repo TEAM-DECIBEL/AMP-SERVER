@@ -1,4 +1,4 @@
-package com.amp.domain.notice.controller.common;
+package com.amp.domain.notice.controller.shared;
 
 import com.amp.domain.notice.dto.response.NoticeDetailResponse;
 import com.amp.domain.notice.service.organizer.NoticeService;
@@ -34,5 +34,4 @@ public class NoticeController {
                 .status(SuccessStatus.NOTICE_DETAIL_GET_SUCCESS.getHttpStatus())
                 .body(BaseResponse.ok(SuccessStatus.NOTICE_DETAIL_GET_SUCCESS.getMsg(), response));
     }
-
 }
