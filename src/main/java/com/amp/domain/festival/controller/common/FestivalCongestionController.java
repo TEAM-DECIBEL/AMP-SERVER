@@ -19,17 +19,17 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-@RestController
 @Validated
-@RequestMapping("/api/v1/festivals")
-@Tag(name = "Festival")
+@RestController
 @RequiredArgsConstructor
+@RequestMapping("/api/v1/festivals")
+@Tag(name = "Stage")
 public class FestivalCongestionController {
 
     private final CongestionQueryService congestionQueryService;
 
-    @Operation(summary = "공연 별 전체 혼잡도 조회")
     @GetMapping("/{festivalId}/congestion")
+    @Operation(summary = "공연 별 전체 혼잡도 조회")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_GET_CONGESTION)
     public ResponseEntity<BaseResponse<FestivalCongestionResponse>> getFestivalCongestion(
             @PathVariable @Positive Long festivalId,
