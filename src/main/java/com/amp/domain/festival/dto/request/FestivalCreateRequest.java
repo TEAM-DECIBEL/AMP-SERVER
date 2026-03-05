@@ -9,7 +9,7 @@ public record FestivalCreateRequest(
         @NotBlank(message = "공연 장소는 필수입니다.") String location,
         @NotNull(message = "공연 이미지는 필수입니다.") MultipartFile mainImage,
         @NotBlank(message = "공연 일시는 필수입니다.") String schedules,
-        String stages,
+        @NotBlank(message = "1개 이상의 무대/부스 정보는 필수입니다.") String stages,
         @NotBlank(message = "1개 이상의 카테고리 선택은 필수입니다.") String activeCategoryIds
 ) {
 }

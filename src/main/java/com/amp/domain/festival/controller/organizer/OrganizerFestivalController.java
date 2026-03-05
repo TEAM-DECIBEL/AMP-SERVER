@@ -23,17 +23,19 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @Validated
-@RequestMapping("/api/v1/organizer/me/festivals")
-@Tag(name = "Organizer API")
+@RequestMapping("/api/v1/organizer/festivals")
+@Tag(name = "Organizer")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('ORGANIZER')")
 public class OrganizerFestivalController {
 
     private final OrganizerFestivalService organizerFestivalService;
 
-    @Operation(summary = "주최사 마이페이지 진행한 모든 공연 조회", description = "주최사가 등록한 모든 공연 중 삭제된 것을 제외하고 전부 조회")
+    @Operation(summary = "주최사의 진행한 모든 공연 조회", description = "주최사의 마이페이지에서 등록한 모든 공연 중 삭제된 것을 제외하고 전부 조회 api")
     @ApiErrorCodes(SwaggerResponseDescription.NO_AUTHORIZATION)
     @GetMapping("/all")
     public ResponseEntity<BaseResponse<PageResponse<OrganizerFestivalListResponse>>> getMyFestivals(
@@ -49,7 +51,7 @@ public class OrganizerFestivalController {
                 .body(BaseResponse.create(SuccessStatus.GET_MY_ALL_FESTIVALS.getMsg(), response));
     }
 
-    @Operation(summary = "주최사 홈 화면 진행중, 진행 예정 공연 조회", description = "주최사가 등록한 모든 공연 중 진행 중이거나 예정인 공연 조회")
+    @Operation(summary = "주최사 진행중, 진행 예정 공연 조회", description = "홈 화면에서 주최사가 등록한 모든 공연 중 진행 중이거나 예정인 공연 조회 api")
     @ApiErrorCodes(SwaggerResponseDescription.NO_AUTHORIZATION)
     @GetMapping("/active")
     public ResponseEntity<BaseResponse<OrganizerActiveFestivalPageResponse>> getActiveFestivals(

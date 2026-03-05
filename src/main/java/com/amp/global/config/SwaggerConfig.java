@@ -20,6 +20,7 @@ import io.swagger.v3.oas.models.responses.ApiResponses;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.servers.Server;
 import org.springdoc.core.customizers.OperationCustomizer;
+import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @OpenAPIDefinition(
         info = @Info(
@@ -46,7 +48,14 @@ import java.util.stream.Collectors;
 @Configuration
 public class SwaggerConfig {
 
-    @Value("${swagger.server.local.url:http://localhost:8080}")
+    private static final List<String> SHARED_PACKAGES = List.of(
+            "com.amp.domain.festival.controller.shared",
+            "com.amp.domain.notice.controller.shared",
+            "com.amp.domain.congestion.controller.shared",
+            "com.amp.domain.auth.controller"
+    );
+
+    @Value("${swagger.server.local.url:}")
     private String localServerUrl;
 
     @Value("${swagger.server.prod.url:https://api.ampnotice.kr}")
@@ -75,6 +84,38 @@ public class SwaggerConfig {
         return new OpenAPI()
                 .servers(servers)
                 .addSecurityItem(securityRequirement);
+    }
+
+    @Bean
+    public GroupedOpenApi organizerGroup() {
+        return GroupedOpenApi.builder()
+                .group("Organizer")
+                .packagesToScan(mergeWithShared(
+                        "com.amp.domain.festival.controller.organizer",
+                        "com.amp.domain.notice.controller.organizer",
+                        "com.amp.domain.organizer.controller"
+                ))
+                .build();
+    }
+
+    @Bean
+    public GroupedOpenApi audienceGroup() {
+        return GroupedOpenApi.builder()
+                .group("Audience")
+                .packagesToScan(mergeWithShared(
+                        "com.amp.domain.festival.controller.audience",
+                        "com.amp.domain.notice.controller.audience",
+                        "com.amp.domain.notification.controller",
+                        "com.amp.domain.wishList.controller",
+                        "com.amp.domain.congestion.controller.audience",
+                        "com.amp.domain.audience.controller"
+                ))
+                .build();
+    }
+
+    private String[] mergeWithShared(String... specific) {
+        return Stream.concat(Stream.of(specific), SHARED_PACKAGES.stream())
+                .toArray(String[]::new);
     }
 
     @Bean
