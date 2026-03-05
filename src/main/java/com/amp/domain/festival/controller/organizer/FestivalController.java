@@ -17,11 +17,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
-@RequestMapping("/api/v1/organizer/festivals")
-@Tag(name = "Organizer API")
+@RequestMapping("/api/v1/festivals")
+@Tag(name = "Festival")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('ORGANIZER')")
 public class FestivalController {
 
     private final FestivalService festivalService;
@@ -37,9 +39,9 @@ public class FestivalController {
                 .body(BaseResponse.create(SuccessStatus.FESTIVAL_CREATE_SUCCESS.getMsg(), response));
     }
 
-    @Operation(summary = "공연 상세 조회 - 수정용")
+    @Operation(summary = "공연 상세 조회 - 수정용", description = "공연 수정 시 필요한 정보 호출 api")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_GET_FESTIVAL_DETAIL)
-    @GetMapping("/{festivalId}")
+    @GetMapping("/{festivalId}/manage")
     public ResponseEntity<BaseResponse<FestivalDetailResponse>> getFestivalDetail(
             @PathVariable Long festivalId) {
         FestivalDetailResponse response = festivalService.getFestivalDetail(festivalId);
