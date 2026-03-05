@@ -2,7 +2,7 @@ package com.amp.domain.festival.dto.response;
 
 import com.amp.domain.category.entity.FestivalCategory;
 import com.amp.domain.festival.entity.Festival;
-import com.amp.domain.stage.dto.response.StageResponse;
+import com.amp.domain.congestion.dto.response.StageResponse;
 
 import java.util.List;
 

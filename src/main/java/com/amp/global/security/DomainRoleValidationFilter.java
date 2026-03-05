@@ -5,6 +5,7 @@ import com.amp.domain.user.entity.User;
 import com.amp.domain.user.entity.UserType;
 import com.amp.domain.user.repository.UserRepository;
 import com.amp.global.response.error.AuthErrorResponse;
+import com.amp.global.security.util.DomainConstants;
 import com.amp.global.security.util.DomainRoleMapping;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
@@ -90,6 +91,14 @@ public class DomainRoleValidationFilter extends OncePerRequestFilter {
 
         // 요청 origin 추출
         String origin = extractOrigin(request);
+
+        // 백엔드 origin
+        if (origin != null && (origin.contains(DomainConstants.LOCAL_BACKEND_HOST)
+                || origin.contains(DomainConstants.PROD_API_HOST)
+                || origin.contains(DomainConstants.PROD_API_ORGANIZER_HOST))) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         if (origin == null || origin.isEmpty()) {
             // origin을 추출할 수 없으면 패스

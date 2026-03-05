@@ -15,9 +15,9 @@ import com.amp.domain.festival.exception.FestivalErrorCode;
 import com.amp.domain.festival.repository.FestivalRepository;
 import com.amp.domain.festival.repository.FestivalScheduleRepository;
 import com.amp.domain.festival.scheduler.FestivalScheduleService;
-import com.amp.domain.stage.dto.request.StageRequest;
-import com.amp.domain.stage.repository.StageRepository;
-import com.amp.domain.stage.service.StageService;
+import com.amp.domain.congestion.dto.request.StageRequest;
+import com.amp.domain.congestion.repository.StageRepository;
+import com.amp.domain.congestion.service.StageService;
 import com.amp.domain.user.entity.Organizer;
 import com.amp.domain.user.entity.User;
 import com.amp.global.annotation.LogExecutionTime;
@@ -91,6 +91,9 @@ public class FestivalService {
 
         if (schedules == null || schedules.isEmpty()) {
             throw new CustomException(FestivalErrorCode.SCHEDULES_REQUIRED);
+        }
+        if (stages == null || stages.isEmpty()) {
+            throw new CustomException(FestivalErrorCode.STAGES_REQUIRED);
         }
         if (activeCategoryIds == null || activeCategoryIds.isEmpty()) {
             throw new CustomException(CategoryErrorCode.CATEGORY_REQUIRED);

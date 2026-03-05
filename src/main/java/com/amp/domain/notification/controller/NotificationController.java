@@ -13,19 +13,21 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequiredArgsConstructor
-@Tag(name = "Audience API")
-@RequestMapping("/api/v1/festivals/{festivalId}/users/notifications")
+@Tag(name = "Notification")
+@RequestMapping("/api/v1/festivals/{festivalId}/notifications")
+@PreAuthorize("hasRole('AUDIENCE')")
 public class NotificationController {
 
     private final CategorySubscribeService categorySubscribeService;
     private final NotificationService notificationService;
 
-    @Operation(summary = "카테고리 구독")
+    @Operation(summary = "카테고리 구독", description = "알람을 받고 싶은 카테고리 구독 api")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_SUBSCRIBE)
-    @PostMapping("/{categoryCode}/subscribe")
+    @PostMapping("/{categoryCode}/subscriptions")
     public ResponseEntity<BaseResponse<Void>> subscribeCategory(
             @PathVariable Long festivalId,
             @PathVariable String categoryCode,
@@ -38,9 +40,9 @@ public class NotificationController {
 
     }
 
-    @Operation(summary = "카테고리 구독 취소")
+    @Operation(summary = "카테고리 구독 취소", description = "알람 등록한 카테고리 구독 취소 api")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_UNSUBSCRIBE)
-    @DeleteMapping("/{categoryCode}/subscribe")
+    @DeleteMapping("/{categoryCode}/subscriptions")
     public ResponseEntity<BaseResponse<Void>> unsubscribeCategory(
             @PathVariable Long festivalId,
             @PathVariable String categoryCode,

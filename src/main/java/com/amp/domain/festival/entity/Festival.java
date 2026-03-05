@@ -1,7 +1,7 @@
 package com.amp.domain.festival.entity;
 
 import com.amp.domain.category.entity.FestivalCategory;
-import com.amp.domain.stage.entity.Stage;
+import com.amp.domain.congestion.entity.Stage;
 import com.amp.domain.user.entity.Organizer;
 import com.amp.global.common.dto.TimeConstants;
 import com.amp.global.entity.BaseTimeEntity;
