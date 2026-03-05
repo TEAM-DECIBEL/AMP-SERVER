@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
@@ -32,6 +33,7 @@ import java.util.List;
 @Slf4j
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -78,13 +80,16 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/v1/notices/*",
+                                "/api/v1/festivals",
+                                "/api/v1/festivals/{festivalId}",
+                                "/api/v1/festivals/*/notices",
+                                "/api/v1/festivals/*/congestion"
+                        ).permitAll()
                         .requestMatchers(
-                                "/api/v1/common/notices/*",
-                                "/api/v1/common/festivals/*",
-                                "/api/v1/common/festivals/*/notices",
-                                "/api/v1/common/festivals/*/congestion",
-                                "/api/v1/users/festivals",
-                                "/api/v1/users/nickname"
+                                "/api/v1/audience/nickname",
+                                "/api/v1/wishlists/recent"
                         ).permitAll()
 
                         .requestMatchers(
@@ -107,15 +112,6 @@ public class SecurityConfig {
                                 "/actuator/**"
                         ).permitAll()
 
-                        .requestMatchers("/api/v1/organizer/**").hasRole("ORGANIZER")
-                        .requestMatchers("/api/auth/onboarding/**").authenticated()
-                        .requestMatchers("/api/v1/users/me/**").hasRole("AUDIENCE")
-                        .requestMatchers("/api/v1/users/mypage").hasRole("AUDIENCE")
-                        .requestMatchers("/api/v1/users/stages/**").hasRole("AUDIENCE")
-                        .requestMatchers("/api/v1/users/notifications/**").hasRole("AUDIENCE")
-                        .requestMatchers("/api/v1/users/festivals/*/notifications/**").hasRole("AUDIENCE")
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/v1/users/notices/*/bookmark").hasRole("AUDIENCE")
                         .anyRequest().authenticated()
                 )
 
