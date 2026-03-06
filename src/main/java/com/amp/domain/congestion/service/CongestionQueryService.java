@@ -90,7 +90,7 @@ public class CongestionQueryService {
         if (user == null || user.getUserType() == UserType.ORGANIZER) return false;
 
         return festivalScheduleRepository.findByFestivalIdAndFestivalDate(festivalId, LocalDate.now())
-                .map(s -> LocalDateTime.now().isAfter(LocalDate.now().atTime(s.getFestivalTime()).minusHours(8)))
+                .map(s -> !LocalDateTime.now().isBefore(LocalDate.now().atTime(s.getFestivalTime()).minusHours(8)))
                 .orElse(false);
     }
 
