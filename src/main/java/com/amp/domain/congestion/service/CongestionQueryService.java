@@ -42,16 +42,22 @@ public class CongestionQueryService {
     public FestivalCongestionResponse getFestivalCongestion(Long festivalId, Pageable pageable) {
         validateFestivalExists(festivalId);
 
-        boolean isInputAvailable = checkInputStatus(festivalId);
-        Page<Stage> stagePage = stageRepository.findByFestivalId(festivalId, pageable);
+        User user = authService.getCurrentUserOrNull();
+        boolean isInputAvailable = checkInputStatus(user, festivalId);
+        boolean isViewAvailable  = isInputAvailable || isOrganizer(user);
 
+        Page<Stage> stagePage = stageRepository.findByFestivalId(festivalId, pageable);
         Map<Long, StageCongestion> latestCongestionMap = fetchLatestCongestion(stagePage.getContent());
 
         Page<StageCongestionSummary> summaryPage = stagePage.map(stage ->
-                mapToSummary(stage, latestCongestionMap.get(stage.getId()), isInputAvailable)
+                mapToSummary(stage, latestCongestionMap.get(stage.getId()), isViewAvailable)
         );
 
         return FestivalCongestionResponse.of(isInputAvailable, summaryPage);
+    }
+
+    private boolean isOrganizer(User user) {
+        return user != null && user.getUserType() == UserType.ORGANIZER;
     }
 
     private Map<Long, StageCongestion> fetchLatestCongestion(List<Stage> stages) {
@@ -87,8 +93,7 @@ public class CongestionQueryService {
                 .build();
     }
 
-    private boolean checkInputStatus(Long festivalId) {
-        User user = authService.getCurrentUserOrNull();
+    private boolean checkInputStatus(User user, Long festivalId) {
         if (user == null || user.getUserType() == UserType.ORGANIZER) return false;
 
         LocalDate today = LocalDate.now();
