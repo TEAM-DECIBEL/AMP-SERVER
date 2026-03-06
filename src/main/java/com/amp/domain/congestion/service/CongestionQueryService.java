@@ -100,7 +100,7 @@ public class CongestionQueryService {
             return !now.isBefore(today.atTime(todaySchedule.get().getFestivalTime()).minusHours(8));
         }
 
-        // 내일 새벽 공연 확인 (오늘 18시 이후 입력 가능한 경우)
+        // 내일 새벽 공연 확인
         return festivalScheduleRepository.findByFestivalIdAndFestivalDate(festivalId, today.plusDays(1))
                 .map(s -> !now.isBefore(today.plusDays(1).atTime(s.getFestivalTime()).minusHours(8)))
                 .orElse(false);
