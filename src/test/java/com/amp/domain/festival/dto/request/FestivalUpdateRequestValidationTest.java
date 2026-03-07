@@ -56,17 +56,7 @@ class FestivalUpdateRequestValidationTest {
             List<StageRequest> stages,
             List<Long> activeCategoryIds
     ) {
-        return new FestivalUpdateRequest(title, location, schedules, stages, activeCategoryIds);
-    }
-
-    private FestivalUpdateRequest validRequest() throws Exception {
-        return requestWith(
-                "테스트 공연",
-                "고양시 일산서구",
-                List.of(schedule()),
-                List.of(validStage()),
-                List.of(1L)
-        );
+        return new FestivalUpdateRequest(title, location, null, schedules, stages, activeCategoryIds);
     }
 
     private boolean hasViolationOn(Set<ConstraintViolation<FestivalUpdateRequest>> violations, String field) {
@@ -251,7 +241,7 @@ class FestivalUpdateRequestValidationTest {
             assertThat(hasViolationOn(violations, "stages")).isFalse();
         }
     }
-    
+
     @Nested
     @DisplayName("activeCategoryIds 검증")
     class ActiveCategoryIdsValidation {
