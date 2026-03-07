@@ -63,29 +63,23 @@ public class FestivalService {
     public FestivalCreateResponse createFestival(FestivalCreateRequest request) {
         User user = authService.getCurrentUser();
 
-        if (!(user instanceof Organizer)) {
+        if (!(user instanceof Organizer organizer)) {
             throw new CustomException(CommonErrorCode.FORBIDDEN);
         }
-        Organizer organizer = (Organizer) user;
 
         List<ScheduleRequest> schedules = parseJson(
                 request.schedules(),
-                new TypeReference<List<ScheduleRequest>>() {
-                },
+                new TypeReference<List<ScheduleRequest>>() {},
                 FestivalErrorCode.INVALID_SCHEDULE_FORMAT
         );
-
         List<StageRequest> stages = parseJson(
                 request.stages(),
-                new TypeReference<List<StageRequest>>() {
-                },
+                new TypeReference<List<StageRequest>>() {},
                 FestivalErrorCode.INVALID_STAGE_FORMAT
         );
-
         List<Long> activeCategoryIds = parseJson(
                 request.activeCategoryIds(),
-                new TypeReference<List<Long>>() {
-                },
+                new TypeReference<List<Long>>() {},
                 FestivalErrorCode.INVALID_CATEGORY_FORMAT
         );
 
@@ -170,11 +164,37 @@ public class FestivalService {
 
         validateOrganizer(festival, user);
 
+        List<ScheduleRequest> schedules = parseJson(
+                request.schedules(),
+                new TypeReference<List<ScheduleRequest>>() {},
+                FestivalErrorCode.INVALID_SCHEDULE_FORMAT
+        );
+        List<StageRequest> stages = parseJson(
+                request.stages(),
+                new TypeReference<List<StageRequest>>() {},
+                FestivalErrorCode.INVALID_STAGE_FORMAT
+        );
+        List<Long> activeCategoryIds = parseJson(
+                request.activeCategoryIds(),
+                new TypeReference<List<Long>>() {},
+                FestivalErrorCode.INVALID_CATEGORY_FORMAT
+        );
+
+        if (schedules == null || schedules.isEmpty()) {
+            throw new CustomException(FestivalErrorCode.SCHEDULES_REQUIRED);
+        }
+        if (stages == null || stages.isEmpty()) {
+            throw new CustomException(FestivalErrorCode.STAGES_REQUIRED);
+        }
+        if (activeCategoryIds == null || activeCategoryIds.isEmpty()) {
+            throw new CustomException(CategoryErrorCode.CATEGORY_REQUIRED);
+        }
+
         festival.updateInfo(request.title(), request.location());
 
-        scheduleService.syncSchedules(festival, request.schedules());
-        stageService.syncStages(festival, request.stages());
-        categoryService.syncCategories(festival, request.activeCategoryIds());
+        scheduleService.syncSchedules(festival, schedules);
+        stageService.syncStages(festival, stages);
+        categoryService.syncCategories(festival, activeCategoryIds);
 
         if (request.mainImage() != null && !request.mainImage().isEmpty()) {
             String oldKey = s3Service.extractKey(festival.getMainImageUrl());
@@ -212,8 +232,6 @@ public class FestivalService {
         festivalScheduleRepository.softDeleteByFestivalId(festivalId);
         stageRepository.softDeleteByFestivalId(festivalId);
         festivalCategoryRepository.softDeleteByFestivalId(festivalId);
-
-
         festivalRepository.softDeleteById(festivalId);
     }
 
@@ -233,7 +251,6 @@ public class FestivalService {
                 .orElseThrow(() -> new CustomException(FestivalErrorCode.INVALID_SCHEDULE_FORMAT));
     }
 
-    @LogExecutionTime("이미지 업로드")
     private String uploadImage(MultipartFile image) {
         try {
             return s3Service.upload(image, "festivals");
@@ -246,6 +263,7 @@ public class FestivalService {
         if (json == null || json.trim().isEmpty()) {
             return null;
         }
+
         try {
             return objectMapper.readValue(json, typeReference);
         } catch (Exception e) {
@@ -257,7 +275,6 @@ public class FestivalService {
         return festivalRepository.findById(id)
                 .orElseThrow(() -> new CustomException(FestivalErrorCode.FESTIVAL_NOT_FOUND));
     }
-
 
     private void validateOrganizer(Festival festival, User user) {
         if (!festival.getOrganizer().getId().equals(user.getId())) {
