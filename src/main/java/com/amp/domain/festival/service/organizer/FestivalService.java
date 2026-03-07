@@ -78,7 +78,7 @@ public class FestivalService {
                 FestivalErrorCode.INVALID_STAGE_FORMAT
         );
         List<Long> activeCategoryIds = parseJson(
-                request.activeCategoryIds(),
+                normalizeJsonArray(request.activeCategoryIds()),
                 new TypeReference<List<Long>>() {},
                 FestivalErrorCode.INVALID_CATEGORY_FORMAT
         );
@@ -175,7 +175,7 @@ public class FestivalService {
                 FestivalErrorCode.INVALID_STAGE_FORMAT
         );
         List<Long> activeCategoryIds = parseJson(
-                request.activeCategoryIds(),
+                normalizeJsonArray(request.activeCategoryIds()),
                 new TypeReference<List<Long>>() {},
                 FestivalErrorCode.INVALID_CATEGORY_FORMAT
         );
@@ -257,6 +257,12 @@ public class FestivalService {
         } catch (Exception e) {
             throw new CustomException(S3ErrorCode.S3_UPLOAD_FAILED);
         }
+    }
+
+    private String normalizeJsonArray(String value) {
+        if (value == null) return null;
+        String trimmed = value.trim();
+        return trimmed.startsWith("[") ? trimmed : "[" + trimmed + "]";
     }
 
     private <T> T parseJson(String json, TypeReference<T> typeReference, FestivalErrorCode errorCode) {
