@@ -176,6 +176,21 @@ public class FestivalService {
         stageService.syncStages(festival, request.stages());
         categoryService.syncCategories(festival, request.activeCategoryIds());
 
+        if (request.mainImage() != null && !request.mainImage().isEmpty()) {
+            String oldKey = s3Service.extractKey(festival.getMainImageUrl());
+            String newKey = null;
+            try {
+                newKey = uploadImage(request.mainImage());
+                s3Service.delete(oldKey);
+                festival.updateMainImage(s3Service.getPublicUrl(newKey));
+            } catch (CustomException e) {
+                if (newKey != null) {
+                    s3Service.delete(newKey);
+                }
+                throw e;
+            }
+        }
+
         LocalDate startDate = calculateDate(festival.getSchedules(), FestivalSchedule::getFestivalDate, true);
         LocalDate endDate = calculateDate(festival.getSchedules(), FestivalSchedule::getFestivalDate, false);
         LocalTime startTime = calculateTime(festival.getSchedules(), FestivalSchedule::getFestivalTime);
