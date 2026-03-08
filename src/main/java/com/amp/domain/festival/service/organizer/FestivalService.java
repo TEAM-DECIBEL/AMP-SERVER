@@ -69,29 +69,24 @@ public class FestivalService {
 
         List<ScheduleRequest> schedules = parseJson(
                 request.schedules(),
-                new TypeReference<List<ScheduleRequest>>() {},
+                new TypeReference<List<ScheduleRequest>>() {
+                },
                 FestivalErrorCode.INVALID_SCHEDULE_FORMAT
         );
         List<StageRequest> stages = parseJson(
                 request.stages(),
-                new TypeReference<List<StageRequest>>() {},
+                new TypeReference<List<StageRequest>>() {
+                },
                 FestivalErrorCode.INVALID_STAGE_FORMAT
         );
         List<Long> activeCategoryIds = parseJson(
                 normalizeJsonArray(request.activeCategoryIds()),
-                new TypeReference<List<Long>>() {},
+                new TypeReference<List<Long>>() {
+                },
                 FestivalErrorCode.INVALID_CATEGORY_FORMAT
         );
 
-        if (schedules == null || schedules.isEmpty()) {
-            throw new CustomException(FestivalErrorCode.SCHEDULES_REQUIRED);
-        }
-        if (stages == null || stages.isEmpty()) {
-            throw new CustomException(FestivalErrorCode.STAGES_REQUIRED);
-        }
-        if (activeCategoryIds == null || activeCategoryIds.isEmpty()) {
-            throw new CustomException(CategoryErrorCode.CATEGORY_REQUIRED);
-        }
+        checkNullField(schedules, stages, activeCategoryIds);
 
         ScheduleRequest earliestSchedule = schedules.stream()
                 .min(Comparator.comparing(ScheduleRequest::getFestivalDate)
@@ -166,29 +161,24 @@ public class FestivalService {
 
         List<ScheduleRequest> schedules = parseJson(
                 request.schedules(),
-                new TypeReference<List<ScheduleRequest>>() {},
+                new TypeReference<List<ScheduleRequest>>() {
+                },
                 FestivalErrorCode.INVALID_SCHEDULE_FORMAT
         );
         List<StageRequest> stages = parseJson(
                 request.stages(),
-                new TypeReference<List<StageRequest>>() {},
+                new TypeReference<List<StageRequest>>() {
+                },
                 FestivalErrorCode.INVALID_STAGE_FORMAT
         );
         List<Long> activeCategoryIds = parseJson(
                 normalizeJsonArray(request.activeCategoryIds()),
-                new TypeReference<List<Long>>() {},
+                new TypeReference<List<Long>>() {
+                },
                 FestivalErrorCode.INVALID_CATEGORY_FORMAT
         );
 
-        if (schedules == null || schedules.isEmpty()) {
-            throw new CustomException(FestivalErrorCode.SCHEDULES_REQUIRED);
-        }
-        if (stages == null || stages.isEmpty()) {
-            throw new CustomException(FestivalErrorCode.STAGES_REQUIRED);
-        }
-        if (activeCategoryIds == null || activeCategoryIds.isEmpty()) {
-            throw new CustomException(CategoryErrorCode.CATEGORY_REQUIRED);
-        }
+        checkNullField(schedules, stages, activeCategoryIds);
 
         festival.updateInfo(request.title(), request.location());
 
@@ -285,6 +275,18 @@ public class FestivalService {
     private void validateOrganizer(Festival festival, User user) {
         if (!festival.getOrganizer().getId().equals(user.getId())) {
             throw new CustomException(CommonErrorCode.FORBIDDEN);
+        }
+    }
+
+    private static void checkNullField(List<ScheduleRequest> schedules, List<StageRequest> stages, List<Long> activeCategoryIds) {
+        if (schedules == null || schedules.isEmpty()) {
+            throw new CustomException(FestivalErrorCode.SCHEDULES_REQUIRED);
+        }
+        if (stages == null || stages.isEmpty()) {
+            throw new CustomException(FestivalErrorCode.STAGES_REQUIRED);
+        }
+        if (activeCategoryIds == null || activeCategoryIds.isEmpty()) {
+            throw new CustomException(CategoryErrorCode.CATEGORY_REQUIRED);
         }
     }
 }
