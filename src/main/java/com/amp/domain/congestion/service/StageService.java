@@ -3,6 +3,8 @@ package com.amp.domain.congestion.service;
 import com.amp.domain.festival.entity.Festival;
 import com.amp.domain.congestion.dto.request.StageRequest;
 import com.amp.domain.congestion.entity.Stage;
+import com.amp.domain.congestion.repository.StageCongestionRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,7 +17,10 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class StageService {
+
+    private final StageCongestionRepository stageCongestionRepository;
 
     public void syncStages(Festival festival, List<StageRequest> requests) {
         if (requests == null || requests.isEmpty()) {
@@ -28,6 +33,15 @@ public class StageService {
 
         Set<Long> requestIds = requests.stream()
                 .map(StageRequest::getId).filter(Objects::nonNull).collect(Collectors.toSet());
+
+        List<Long> removedStageIds = existStages.stream()
+                .map(Stage::getId)
+                .filter(id -> !requestIds.contains(id))
+                .collect(Collectors.toList());
+
+        if (!removedStageIds.isEmpty()) {
+            stageCongestionRepository.deleteByStageIdIn(removedStageIds);
+        }
 
         existStages.removeIf(stage -> !requestIds.contains(stage.getId()));
 

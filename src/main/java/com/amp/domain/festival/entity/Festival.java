@@ -108,4 +108,8 @@ public class Festival extends BaseTimeEntity {
     public void updateStartTime(LocalTime startTime) {
         this.startTime = startTime;
     }
+
+    public void updateMainImage(String mainImageUrl) {
+        this.mainImageUrl = mainImageUrl;
+    }
 }
