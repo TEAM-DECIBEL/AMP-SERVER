@@ -47,7 +47,7 @@ public class Notice extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "notice", cascade = CascadeType.ALL, orphanRemoval = true)
     @BatchSize(size = 100)
-    List<NoticeImage> images = new ArrayList<>();
+    private List<NoticeImage> images = new ArrayList<>();
 
     @Column(name = "is_pinned", nullable = false)
     private Boolean isPinned = false;
