@@ -9,9 +9,11 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.SQLRestriction;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -44,7 +46,8 @@ public class Notice extends BaseTimeEntity {
     private String content;
 
     @OneToMany(mappedBy = "notice", cascade = CascadeType.ALL, orphanRemoval = true)
-    List<NoticeImage> images;
+    @BatchSize(size = 100)
+    List<NoticeImage> images = new ArrayList<>();
 
     @Column(name = "is_pinned", nullable = false)
     private Boolean isPinned = false;
