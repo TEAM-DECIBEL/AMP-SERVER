@@ -2,6 +2,8 @@ package com.amp.domain.notice.dto.response;
 
 import com.amp.global.common.dto.CategoryData;
 
+import java.util.List;
+
 public record NoticeDetailResponse(
         Long noticeId,
         Long festivalId,
@@ -9,11 +11,10 @@ public record NoticeDetailResponse(
         CategoryData category,
         String title,
         String content,
-        String imageUrl,
+        List<String> imageUrls,
         boolean isPinned,
         boolean isSaved,
         Author author,
         String createdAt
 ) {
 }
-

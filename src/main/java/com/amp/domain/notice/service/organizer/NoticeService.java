@@ -12,10 +12,12 @@ import com.amp.global.common.dto.CategoryData;
 import com.amp.domain.notice.dto.response.NoticeCreateResponse;
 import com.amp.domain.notice.dto.response.NoticeDetailResponse;
 import com.amp.domain.notice.entity.Notice;
+import com.amp.domain.notice.entity.NoticeImage;
 import com.amp.domain.notice.event.NoticeCreatedEvent;
 import com.amp.domain.notice.exception.NoticeErrorCode;
 import com.amp.domain.notice.exception.NoticeException;
 import com.amp.domain.notice.repository.BookmarkRepository;
+import com.amp.domain.notice.repository.NoticeImageRepository;
 import com.amp.domain.notice.repository.NoticeRepository;
 import com.amp.domain.user.entity.Audience;
 import com.amp.domain.user.entity.Organizer;
@@ -23,7 +25,6 @@ import com.amp.domain.user.exception.UserErrorCode;
 import com.amp.domain.user.repository.AudienceRepository;
 import com.amp.domain.user.repository.OrganizerRepository;
 import com.amp.global.exception.CustomException;
-import com.amp.global.s3.S3ErrorCode;
 import com.amp.global.s3.S3Service;
 import com.amp.global.security.service.AuthService;
 import lombok.AllArgsConstructor;
@@ -35,6 +36,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static com.amp.global.common.dto.TimeFormatter.formatTimeAgo;
 
 @Service
@@ -43,6 +47,7 @@ import static com.amp.global.common.dto.TimeFormatter.formatTimeAgo;
 public class NoticeService {
 
     private final NoticeRepository noticeRepository;
+    private final NoticeImageRepository noticeImageRepository;
     private final BookmarkRepository bookmarkRepository;
     private final OrganizerRepository organizerRepository;
     private final AudienceRepository audienceRepository;
@@ -54,7 +59,8 @@ public class NoticeService {
     private final AuthService authService;
 
     @Transactional
-    public NoticeCreateResponse createNotice(Long festivalId, NoticeCreateRequest request) {
+    public NoticeCreateResponse createNotice(Long festivalId, NoticeCreateRequest request,
+                                             List<MultipartFile> images) {
 
         Authentication authentication =
                 SecurityContextHolder.getContext().getAuthentication();
@@ -84,68 +90,62 @@ public class NoticeService {
             }
         }
 
-
         if (!festivalCategory.getFestival().getId().equals(festival.getId())) {
             throw new NoticeException(FestivalCategoryErrorCode.NOTICE_CATEGORY_NOT_FOUND);
         }
 
-        String imageKey = null;
-        String imageUrl = null;
-        Notice notice;
+        List<MultipartFile> validImages = (images != null)
+                ? images.stream().filter(f -> f != null && !f.isEmpty()).toList()
+                : List.of();
 
+        if (validImages.size() > 20) {
+            throw new NoticeException(NoticeErrorCode.NOTICE_IMAGE_LIMIT_EXCEEDED);
+        }
+
+        Notice notice = Notice.builder()
+                .title(request.title())
+                .content(request.content())
+                .isPinned(request.isPinned())
+                .organizer(organizer)
+                .festival(festival)
+                .festivalCategory(festivalCategory)
+                .build();
+
+        noticeRepository.save(notice);
+
+        List<String> uploadedKeys = new ArrayList<>();
         try {
-            if (request.image() != null && !request.image().isEmpty()) {
-                imageKey = uploadImage(request.image());
-                imageUrl = s3Service.getPublicUrl(imageKey);
+            for (int i = 0; i < validImages.size(); i++) {
+                String key = s3Service.upload(validImages.get(i), "notices");
+                uploadedKeys.add(key);
+                noticeImageRepository.save(
+                        NoticeImage.of(notice, s3Service.getPublicUrl(key), i)
+                );
             }
-
-            notice = Notice.builder()
-                    .title(request.title())
-                    .content(request.content())
-                    .imageUrl(imageUrl)
-                    .isPinned(request.isPinned())
-                    .organizer(organizer)
-                    .festival(festival)
-                    .festivalCategory(festivalCategory)
-                    .build();
-
-            noticeRepository.save(notice);
-
-            eventPublisher.publishEvent(
-                    new NoticeCreatedEvent(
-                            festivalCategory.getId(),
-                            festivalCategory.getCategory().getCategoryName(),
-                            notice.getFestival().getTitle(),
-                            notice,
-                            notice.getTitle(),
-                            notice.getCreatedAt()
-                    )
-            );
-
         } catch (CustomException e) {
-            if (imageKey != null) {
-                s3Service.delete(imageKey);
-            }
+            uploadedKeys.forEach(key -> {
+                try { s3Service.delete(key); } catch (Exception ignored) {}
+            });
             throw e;
-
         } catch (Exception e) {
-            if (imageKey != null) {
-                try {
-                    s3Service.delete(imageKey);
-                } catch (Exception ignored) {
-                }
-            }
+            uploadedKeys.forEach(key -> {
+                try { s3Service.delete(key); } catch (Exception ignored) {}
+            });
             throw new NoticeException(NoticeErrorCode.NOTICE_CREATE_FAIL);
         }
-        return new NoticeCreateResponse(notice.getId());
-    }
 
-    private String uploadImage(MultipartFile image) {
-        try {
-            return s3Service.upload(image, "notices");
-        } catch (Exception e) {
-            throw new CustomException(S3ErrorCode.S3_UPLOAD_FAILED);
-        }
+        eventPublisher.publishEvent(
+                new NoticeCreatedEvent(
+                        festivalCategory.getId(),
+                        festivalCategory.getCategory().getCategoryName(),
+                        notice.getFestival().getTitle(),
+                        notice,
+                        notice.getTitle(),
+                        notice.getCreatedAt()
+                )
+        );
+
+        return new NoticeCreateResponse(notice.getId());
     }
 
     public NoticeDetailResponse getNoticeDetail(Long noticeId) {
@@ -160,7 +160,7 @@ public class NoticeService {
         boolean isSaved = getIsSaved(notice);
 
         CategoryData category = new CategoryData(
-                notice.getFestivalCategory().getId(),
+                notice.getFestivalCategory().getCategory().getId(),
                 notice.getFestivalCategory().getCategory().getCategoryName(),
                 notice.getFestivalCategory().getCategory().getCategoryCode()
         );
@@ -170,6 +170,11 @@ public class NoticeService {
                 notice.getOrganizer().getOrganizerName()
         );
 
+        List<String> imageUrls = notice.getImages().stream()
+                .sorted(java.util.Comparator.comparingInt(NoticeImage::getImageOrder))
+                .map(NoticeImage::getImageUrl)
+                .toList();
+
         return new NoticeDetailResponse(
                 notice.getId(),
                 notice.getFestival().getId(),
@@ -177,7 +182,7 @@ public class NoticeService {
                 category,
                 notice.getTitle(),
                 notice.getContent(),
-                notice.getImageUrl(),
+                imageUrls,
                 notice.getIsPinned(),
                 isSaved,
                 author,
@@ -208,6 +213,7 @@ public class NoticeService {
         Notice notice = noticeRepository.findById(noticeId)
                 .orElseThrow(() ->
                         new NoticeException(NoticeErrorCode.NOTICE_NOT_FOUND));
+
         if (notice.getDeletedAt() != null) {
             throw new NoticeException(NoticeErrorCode.NOTICE_ALREADY_DELETED);
         }
@@ -228,6 +234,14 @@ public class NoticeService {
         if (!notice.getOrganizer().getId().equals(organizer.getId())) {
             throw new NoticeException(NoticeErrorCode.NOTICE_DELETE_FORBIDDEN);
         }
+
+        notice.getImages().forEach(image -> {
+            try {
+                s3Service.delete(s3Service.extractKey(image.getImageUrl()));
+            } catch (Exception e) {
+                log.warn("S3 이미지 삭제 실패: {}", image.getImageUrl(), e);
+            }
+        });
 
         notice.delete();
     }
