@@ -15,7 +15,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.security.access.prepost.PreAuthorize;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/notices")
@@ -32,10 +35,11 @@ public class NoticeUpdateController {
     @PutMapping(path = "/{noticeId}",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<BaseResponse<Void>> updateNotice(
-            @PathVariable("noticeId") @Positive Long noticeId,
-            @ModelAttribute @Valid NoticeUpdateRequest noticeUpdateRequest
+            @PathVariable @Positive Long noticeId,
+            @RequestPart("noticeUpdateRequest") @Valid NoticeUpdateRequest noticeUpdateRequest,
+            @RequestPart(value = "newImages", required = false) List<MultipartFile> newImages
     ) {
-        noticeUpdateService.updateNotice(noticeId, noticeUpdateRequest);
+        noticeUpdateService.updateNotice(noticeId, noticeUpdateRequest, newImages);
 
         return ResponseEntity
                 .status(SuccessStatus.UPDATE_NOTICE_SUCCESS.getHttpStatus())
@@ -46,7 +50,7 @@ public class NoticeUpdateController {
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_DELETE_NOTICE)
     @DeleteMapping("/{noticeId}")
     public ResponseEntity<BaseResponse<Void>> deleteNotice(
-            @PathVariable("noticeId") @Positive Long noticeId
+            @PathVariable @Positive Long noticeId
     ) {
         noticeService.deleteNotice(noticeId);
 
@@ -57,4 +61,3 @@ public class NoticeUpdateController {
     }
 
 }
-

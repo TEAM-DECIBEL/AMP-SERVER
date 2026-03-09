@@ -1,10 +1,12 @@
 package com.amp.domain.audience.dto.response;
 
 import com.amp.domain.notice.entity.Bookmark;
+import com.amp.domain.notice.entity.NoticeImage;
 import com.amp.global.common.dto.response.PaginationResponse;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.util.Comparator;
 import java.util.List;
 
 @Getter
@@ -22,7 +24,7 @@ public class SavedNoticesResponse {
         private String categoryName;
         private String content;
         private String title;
-        private String imageUrl;
+        private List<String> imageUrls;
 
         public static SavedAnnouncementDto from(Bookmark bookmark) {
             return SavedAnnouncementDto.builder()
@@ -32,7 +34,10 @@ public class SavedNoticesResponse {
                     .festivalTitle(bookmark.getNotice().getFestival().getTitle())
                     .categoryName(bookmark.getNotice().getFestivalCategory().getCategory().getCategoryName())
                     .title(bookmark.getNotice().getTitle())
-                    .imageUrl(bookmark.getNotice().getImageUrl())
+                    .imageUrls(bookmark.getNotice().getImages().stream()
+                            .sorted(Comparator.comparingInt(NoticeImage::getImageOrder))
+                            .map(NoticeImage::getImageUrl)
+                            .toList())
                     .build();
         }
     }
