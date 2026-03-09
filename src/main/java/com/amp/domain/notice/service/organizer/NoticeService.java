@@ -35,6 +35,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Arrays;
@@ -226,15 +228,13 @@ public class NoticeService {
             throw new NoticeException(NoticeErrorCode.NOTICE_DELETE_FORBIDDEN);
         }
 
-        notice.getImages().forEach(image -> {
-            try {
-                s3Service.delete(s3Service.extractKey(image.getImageUrl()));
-            } catch (Exception e) {
-                log.warn("S3 이미지 삭제 실패: {}", image.getImageUrl(), e);
-            }
-        });
+        List<String> imageKeys = notice.getImages().stream()
+                .map(img -> s3Service.extractKey(img.getImageUrl()))
+                .toList();
 
         notice.delete();
+
+        deleteS3AfterCommit(imageKeys);
     }
 
     @Transactional
@@ -312,14 +312,12 @@ public class NoticeService {
                 .filter(img -> !keepUrls.contains(img.getImageUrl()))
                 .toList();
 
-        imagesToDelete.forEach(img -> {
-            try {
-                s3Service.delete(s3Service.extractKey(img.getImageUrl()));
-            } catch (Exception e) {
-                log.warn("S3 이미지 삭제 실패: {}", img.getImageUrl(), e);
-            }
-        });
+        List<String> keysToDelete = imagesToDelete.stream()
+                .map(img -> s3Service.extractKey(img.getImageUrl()))
+                .toList();
+
         currentImages.removeAll(imagesToDelete);
+        deleteS3AfterCommit(keysToDelete);
 
         List<NoticeImage> keptImages = keepUrls.stream()
                 .filter(imageMap::containsKey)
@@ -365,6 +363,22 @@ public class NoticeService {
         }
 
         return keys;
+    }
+
+    private void deleteS3AfterCommit(List<String> keys) {
+        if (keys.isEmpty()) return;
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                keys.forEach(key -> {
+                    try {
+                        s3Service.delete(key);
+                    } catch (Exception e) {
+                        log.warn("S3 이미지 삭제 실패: {}", key, e);
+                    }
+                });
+            }
+        });
     }
 
     private void validateOrganizer(Festival festival, Organizer organizer) {
