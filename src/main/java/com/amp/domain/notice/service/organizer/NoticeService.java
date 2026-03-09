@@ -36,8 +36,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.IntStream;
 
 import static com.amp.global.common.dto.TimeFormatter.formatTimeAgo;
 
@@ -113,25 +116,28 @@ public class NoticeService {
 
         noticeRepository.save(notice);
 
-        List<String> uploadedKeys = new ArrayList<>();
-        try {
-            for (int i = 0; i < validImages.size(); i++) {
-                String key = s3Service.upload(validImages.get(i), "notices");
-                uploadedKeys.add(key);
-                noticeImageRepository.save(
-                        NoticeImage.of(notice, s3Service.getPublicUrl(key), i)
-                );
-            }
-        } catch (CustomException e) {
-            uploadedKeys.forEach(key -> {
-                try { s3Service.delete(key); } catch (Exception ignored) {}
-            });
-            throw e;
-        } catch (Exception e) {
-            uploadedKeys.forEach(key -> {
+        String[] keys = new String[validImages.size()];
+
+        List<CompletableFuture<Void>> futures = IntStream.range(0, validImages.size())
+                .mapToObj(i -> CompletableFuture.runAsync(
+                        () -> keys[i] = s3Service.upload(validImages.get(i), "notices")
+                ))
+                .toList();
+
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+                .exceptionally(ex -> null)
+                .join();
+
+        boolean anyFailed = futures.stream().anyMatch(CompletableFuture::isCompletedExceptionally);
+        if (anyFailed) {
+            Arrays.stream(keys).filter(Objects::nonNull).forEach(key -> {
                 try { s3Service.delete(key); } catch (Exception ignored) {}
             });
             throw new NoticeException(NoticeErrorCode.NOTICE_CREATE_FAIL);
+        }
+
+        for (int i = 0; i < keys.length; i++) {
+            noticeImageRepository.save(NoticeImage.of(notice, s3Service.getPublicUrl(keys[i]), i));
         }
 
         eventPublisher.publishEvent(
