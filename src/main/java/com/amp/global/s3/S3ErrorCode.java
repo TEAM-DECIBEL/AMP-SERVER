@@ -13,6 +13,7 @@ public enum S3ErrorCode implements ErrorCode {
     INVALID_IMAGE_IMAGE(HttpStatus.BAD_REQUEST, "S3", "001", "이미지 파일만 업로드 가능합니다."),
     FILE_NAME_NOT_FOUND(HttpStatus.BAD_REQUEST, "S3", "002", "파일명이 없습니다."),
     INVALID_DIRECTORY_ROUTE(HttpStatus.BAD_REQUEST, "S3", "003", "잘못된 디렉토리 경로입니다."),
+    INVALID_IMAGE_URL(HttpStatus.BAD_REQUEST, "S3", "004", "유효하지 않은 이미지 URL입니다."),
 
     // 500 Internal Server Error
     S3_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "S3", "001", "S3 업로드를 실패하였습니다."),
