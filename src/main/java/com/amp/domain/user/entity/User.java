@@ -75,4 +75,11 @@ public class User {
     protected void finishOnboarding() {
         this.registrationStatus = RegistrationStatus.COMPLETED;
     }
+
+    /**
+     * 등록 상태 업데이트
+     */
+    public void updateRegistrationStatus(RegistrationStatus status) {
+        this.registrationStatus = status;
+    }
 }

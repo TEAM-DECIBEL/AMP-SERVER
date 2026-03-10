@@ -7,6 +7,11 @@ public enum RegistrationStatus {
     PENDING,
 
     /**
+     * Organizer 가입코드 검증 대기 상태
+     */
+    CODE_VERIFICATION_PENDING,
+
+    /**
      * userType은 설정되었으나 이름 입력이 필요한 상태
      */
     NAME_PENDING,
