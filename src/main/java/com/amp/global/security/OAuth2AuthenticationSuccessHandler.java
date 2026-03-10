@@ -1,5 +1,7 @@
 package com.amp.global.security;
 
+import com.amp.domain.auth.entity.OrganizerRegistration;
+import com.amp.domain.auth.repository.OrganizerRegistrationRepository;
 import com.amp.domain.user.entity.RegistrationStatus;
 import com.amp.domain.user.entity.User;
 import com.amp.domain.user.entity.UserType;
@@ -18,6 +20,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.util.Optional;
 
 import static com.amp.global.security.util.DomainConstants.*;
 
@@ -30,6 +33,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     private final UserRepository userRepository;
     private final HttpCookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository;
     private final DomainRoleMapping domainRoleMapping;
+    private final OrganizerRegistrationRepository organizerRegistrationRepository;
 
     @Value("${app.jwt.cookie-name:accessToken}")
     private String cookieName;
@@ -86,7 +90,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
         log.info("Response committed after cookie: {}", response.isCommitted());
 
-        String targetUrl = determineTargetUrl(clientOrigin, user);
+        String targetUrl = determineTargetUrl(clientOrigin, user, requestedUserType);
 
         log.info("Final redirect URL: {}", targetUrl);
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
@@ -131,30 +135,71 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     /**
      * 리다이렉트 URL 결정 (순수하게 URL만 결정, DB 저장 로직 없음)
      */
-    private String determineTargetUrl(String clientOrigin, User user) {
-        if (user.getRegistrationStatus() == RegistrationStatus.PENDING) {
-            // 신규 사용자: 온보딩 페이지로 리다이렉트
-            String onboardingUrl = clientOrigin + ONBOARDING_PATH;
-            log.info("New user, redirecting to onboarding: {}", onboardingUrl);
-            return onboardingUrl;
+    private String determineTargetUrl(String clientOrigin, User user, UserType requestedUserType) {
+        // 기존 사용자 (COMPLETED)
+        if (user.getRegistrationStatus() == RegistrationStatus.COMPLETED) {
+            return handleCompletedUser(clientOrigin, user);
         }
 
-        // 기존 사용자: 도메인-역할 검증
+        // 가입코드 검증 대기 중인 사용자
+        if (user.getRegistrationStatus() == RegistrationStatus.CODE_VERIFICATION_PENDING) {
+            log.info("User needs code verification, redirecting to verify-code: {}", user.getEmail());
+            return clientOrigin + VERIFY_CODE_PATH;
+        }
+
+        // 신규 Organizer: 가입코드 검증 필요 여부 확인
+        if (requestedUserType == UserType.ORGANIZER) {
+            return handleNewOrganizer(clientOrigin, user);
+        }
+
+        // 신규 Audience: 바로 온보딩
+        String onboardingUrl = clientOrigin + ONBOARDING_PATH;
+        log.info("New audience user, redirecting to onboarding: {}", onboardingUrl);
+        return onboardingUrl;
+    }
+
+    /**
+     * 기존 사용자(COMPLETED) 처리
+     */
+    private String handleCompletedUser(String clientOrigin, User user) {
         UserType actualUserType = user.getUserType();
 
         if (!domainRoleMapping.isValidDomainForRole(actualUserType, clientOrigin)) {
-            // 도메인 불일치: 올바른 도메인의 메인 페이지로 리다이렉트
             String correctDomain = domainRoleMapping.getCorrectDomain(actualUserType, clientOrigin);
-
             log.info("Domain mismatch! User {} with type {} accessed from {}. Redirecting to {}",
                     user.getEmail(), actualUserType, clientOrigin, correctDomain);
-
             return correctDomain;
         }
 
-        // 도메인 일치: 메인 페이지로 리다이렉트
         log.info("User registration completed, redirecting to main: {}", clientOrigin);
         return clientOrigin;
+    }
+
+    /**
+     * 신규 Organizer 처리: 가입코드 등록 여부에 따른 분기
+     */
+    private String handleNewOrganizer(String clientOrigin, User user) {
+        Optional<OrganizerRegistration> registration =
+                organizerRegistrationRepository.findByEmail(user.getEmail());
+
+        if (registration.isEmpty()) {
+            // 미등록 이메일 → 에러 페이지
+            log.warn("Organizer email not registered: {}", user.getEmail());
+            return clientOrigin + REGISTRATION_ERROR_PATH + "?reason=not_registered";
+        }
+
+        if (registration.get().isVerified()) {
+            // 이미 검증 완료 → 온보딩
+            String onboardingUrl = clientOrigin + ONBOARDING_PATH;
+            log.info("Organizer already verified, redirecting to onboarding: {}", user.getEmail());
+            return onboardingUrl;
+        }
+
+        // 검증 필요 → 가입코드 입력 페이지
+        user.updateRegistrationStatus(RegistrationStatus.CODE_VERIFICATION_PENDING);
+        userRepository.save(user);
+        log.info("Organizer needs code verification, redirecting to verify-code: {}", user.getEmail());
+        return clientOrigin + VERIFY_CODE_PATH;
     }
 
     private String extractOriginFromState(String state) {

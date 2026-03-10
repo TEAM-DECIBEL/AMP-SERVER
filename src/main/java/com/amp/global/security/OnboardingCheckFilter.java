@@ -1,6 +1,7 @@
 package com.amp.global.security;
 
 import com.amp.domain.auth.exception.AuthErrorCode;
+import com.amp.domain.auth.exception.RegistrationErrorCode;
 import com.amp.domain.user.entity.RegistrationStatus;
 import com.amp.domain.user.entity.User;
 import com.amp.domain.user.repository.UserRepository;
@@ -31,6 +32,7 @@ public class OnboardingCheckFilter extends OncePerRequestFilter {
 
     private static final List<String> SKIP_PATHS = Arrays.asList(
             "/api/v1/auth/onboarding",
+            "/api/v1/auth/registration",
             "/api/v1/auth/login",
             "/api/*",
             "/oauth2",
@@ -65,21 +67,49 @@ public class OnboardingCheckFilter extends OncePerRequestFilter {
         // 온보딩 상태 확인
         User user = userRepository.findByEmail(email).orElse(null);
 
-        if (user != null && user.getRegistrationStatus() == RegistrationStatus.PENDING) {
-            log.warn("Onboarding not completed for user: {}", email);
-            response.setContentType("application/json;charset=UTF-8");
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+        if (user != null) {
+            RegistrationStatus status = user.getRegistrationStatus();
 
-            AuthErrorResponse errorResponse = AuthErrorResponse.onboardingRequired(
-                    AuthErrorCode.ONBOARDING_REQUIRED,
-                    "/api/v1/auth/onboarding/complete"
-            );
+            // 가입코드 검증 필요
+            if (status == RegistrationStatus.CODE_VERIFICATION_PENDING) {
+                log.warn("Code verification not completed for user: {}", email);
+                sendCodeVerificationRequiredError(response);
+                return;
+            }
 
-            response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
-            return;
+            // 온보딩 필요
+            if (status == RegistrationStatus.PENDING) {
+                log.warn("Onboarding not completed for user: {}", email);
+                sendOnboardingRequiredError(response);
+                return;
+            }
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private void sendCodeVerificationRequiredError(HttpServletResponse response) throws IOException {
+        response.setContentType("application/json;charset=UTF-8");
+        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+
+        AuthErrorResponse errorResponse = AuthErrorResponse.codeVerificationRequired(
+                RegistrationErrorCode.CODE_VERIFICATION_REQUIRED,
+                "/api/v1/auth/registration/verify"
+        );
+
+        response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
+    }
+
+    private void sendOnboardingRequiredError(HttpServletResponse response) throws IOException {
+        response.setContentType("application/json;charset=UTF-8");
+        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+
+        AuthErrorResponse errorResponse = AuthErrorResponse.onboardingRequired(
+                AuthErrorCode.ONBOARDING_REQUIRED,
+                "/api/v1/auth/onboarding/complete"
+        );
+
+        response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
     }
 
     private boolean shouldSkipOnboardingCheck(String path) {
