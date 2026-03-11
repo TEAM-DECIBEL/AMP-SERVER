@@ -6,6 +6,7 @@ import com.amp.domain.festival.repository.FestivalRepository;
 import com.amp.domain.notice.dto.response.FestivalNoticeListResponse;
 import com.amp.domain.notice.dto.response.NoticeListResponse;
 import com.amp.domain.notice.entity.Notice;
+import com.amp.domain.notice.entity.NoticeImage;
 import com.amp.domain.notice.exception.NoticeException;
 import com.amp.domain.notice.repository.BookmarkRepository;
 import com.amp.domain.notice.repository.NoticeRepository;
@@ -22,10 +23,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.amp.global.common.dto.TimeFormatter.formatTimeAgo;
@@ -57,12 +55,17 @@ public class FestivalNoticeService {
 
         List<FestivalNoticeListResponse> announcements = noticePage.getContent().stream().map(notice -> {
             boolean isSaved = savedNoticeIds.contains(notice.getId());
+            List<String> imageUrls = notice.getImages().stream()
+                    .sorted(Comparator.comparingInt(NoticeImage::getImageOrder))
+                    .map(NoticeImage::getImageUrl)
+                    .toList();
+
             return new FestivalNoticeListResponse(
                     notice.getId(),
                     notice.getFestivalCategory().getCategory().getCategoryName(),
                     notice.getTitle(),
                     notice.getContent(),
-                    notice.getImageUrl(),
+                    imageUrls,
                     notice.getIsPinned(),
                     isSaved,
                     formatTimeAgo(notice.getCreatedAt())

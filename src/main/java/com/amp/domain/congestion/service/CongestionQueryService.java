@@ -1,5 +1,6 @@
 package com.amp.domain.congestion.service;
 
+import com.amp.domain.festival.entity.FestivalSchedule;
 import com.amp.domain.festival.exception.FestivalErrorCode;
 import com.amp.domain.festival.repository.FestivalRepository;
 import com.amp.domain.festival.repository.FestivalScheduleRepository;
@@ -24,6 +25,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -40,16 +42,22 @@ public class CongestionQueryService {
     public FestivalCongestionResponse getFestivalCongestion(Long festivalId, Pageable pageable) {
         validateFestivalExists(festivalId);
 
-        boolean isInputAvailable = checkInputStatus(festivalId);
-        Page<Stage> stagePage = stageRepository.findByFestivalId(festivalId, pageable);
+        User user = authService.getCurrentUserOrNull();
+        boolean isInputAvailable = checkInputStatus(user, festivalId);
+        boolean isViewAvailable  = isInputAvailable || isOrganizer(user);
 
+        Page<Stage> stagePage = stageRepository.findByFestivalId(festivalId, pageable);
         Map<Long, StageCongestion> latestCongestionMap = fetchLatestCongestion(stagePage.getContent());
 
         Page<StageCongestionSummary> summaryPage = stagePage.map(stage ->
-                mapToSummary(stage, latestCongestionMap.get(stage.getId()), isInputAvailable)
+                mapToSummary(stage, latestCongestionMap.get(stage.getId()), isViewAvailable)
         );
 
         return FestivalCongestionResponse.of(isInputAvailable, summaryPage);
+    }
+
+    private boolean isOrganizer(User user) {
+        return user != null && user.getUserType() == UserType.ORGANIZER;
     }
 
     private Map<Long, StageCongestion> fetchLatestCongestion(List<Stage> stages) {
@@ -85,12 +93,21 @@ public class CongestionQueryService {
                 .build();
     }
 
-    private boolean checkInputStatus(Long festivalId) {
-        User user = authService.getCurrentUserOrNull();
+    private boolean checkInputStatus(User user, Long festivalId) {
         if (user == null || user.getUserType() == UserType.ORGANIZER) return false;
 
-        return festivalScheduleRepository.findByFestivalIdAndFestivalDate(festivalId, LocalDate.now())
-                .map(s -> LocalDateTime.now().isAfter(LocalDate.now().atTime(s.getFestivalTime()).minusHours(8)))
+        LocalDate today = LocalDate.now();
+        LocalDateTime now = LocalDateTime.now();
+
+        // 오늘 스케줄 확인
+        Optional<FestivalSchedule> todaySchedule = festivalScheduleRepository.findByFestivalIdAndFestivalDate(festivalId, today);
+        if (todaySchedule.isPresent()) {
+            return !now.isBefore(today.atTime(todaySchedule.get().getFestivalTime()).minusHours(8));
+        }
+
+        // 내일 새벽 공연 확인
+        return festivalScheduleRepository.findByFestivalIdAndFestivalDate(festivalId, today.plusDays(1))
+                .map(s -> !now.isBefore(today.plusDays(1).atTime(s.getFestivalTime()).minusHours(8)))
                 .orElse(false);
     }
 
