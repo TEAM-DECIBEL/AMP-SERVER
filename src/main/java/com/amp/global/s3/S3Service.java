@@ -88,6 +88,9 @@ public class S3Service {
                 s3Properties.getBucket(),
                 s3Properties.getRegion()
         );
-        return publicUrl.replace(baseUrl, "");
+        if (publicUrl == null || !publicUrl.startsWith(baseUrl)) {
+            throw new CustomException(S3ErrorCode.INVALID_IMAGE_URL);
+        }
+        return publicUrl.substring(baseUrl.length());
     }
 }

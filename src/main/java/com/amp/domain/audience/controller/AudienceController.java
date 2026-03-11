@@ -43,8 +43,7 @@ public class AudienceController {
     @PreAuthorize("hasRole('AUDIENCE')")
     public ResponseEntity<BaseResponse<AudienceMyPageResponse>> getMyPage(
             @AuthenticationPrincipal CustomUserPrincipal principal) {
-        Long userId = principal.getUserId();
-        AudienceMyPageResponse response = audienceService.getMyPage(userId);
+        AudienceMyPageResponse response = audienceService.getMyPage(principal.getEmail());
         return ResponseEntity
                 .status(SuccessStatus.USER_PROFILE_RETRIEVED.getHttpStatus())
                 .body(BaseResponse.of(SuccessStatus.USER_PROFILE_RETRIEVED, response));
