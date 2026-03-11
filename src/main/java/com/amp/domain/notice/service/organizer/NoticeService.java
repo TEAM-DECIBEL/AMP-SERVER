@@ -207,10 +207,6 @@ public class NoticeService {
                 .orElseThrow(() ->
                         new NoticeException(NoticeErrorCode.NOTICE_NOT_FOUND));
 
-        if (notice.getDeletedAt() != null) {
-            throw new NoticeException(NoticeErrorCode.NOTICE_ALREADY_DELETED);
-        }
-
         Authentication authentication =
                 SecurityContextHolder.getContext().getAuthentication();
 
@@ -258,10 +254,6 @@ public class NoticeService {
 
         Notice notice = noticeRepository.findById(noticeId)
                 .orElseThrow(() -> new NoticeException(NoticeErrorCode.NOTICE_NOT_FOUND));
-
-        if (notice.getDeletedAt() != null) {
-            throw new NoticeException(NoticeErrorCode.NOTICE_ALREADY_DELETED);
-        }
 
         if (!notice.getFestival().getId().equals(festival.getId())) {
             throw new NoticeException(NoticeErrorCode.NOTICE_UPDATE_FORBIDDEN);
