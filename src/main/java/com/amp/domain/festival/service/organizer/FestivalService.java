@@ -20,7 +20,6 @@ import com.amp.domain.congestion.repository.StageRepository;
 import com.amp.domain.congestion.service.StageService;
 import com.amp.domain.user.entity.Organizer;
 import com.amp.domain.user.entity.User;
-import com.amp.global.annotation.LogExecutionTime;
 import com.amp.global.common.CommonErrorCode;
 import com.amp.global.exception.CustomException;
 import com.amp.global.s3.S3ErrorCode;
@@ -32,6 +31,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
@@ -63,10 +64,9 @@ public class FestivalService {
     public FestivalCreateResponse createFestival(FestivalCreateRequest request) {
         User user = authService.getCurrentUser();
 
-        if (!(user instanceof Organizer)) {
+        if (!(user instanceof Organizer organizer)) {
             throw new CustomException(CommonErrorCode.FORBIDDEN);
         }
-        Organizer organizer = (Organizer) user;
 
         List<ScheduleRequest> schedules = parseJson(
                 request.schedules(),
@@ -74,30 +74,20 @@ public class FestivalService {
                 },
                 FestivalErrorCode.INVALID_SCHEDULE_FORMAT
         );
-
         List<StageRequest> stages = parseJson(
                 request.stages(),
                 new TypeReference<List<StageRequest>>() {
                 },
                 FestivalErrorCode.INVALID_STAGE_FORMAT
         );
-
         List<Long> activeCategoryIds = parseJson(
-                request.activeCategoryIds(),
+                normalizeJsonArray(request.activeCategoryIds()),
                 new TypeReference<List<Long>>() {
                 },
                 FestivalErrorCode.INVALID_CATEGORY_FORMAT
         );
 
-        if (schedules == null || schedules.isEmpty()) {
-            throw new CustomException(FestivalErrorCode.SCHEDULES_REQUIRED);
-        }
-        if (stages == null || stages.isEmpty()) {
-            throw new CustomException(FestivalErrorCode.STAGES_REQUIRED);
-        }
-        if (activeCategoryIds == null || activeCategoryIds.isEmpty()) {
-            throw new CustomException(CategoryErrorCode.CATEGORY_REQUIRED);
-        }
+        checkNullField(schedules, stages, activeCategoryIds);
 
         ScheduleRequest earliestSchedule = schedules.stream()
                 .min(Comparator.comparing(ScheduleRequest::getFestivalDate)
@@ -170,11 +160,61 @@ public class FestivalService {
 
         validateOrganizer(festival, user);
 
+        List<ScheduleRequest> schedules = parseJson(
+                request.schedules(),
+                new TypeReference<List<ScheduleRequest>>() {
+                },
+                FestivalErrorCode.INVALID_SCHEDULE_FORMAT
+        );
+        List<StageRequest> stages = parseJson(
+                request.stages(),
+                new TypeReference<List<StageRequest>>() {
+                },
+                FestivalErrorCode.INVALID_STAGE_FORMAT
+        );
+        List<Long> activeCategoryIds = parseJson(
+                normalizeJsonArray(request.activeCategoryIds()),
+                new TypeReference<List<Long>>() {
+                },
+                FestivalErrorCode.INVALID_CATEGORY_FORMAT
+        );
+
+        checkNullField(schedules, stages, activeCategoryIds);
+
         festival.updateInfo(request.title(), request.location());
 
-        scheduleService.syncSchedules(festival, request.schedules());
-        stageService.syncStages(festival, request.stages());
-        categoryService.syncCategories(festival, request.activeCategoryIds());
+        scheduleService.syncSchedules(festival, schedules);
+        stageService.syncStages(festival, stages);
+        categoryService.syncCategories(festival, activeCategoryIds);
+
+        if (request.mainImage() != null && !request.mainImage().isEmpty()) {
+            String oldKey = s3Service.extractKey(festival.getMainImageUrl());
+            String newKey = uploadImage(request.mainImage());
+
+            festival.updateMainImage(s3Service.getPublicUrl(newKey));
+
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    try {
+                        s3Service.delete(oldKey);
+                    } catch (Exception e) {
+                        log.error("[S3] 커밋 후 구 이미지 삭제 실패 — key: {}, 원인: {}", oldKey, e.getMessage());
+                    }
+                }
+
+                @Override
+                public void afterCompletion(int status) {
+                    if (status == STATUS_ROLLED_BACK) {
+                        try {
+                            s3Service.delete(newKey);
+                        } catch (Exception e) {
+                            log.error("[S3] 롤백 후 새 이미지 삭제 실패 — key: {}, 원인: {}", newKey, e.getMessage());
+                        }
+                    }
+                }
+            });
+        }
 
         LocalDate startDate = calculateDate(festival.getSchedules(), FestivalSchedule::getFestivalDate, true);
         LocalDate endDate = calculateDate(festival.getSchedules(), FestivalSchedule::getFestivalDate, false);
@@ -197,8 +237,6 @@ public class FestivalService {
         festivalScheduleRepository.softDeleteByFestivalId(festivalId);
         stageRepository.softDeleteByFestivalId(festivalId);
         festivalCategoryRepository.softDeleteByFestivalId(festivalId);
-
-
         festivalRepository.softDeleteById(festivalId);
     }
 
@@ -218,7 +256,6 @@ public class FestivalService {
                 .orElseThrow(() -> new CustomException(FestivalErrorCode.INVALID_SCHEDULE_FORMAT));
     }
 
-    @LogExecutionTime("이미지 업로드")
     private String uploadImage(MultipartFile image) {
         try {
             return s3Service.upload(image, "festivals");
@@ -227,10 +264,17 @@ public class FestivalService {
         }
     }
 
+    private String normalizeJsonArray(String value) {
+        if (value == null) return null;
+        String trimmed = value.trim();
+        return trimmed.startsWith("[") ? trimmed : "[" + trimmed + "]";
+    }
+
     private <T> T parseJson(String json, TypeReference<T> typeReference, FestivalErrorCode errorCode) {
         if (json == null || json.trim().isEmpty()) {
             return null;
         }
+
         try {
             return objectMapper.readValue(json, typeReference);
         } catch (Exception e) {
@@ -243,10 +287,21 @@ public class FestivalService {
                 .orElseThrow(() -> new CustomException(FestivalErrorCode.FESTIVAL_NOT_FOUND));
     }
 
-
     private void validateOrganizer(Festival festival, User user) {
         if (!festival.getOrganizer().getId().equals(user.getId())) {
             throw new CustomException(CommonErrorCode.FORBIDDEN);
+        }
+    }
+
+    private static void checkNullField(List<ScheduleRequest> schedules, List<StageRequest> stages, List<Long> activeCategoryIds) {
+        if (schedules == null || schedules.isEmpty()) {
+            throw new CustomException(FestivalErrorCode.SCHEDULES_REQUIRED);
+        }
+        if (stages == null || stages.isEmpty()) {
+            throw new CustomException(FestivalErrorCode.STAGES_REQUIRED);
+        }
+        if (activeCategoryIds == null || activeCategoryIds.isEmpty()) {
+            throw new CustomException(CategoryErrorCode.CATEGORY_REQUIRED);
         }
     }
 }

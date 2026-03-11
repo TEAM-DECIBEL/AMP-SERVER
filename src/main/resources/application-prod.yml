@@ -52,7 +52,6 @@ springdoc:
 
 server:
   port: 8080
-  # Nginx 뒤에서 X-Forwarded-Proto=https 반영
   forward-headers-strategy: framework
 
 swagger:

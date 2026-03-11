@@ -60,6 +60,7 @@ public class Festival extends BaseTimeEntity {
     private List<Stage> stages = new ArrayList<>();
 
     @OneToMany(mappedBy = "festival", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("category.id ASC")
     private List<FestivalCategory> festivalCategories = new ArrayList<>();
 
     @Column(name = "deleted_at")
@@ -107,5 +108,9 @@ public class Festival extends BaseTimeEntity {
 
     public void updateStartTime(LocalTime startTime) {
         this.startTime = startTime;
+    }
+
+    public void updateMainImage(String mainImageUrl) {
+        this.mainImageUrl = mainImageUrl;
     }
 }

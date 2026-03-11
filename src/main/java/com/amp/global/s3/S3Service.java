@@ -2,7 +2,6 @@ package com.amp.global.s3;
 
 import com.amp.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -82,5 +81,16 @@ public class S3Service {
                 s3Properties.getRegion()
         ) + key;
     }
-}
 
+    public String extractKey(String publicUrl) {
+        String baseUrl = String.format(
+                s3Properties.getBaseUrl(),
+                s3Properties.getBucket(),
+                s3Properties.getRegion()
+        );
+        if (publicUrl == null || !publicUrl.startsWith(baseUrl)) {
+            throw new CustomException(S3ErrorCode.INVALID_IMAGE_URL);
+        }
+        return publicUrl.substring(baseUrl.length());
+    }
+}
