@@ -11,7 +11,7 @@ tone_instructions: |
 # 리뷰 설정
 reviews:
   profile: 'assertive'
-  high_level_summary: true
+  high_level_summary: false
   review_status: true
   changed_files_summary: true
   collapse_walkthrough: true
