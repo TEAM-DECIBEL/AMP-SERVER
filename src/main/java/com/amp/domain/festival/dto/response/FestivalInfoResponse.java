@@ -13,7 +13,7 @@ public record FestivalInfoResponse(
         String location,
         String period,
         Boolean isWishlist,
-        Long dday,
+        Long dDay,
         List<CategoryData> activeCategories) {
     public static FestivalInfoResponse from(Festival festival, Boolean isWishlist) {
         return new FestivalInfoResponse(

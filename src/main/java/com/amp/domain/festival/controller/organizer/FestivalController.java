@@ -52,7 +52,7 @@ public class FestivalController {
 
     @Operation(summary = "공연 수정")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_UPDATE_FESTIVAL)
-    @PatchMapping(value = "/{festivalId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(value = "/{festivalId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<BaseResponse<FestivalUpdateResponse>> updateFestival(
             @PathVariable Long festivalId,
             @ModelAttribute @Valid FestivalUpdateRequest request) {

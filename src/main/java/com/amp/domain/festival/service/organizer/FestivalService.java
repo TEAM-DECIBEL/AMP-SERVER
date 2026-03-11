@@ -20,7 +20,6 @@ import com.amp.domain.congestion.repository.StageRepository;
 import com.amp.domain.congestion.service.StageService;
 import com.amp.domain.user.entity.Organizer;
 import com.amp.domain.user.entity.User;
-import com.amp.global.annotation.LogExecutionTime;
 import com.amp.global.common.CommonErrorCode;
 import com.amp.global.exception.CustomException;
 import com.amp.global.s3.S3ErrorCode;
@@ -32,6 +31,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
@@ -188,17 +189,31 @@ public class FestivalService {
 
         if (request.mainImage() != null && !request.mainImage().isEmpty()) {
             String oldKey = s3Service.extractKey(festival.getMainImageUrl());
-            String newKey = null;
-            try {
-                newKey = uploadImage(request.mainImage());
-                s3Service.delete(oldKey);
-                festival.updateMainImage(s3Service.getPublicUrl(newKey));
-            } catch (CustomException e) {
-                if (newKey != null) {
-                    s3Service.delete(newKey);
+            String newKey = uploadImage(request.mainImage());
+
+            festival.updateMainImage(s3Service.getPublicUrl(newKey));
+
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    try {
+                        s3Service.delete(oldKey);
+                    } catch (Exception e) {
+                        log.error("[S3] 커밋 후 구 이미지 삭제 실패 — key: {}, 원인: {}", oldKey, e.getMessage());
+                    }
                 }
-                throw e;
-            }
+
+                @Override
+                public void afterCompletion(int status) {
+                    if (status == STATUS_ROLLED_BACK) {
+                        try {
+                            s3Service.delete(newKey);
+                        } catch (Exception e) {
+                            log.error("[S3] 롤백 후 새 이미지 삭제 실패 — key: {}, 원인: {}", newKey, e.getMessage());
+                        }
+                    }
+                }
+            });
         }
 
         LocalDate startDate = calculateDate(festival.getSchedules(), FestivalSchedule::getFestivalDate, true);
