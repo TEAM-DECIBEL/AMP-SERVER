@@ -11,6 +11,7 @@ public enum NoticeErrorCode implements ErrorCode {
     // 400 Bad Request
     NOTICE_ALREADY_DELETED(HttpStatus.BAD_REQUEST, "NTC", "001", "이미 삭제된 공지입니다."),
     PINNED_NOTICE_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "NTC", "002", "상단 고정 공지는 최대 3개까지 가능합니다."),
+    NOTICE_IMAGE_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "NTC", "003", "이미지는 최대 20장까지 업로드 가능합니다."),
 
     // 403 Forbidden
     NOTICE_DELETE_FORBIDDEN(HttpStatus.FORBIDDEN, "NTC", "001", "작성자 유저만 공지글을 삭제할 수 있습니다."),
