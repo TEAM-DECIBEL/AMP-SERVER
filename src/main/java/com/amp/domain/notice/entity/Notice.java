@@ -70,6 +70,10 @@ public class Notice extends BaseTimeEntity {
         this.deletedAt = LocalDateTime.now();
     }
 
+    public void addImage(NoticeImage image) {
+        this.images.add(image);
+    }
+
     public void update(
             String title,
             String content,

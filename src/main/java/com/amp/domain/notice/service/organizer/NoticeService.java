@@ -126,7 +126,9 @@ public class NoticeService {
         String[] keys = uploadImagesInParallel(validImages, NoticeErrorCode.NOTICE_CREATE_FAIL);
 
         for (int i = 0; i < keys.length; i++) {
-            noticeImageRepository.save(NoticeImage.of(notice, s3Service.getPublicUrl(keys[i]), i));
+            NoticeImage image = NoticeImage.of(notice, s3Service.getPublicUrl(keys[i]), i);
+            notice.addImage(image);
+            noticeImageRepository.save(image);
         }
 
         eventPublisher.publishEvent(
@@ -329,7 +331,9 @@ public class NoticeService {
         String[] keys = uploadImagesInParallel(validNewImages, NoticeErrorCode.UPDATE_NOTICE_FAILED);
 
         for (int i = 0; i < keys.length; i++) {
-            noticeImageRepository.save(NoticeImage.of(notice, s3Service.getPublicUrl(keys[i]), startOrder + i));
+            NoticeImage image = NoticeImage.of(notice, s3Service.getPublicUrl(keys[i]), startOrder + i);
+            notice.addImage(image);
+            noticeImageRepository.save(image);
         }
     }
 
