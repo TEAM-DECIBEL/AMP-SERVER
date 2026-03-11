@@ -17,8 +17,8 @@ public class AudienceService {
 
     private final AudienceRepository audienceRepository;
 
-    public AudienceMyPageResponse getMyPage(Long userId) {
-        Audience audience = audienceRepository.findById(userId)
+    public AudienceMyPageResponse getMyPage(String email) {
+        Audience audience = audienceRepository.findByEmail(email)
                 .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
         return AudienceMyPageResponse.from(audience);
     }

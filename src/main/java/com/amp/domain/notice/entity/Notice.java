@@ -9,9 +9,12 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.SQLRestriction;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "notice")
@@ -42,8 +45,9 @@ public class Notice extends BaseTimeEntity {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
-    @Column(name = "image_url", length = 500)
-    private String imageUrl;
+    @OneToMany(mappedBy = "notice", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 100)
+    private List<NoticeImage> images = new ArrayList<>();
 
     @Column(name = "is_pinned", nullable = false)
     private Boolean isPinned = false;
@@ -53,13 +57,12 @@ public class Notice extends BaseTimeEntity {
 
     @Builder
     public Notice(Festival festival, FestivalCategory festivalCategory, Organizer organizer,
-                  String title, String content, String imageUrl, Boolean isPinned) {
+                  String title, String content, Boolean isPinned) {
         this.festival = festival;
         this.festivalCategory = festivalCategory;
         this.organizer = organizer;
         this.title = title;
         this.content = content;
-        this.imageUrl = imageUrl;
         this.isPinned = isPinned != null ? isPinned : false;
     }
 
@@ -67,16 +70,18 @@ public class Notice extends BaseTimeEntity {
         this.deletedAt = LocalDateTime.now();
     }
 
+    public void addImage(NoticeImage image) {
+        this.images.add(image);
+    }
+
     public void update(
             String title,
             String content,
-            String imageUrl,
             Boolean isPinned,
             FestivalCategory festivalCategory
     ) {
         this.title = title;
         this.content = content;
-        this.imageUrl = imageUrl;
         this.isPinned = isPinned;
         this.festivalCategory = festivalCategory;
     }

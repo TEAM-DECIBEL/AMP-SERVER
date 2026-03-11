@@ -2,7 +2,6 @@ package com.amp.domain.notice.controller.organizer;
 
 import com.amp.domain.notice.dto.request.NoticeUpdateRequest;
 import com.amp.domain.notice.service.organizer.NoticeService;
-import com.amp.domain.notice.service.organizer.NoticeUpdateService;
 import com.amp.global.annotation.ApiErrorCodes;
 import com.amp.global.common.SuccessStatus;
 import com.amp.global.response.success.BaseResponse;
@@ -15,7 +14,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.security.access.prepost.PreAuthorize;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/notices")
@@ -24,7 +26,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 @PreAuthorize("hasRole('ORGANIZER')")
 public class NoticeUpdateController {
 
-    private final NoticeUpdateService noticeUpdateService;
     private final NoticeService noticeService;
 
     @Operation(summary = "공지 수정/상단고정", description = "공지 수정 및 상단 고정 여부 선택 api")
@@ -32,10 +33,11 @@ public class NoticeUpdateController {
     @PutMapping(path = "/{noticeId}",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<BaseResponse<Void>> updateNotice(
-            @PathVariable("noticeId") @Positive Long noticeId,
-            @ModelAttribute @Valid NoticeUpdateRequest noticeUpdateRequest
+            @PathVariable @Positive Long noticeId,
+            @RequestPart("noticeUpdateRequest") @Valid NoticeUpdateRequest noticeUpdateRequest,
+            @RequestPart(value = "newImages", required = false) List<MultipartFile> newImages
     ) {
-        noticeUpdateService.updateNotice(noticeId, noticeUpdateRequest);
+        noticeService.updateNotice(noticeId, noticeUpdateRequest, newImages);
 
         return ResponseEntity
                 .status(SuccessStatus.UPDATE_NOTICE_SUCCESS.getHttpStatus())
@@ -46,7 +48,7 @@ public class NoticeUpdateController {
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_DELETE_NOTICE)
     @DeleteMapping("/{noticeId}")
     public ResponseEntity<BaseResponse<Void>> deleteNotice(
-            @PathVariable("noticeId") @Positive Long noticeId
+            @PathVariable @Positive Long noticeId
     ) {
         noticeService.deleteNotice(noticeId);
 
@@ -57,4 +59,3 @@ public class NoticeUpdateController {
     }
 
 }
-
