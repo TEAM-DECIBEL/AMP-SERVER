@@ -47,6 +47,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.mockito.MockedStatic;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -342,11 +346,19 @@ class NoticeServiceTest {
         when(s3Service.extractKey(anyString())).thenReturn("notices/img.jpg");
 
         // when
-        noticeService.deleteNotice(1L);
+        try (MockedStatic<TransactionSynchronizationManager> tsm =
+                     mockStatic(TransactionSynchronizationManager.class)) {
+            tsm.when(() -> TransactionSynchronizationManager.registerSynchronization(any()))
+                    .thenAnswer(invocation -> {
+                        invocation.<TransactionSynchronization>getArgument(0).afterCommit();
+                        return null;
+                    });
+            noticeService.deleteNotice(1L);
 
-        // then
-        verify(s3Service, times(2)).delete(anyString());
-        assertThat(notice.getDeletedAt()).isNotNull();
+            // then
+            verify(s3Service, times(2)).delete(anyString());
+            assertThat(notice.getDeletedAt()).isNotNull();
+        }
     }
 
     @Test
@@ -366,16 +378,15 @@ class NoticeServiceTest {
     }
 
     @Test
-    @DisplayName("공지 삭제 - 이미 삭제된 공지면 예외 발생")
+    @DisplayName("공지 삭제 - 존재하지 않는 공지면 예외 발생 (@SQLRestriction으로 삭제된 공지는 조회 불가)")
     void deleteNoticeAlreadyDeletedThrowException() {
-        // given
-        notice.delete();
-        when(noticeRepository.findById(1L)).thenReturn(Optional.of(notice));
+        // given - @SQLRestriction("deleted_at IS NULL")으로 삭제된 공지는 findById에서 empty 반환
+        when(noticeRepository.findById(1L)).thenReturn(Optional.empty());
 
         // when & then
         assertThatThrownBy(() -> noticeService.deleteNotice(1L))
                 .isInstanceOf(NoticeException.class)
-                .hasMessage(NoticeErrorCode.NOTICE_ALREADY_DELETED.getMsg());
+                .hasMessage(NoticeErrorCode.NOTICE_NOT_FOUND.getMsg());
     }
 
     @Test
@@ -407,10 +418,18 @@ class NoticeServiceTest {
         doThrow(new RuntimeException("S3 오류")).when(s3Service).delete(anyString());
 
         // when
-        noticeService.deleteNotice(1L);
+        try (MockedStatic<TransactionSynchronizationManager> tsm =
+                     mockStatic(TransactionSynchronizationManager.class)) {
+            tsm.when(() -> TransactionSynchronizationManager.registerSynchronization(any()))
+                    .thenAnswer(invocation -> {
+                        invocation.<TransactionSynchronization>getArgument(0).afterCommit();
+                        return null;
+                    });
+            noticeService.deleteNotice(1L);
 
-        // then
-        assertThat(notice.getDeletedAt()).isNotNull();
+            // then
+            assertThat(notice.getDeletedAt()).isNotNull();
+        }
     }
 
     @Test
@@ -443,20 +462,19 @@ class NoticeServiceTest {
     }
 
     @Test
-    @DisplayName("공지 수정 - 삭제된 공지는 수정 불가")
+    @DisplayName("공지 수정 - 삭제된 공지는 수정 불가 (@SQLRestriction으로 삭제된 공지는 조회 불가)")
     void updateNoticeDeletedNoticeThrowException() {
-        // given
-        notice.delete();
+        // given - @SQLRestriction("deleted_at IS NULL")으로 삭제된 공지는 findById에서 empty 반환
         setAuth(organizer.getEmail());
         NoticeUpdateRequest request = new NoticeUpdateRequest(1L, "제목", 10L, null, "내용", false);
         when(organizerRepository.findByEmail(organizer.getEmail())).thenReturn(Optional.of(organizer));
         when(festivalRepository.findById(1L)).thenReturn(Optional.of(festival));
-        when(noticeRepository.findById(1L)).thenReturn(Optional.of(notice));
+        when(noticeRepository.findById(1L)).thenReturn(Optional.empty());
 
         // when & then
         assertThatThrownBy(() -> noticeService.updateNotice(1L, request, null))
                 .isInstanceOf(NoticeException.class)
-                .hasMessage(NoticeErrorCode.NOTICE_ALREADY_DELETED.getMsg());
+                .hasMessage(NoticeErrorCode.NOTICE_NOT_FOUND.getMsg());
     }
 
     @Test
@@ -490,11 +508,19 @@ class NoticeServiceTest {
         NoticeUpdateRequest request = new NoticeUpdateRequest(1L, "제목", 10L, null, "내용", false);
 
         // when
-        noticeService.updateNotice(1L, request, null);
+        try (MockedStatic<TransactionSynchronizationManager> tsm =
+                     mockStatic(TransactionSynchronizationManager.class)) {
+            tsm.when(() -> TransactionSynchronizationManager.registerSynchronization(any()))
+                    .thenAnswer(invocation -> {
+                        invocation.<TransactionSynchronization>getArgument(0).afterCommit();
+                        return null;
+                    });
+            noticeService.updateNotice(1L, request, null);
 
-        // then
-        verify(s3Service, times(2)).delete(anyString());
-        assertThat(notice.getImages()).isEmpty();
+            // then
+            verify(s3Service, times(2)).delete(anyString());
+            assertThat(notice.getImages()).isEmpty();
+        }
     }
 
     @Test
@@ -515,11 +541,19 @@ class NoticeServiceTest {
         NoticeUpdateRequest request = new NoticeUpdateRequest(1L, "제목", 10L, keepUrls, "내용", false);
 
         // when
-        noticeService.updateNotice(1L, request, null);
+        try (MockedStatic<TransactionSynchronizationManager> tsm =
+                     mockStatic(TransactionSynchronizationManager.class)) {
+            tsm.when(() -> TransactionSynchronizationManager.registerSynchronization(any()))
+                    .thenAnswer(invocation -> {
+                        invocation.<TransactionSynchronization>getArgument(0).afterCommit();
+                        return null;
+                    });
+            noticeService.updateNotice(1L, request, null);
 
-        // then
-        verify(s3Service, times(1)).delete("notices/img2.jpg");
-        assertThat(notice.getImages()).hasSize(2);
+            // then
+            verify(s3Service, times(1)).delete("notices/img2.jpg");
+            assertThat(notice.getImages()).hasSize(2);
+        }
     }
 
     @Test
