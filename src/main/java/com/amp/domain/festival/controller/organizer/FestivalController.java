@@ -52,10 +52,10 @@ public class FestivalController {
 
     @Operation(summary = "공연 수정")
     @ApiErrorCodes(SwaggerResponseDescription.FAIL_TO_UPDATE_FESTIVAL)
-    @PatchMapping("/{festivalId}")
+    @PutMapping(value = "/{festivalId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<BaseResponse<FestivalUpdateResponse>> updateFestival(
             @PathVariable Long festivalId,
-            @RequestBody @Valid FestivalUpdateRequest request) {
+            @ModelAttribute @Valid FestivalUpdateRequest request) {
         FestivalUpdateResponse response = festivalService.updateFestival(festivalId, request);
         return ResponseEntity
                 .status(SuccessStatus.FESTIVAL_UPDATE_SUCCESS.getHttpStatus())
