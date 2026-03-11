@@ -1,14 +1,15 @@
 package com.amp.domain.notice.dto.response;
 
+import java.util.List;
+
 public record FestivalNoticeListResponse(
         Long noticeId,
         String categoryName,
         String title,
         String content,
-        String imageUrl,
+        List<String> imageUrls,
         boolean isPinned,
         boolean isSaved,
         String createdAt
 ) {
 }
-
