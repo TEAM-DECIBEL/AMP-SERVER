@@ -70,10 +70,49 @@ public class CustomOAuth2AuthorizationRequestResolver implements OAuth2Authoriza
         String originalState = authorizationRequest.getState();
         String customState = originalState + "|userType=" + requestedUserType.name() + "|origin=" + safeOrigin;
 
+        // 5. redirect_uri 강제 HTTPS 변환
+        // Nginx가 SSL 종료 후 내부적으로 http로 전달하면 {baseUrl}이 http://로 확장될 수 있음
+        // request.getServerName()은 Nginx 설정 무관하게 실제 도메인을 반환하므로 이를 기준으로 판단
+        String redirectUri = enforceHttpsRedirectUri(authorizationRequest.getRedirectUri(), request);
+
+        // authorizationRequestUri(null) 로 초기화해야 build()가 새 state/redirectUri로 URI를 재생성함
+        // from()이 원본 URI를 복사하고 build()는 URI가 있으면 재생성하지 않기 때문
         return OAuth2AuthorizationRequest
                 .from(authorizationRequest)
+                .redirectUri(redirectUri)
                 .state(customState)
+                .authorizationRequestUri((String) null)
                 .build();
+    }
+
+    /**
+     * production 도메인에서 redirect_uri가 http://로 생성되는 문제 방지
+     * - 이미 https://이면 그대로 반환
+     * - X-Forwarded-Proto: https 헤더가 있으면 https로 변환
+     * - 서버 호스트가 .ampnotice.kr 도메인이면 https로 강제 변환
+     */
+    private String enforceHttpsRedirectUri(String redirectUri, HttpServletRequest request) {
+        if (redirectUri == null || redirectUri.startsWith("https://")) {
+            return redirectUri;
+        }
+
+        // X-Forwarded-Proto 헤더 확인 (Nginx가 설정했을 경우)
+        String forwardedProto = request.getHeader("X-Forwarded-Proto");
+        if ("https".equals(forwardedProto)) {
+            String fixed = "https://" + redirectUri.substring(7);
+            log.info("redirect_uri https 강제 변환 (X-Forwarded-Proto): {} -> {}", redirectUri, fixed);
+            return fixed;
+        }
+
+        // 서버 호스트 기반으로 production 도메인 판별 (Nginx 헤더 무관하게 동작)
+        String serverName = request.getServerName();
+        if (serverName != null && serverName.endsWith(".ampnotice.kr")) {
+            String fixed = "https://" + redirectUri.substring(7);
+            log.info("redirect_uri https 강제 변환 (production domain): {} -> {}", redirectUri, fixed);
+            return fixed;
+        }
+
+        return redirectUri;
     }
 
     /**
