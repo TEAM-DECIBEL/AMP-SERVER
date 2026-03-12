@@ -25,8 +25,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class OrganizerRegistrationService {
 
-    private static final int MAX_ATTEMPTS = 5;
-
     private final OrganizerRegistrationRepository organizerRegistrationRepository;
     private final OrganizerRepository organizerRepository;
     private final UserRepository userRepository;
@@ -60,26 +58,10 @@ public class OrganizerRegistrationService {
             throw new CustomException(RegistrationErrorCode.ALREADY_VERIFIED);
         }
 
-        // 최대 시도 횟수 초과 확인
-        if (registration.isMaxAttemptsExceeded(MAX_ATTEMPTS)) {
-            throw new CustomException(RegistrationErrorCode.MAX_ATTEMPTS_EXCEEDED);
-        }
-
-        // 시도 횟수 증가
-        registration.incrementAttemptCount();
-        organizerRegistrationRepository.save(registration);
-
         // 가입코드 검증
         if (!registration.getRegistrationCode().equals(request.getRegistrationCode())) {
-            int remainingAttempts = MAX_ATTEMPTS - registration.getAttemptCount();
-            log.warn("Invalid registration code attempt for email: {}, remaining attempts: {}",
-                    email, remainingAttempts);
-
-            if (remainingAttempts <= 0) {
-                throw new CustomException(RegistrationErrorCode.MAX_ATTEMPTS_EXCEEDED);
-            }
-
-            return VerifyRegistrationCodeResponse.failure(remainingAttempts);
+            log.warn("Invalid registration code attempt for email: {}", email);
+            throw new CustomException(RegistrationErrorCode.INVALID_REGISTRATION_CODE);
         }
 
         // 주최사명 중복 체크

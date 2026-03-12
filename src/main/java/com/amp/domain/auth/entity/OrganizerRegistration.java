@@ -30,30 +30,15 @@ public class OrganizerRegistration extends BaseTimeEntity {
 
     private LocalDateTime verifiedAt;
 
-    @Column(nullable = false)
-    private int attemptCount = 0;
-
-    private LocalDateTime lastAttemptAt;
-
     @Builder
     public OrganizerRegistration(String email, String registrationCode) {
         this.email = email;
         this.registrationCode = registrationCode;
         this.verified = false;
-        this.attemptCount = 0;
-    }
-
-    public void incrementAttemptCount() {
-        this.attemptCount++;
-        this.lastAttemptAt = LocalDateTime.now();
     }
 
     public void markAsVerified() {
         this.verified = true;
         this.verifiedAt = LocalDateTime.now();
-    }
-
-    public boolean isMaxAttemptsExceeded(int maxAttempts) {
-        return this.attemptCount >= maxAttempts;
     }
 }

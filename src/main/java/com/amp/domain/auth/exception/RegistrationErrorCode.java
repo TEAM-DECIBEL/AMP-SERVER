@@ -14,7 +14,6 @@ public enum RegistrationErrorCode implements ErrorCode {
 
     // 403 Forbidden
     EMAIL_NOT_REGISTERED(HttpStatus.FORBIDDEN, "REG", "002", "등록되지 않은 이메일입니다."),
-    MAX_ATTEMPTS_EXCEEDED(HttpStatus.FORBIDDEN, "REG", "003", "최대 시도 횟수를 초과했습니다."),
     CODE_VERIFICATION_REQUIRED(HttpStatus.FORBIDDEN, "REG", "004", "가입코드 검증이 필요합니다."),
 
     // 409 Conflict
