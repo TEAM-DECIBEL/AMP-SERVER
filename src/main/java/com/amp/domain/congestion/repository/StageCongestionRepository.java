@@ -27,4 +27,6 @@ public interface StageCongestionRepository extends JpaRepository<StageCongestion
             "ORDER BY sc.measuredAt DESC")
     Optional<StageCongestion> findLatestByStageId(@Param("stageId") Long stageId);
 
+    void deleteByStageIdIn(List<Long> stageIds);
+
 }

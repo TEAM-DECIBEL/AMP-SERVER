@@ -5,6 +5,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.stereotype.Component;
@@ -48,12 +49,12 @@ public class HttpCookieOAuth2AuthorizationRequestRepository
         log.debug("Redirect URI: {}", authorizationRequest.getRedirectUri());
         log.debug("State: {}", authorizationRequest.getState());
 
-        addCookie(response, OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME,
+        addCookie(response, request, OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME,
                 serialize(authorizationRequest), COOKIE_EXPIRE_SECONDS);
 
         String redirectUriAfterLogin = request.getParameter(REDIRECT_URI_PARAM_COOKIE_NAME);
         if (StringUtils.isNotBlank(redirectUriAfterLogin)) {
-            addCookie(response, REDIRECT_URI_PARAM_COOKIE_NAME,
+            addCookie(response, request, REDIRECT_URI_PARAM_COOKIE_NAME,
                     redirectUriAfterLogin, COOKIE_EXPIRE_SECONDS);
         }
     }
@@ -88,16 +89,40 @@ public class HttpCookieOAuth2AuthorizationRequestRepository
         return java.util.Optional.empty();
     }
 
-    private void addCookie(HttpServletResponse response, String name, String value, int maxAge) {
-        Cookie cookie = new Cookie(name, value);
-        cookie.setPath("/");
-        cookie.setHttpOnly(true);
-        cookie.setMaxAge(maxAge);
-        // ✅ 프로덕션에서는 true로 설정
-        cookie.setSecure(false); // 로컬 개발: false, 프로덕션: true
+    /**
+     * OAuth2 인증 요청 쿠키 설정
+     * - 프로덕션(HTTPS): SameSite=None; Secure; Domain=.ampnotice.kr
+     *   → Google OAuth 콜백(cross-site)에서 반드시 쿠키가 전달되어야 함
+     * - 로컬(HTTP): SameSite=Lax (SameSite=None은 Secure 없이 사용 불가)
+     */
+    private void addCookie(HttpServletResponse response, HttpServletRequest request,
+                           String name, String value, int maxAge) {
 
-        response.addCookie(cookie);
-        log.debug("Added cookie: {} (maxAge: {})", name, maxAge);
+        String serverName = request.getServerName();
+        boolean isProdDomain = serverName != null && serverName.endsWith(".ampnotice.kr");
+        boolean isHttps = isProdDomain || "https".equals(request.getScheme());
+
+        ResponseCookie.ResponseCookieBuilder builder = ResponseCookie.from(name, value)
+                .path("/")
+                .httpOnly(true)
+                .maxAge(maxAge);
+
+        if (isHttps) {
+            // 프로덕션: SameSite=None + Secure + Domain 으로 cross-site OAuth 콜백 보장
+            // api.host.ampnotice.kr에서 설정한 쿠키가 api.ampnotice.kr 콜백에서도 전달되려면 필수
+            builder.secure(true)
+                    .sameSite("None")
+                    .domain(".ampnotice.kr");
+        } else {
+            // 로컬: SameSite=None은 Secure 없이 불가하므로 Lax 사용
+            builder.secure(false)
+                    .sameSite("Lax");
+        }
+
+        ResponseCookie cookie = builder.build();
+        response.addHeader("Set-Cookie", cookie.toString());
+        log.debug("Added cookie: {} (maxAge: {}, secure: {}, sameSite: {}, serverName: {})",
+                name, maxAge, isHttps, isHttps ? "None" : "Lax", serverName);
     }
 
     private void deleteCookie(HttpServletRequest request, HttpServletResponse response, String name) {

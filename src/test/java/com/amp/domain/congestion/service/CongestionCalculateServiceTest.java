@@ -69,7 +69,7 @@ class CongestionCalculateServiceTest {
                 .willReturn(Optional.of(FestivalSchedule.builder()
                         .festival(festival)
                         .festivalDate(LocalDate.now())
-                        .festivalTime(LocalTime.of(20, 0))
+                        .festivalTime(LocalTime.of(0, 0))
                         .build()));
         given(stageRepository.findById(stageId)).willReturn(Optional.of(stage));
         given(reportRepository.findRecentReports(eq(stageId), any())).willReturn(List.of(report1, report2));
