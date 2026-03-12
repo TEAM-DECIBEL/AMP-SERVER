@@ -9,9 +9,7 @@ import com.amp.domain.auth.exception.OnboardingException;
 import com.amp.domain.auth.exception.RegistrationErrorCode;
 import com.amp.domain.auth.repository.OrganizerRegistrationRepository;
 import com.amp.domain.user.entity.Organizer;
-import com.amp.domain.user.entity.User;
 import com.amp.domain.user.repository.OrganizerRepository;
-import com.amp.domain.user.repository.UserRepository;
 import com.amp.global.common.CommonErrorCode;
 import com.amp.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +25,6 @@ public class OrganizerRegistrationService {
 
     private final OrganizerRegistrationRepository organizerRegistrationRepository;
     private final OrganizerRepository organizerRepository;
-    private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
     public boolean isEmailRegistered(String email) {
@@ -47,7 +44,7 @@ public class OrganizerRegistrationService {
     }
 
     public VerifyRegistrationCodeResponse verifyRegistrationCode(String email, VerifyRegistrationCodeRequest request) {
-        User user = userRepository.findByEmail(email)
+        Organizer organizer = organizerRepository.findByEmail(email)
                 .orElseThrow(() -> new CustomException(CommonErrorCode.USER_NOT_FOUND));
 
         OrganizerRegistration registration = organizerRegistrationRepository.findByEmail(email)
@@ -72,10 +69,9 @@ public class OrganizerRegistrationService {
         registration.markAsVerified();
         organizerRegistrationRepository.save(registration);
 
-        // Organizer로 캐스팅하여 온보딩 완료 처리
-        Organizer organizer = (Organizer) user;
+        // 온보딩 완료 처리
         organizer.completeOrganizerOnboarding(organizerName);
-        userRepository.save(organizer);
+        organizerRepository.save(organizer);
 
         log.info("Registration verified and onboarding completed for email: {}, organizerName: {}",
                 email, organizerName);
