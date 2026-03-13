@@ -141,10 +141,10 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
             return handleCompletedUser(clientOrigin, user);
         }
 
-        // 가입코드 검증 대기 중인 사용자
+        // 가입코드 검증 대기 중인 사용자 → 메인 홈으로 리다이렉트
         if (user.getRegistrationStatus() == RegistrationStatus.CODE_VERIFICATION_PENDING) {
-            log.info("User needs code verification, redirecting to verify-code: {}", user.getEmail());
-            return clientOrigin + VERIFY_CODE_PATH;
+            log.info("User needs code verification, redirecting to main: {}", user.getEmail());
+            return clientOrigin + "/";
         }
 
         // 신규 Organizer: 가입코드 검증 필요 여부 확인
@@ -183,9 +183,9 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
                 organizerRegistrationRepository.findByEmail(user.getEmail());
 
         if (registration.isEmpty()) {
-            // 미등록 이메일 → 에러 페이지
+            // 미등록 이메일 → 메인 홈으로 리다이렉트
             log.warn("Organizer email not registered: {}", user.getEmail());
-            return clientOrigin + REGISTRATION_ERROR_PATH + "?reason=not_registered";
+            return clientOrigin + "/";
         }
 
         if (registration.get().isVerified()) {
@@ -195,11 +195,11 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
             return onboardingUrl;
         }
 
-        // 검증 필요 → 가입코드 입력 페이지
+        // 검증 필요 → 메인 홈으로 리다이렉트
         user.updateRegistrationStatus(RegistrationStatus.CODE_VERIFICATION_PENDING);
         userRepository.save(user);
-        log.info("Organizer needs code verification, redirecting to verify-code: {}", user.getEmail());
-        return clientOrigin + VERIFY_CODE_PATH;
+        log.info("Organizer needs code verification, redirecting to main: {}", user.getEmail());
+        return clientOrigin + "/";
     }
 
     private String extractOriginFromState(String state) {

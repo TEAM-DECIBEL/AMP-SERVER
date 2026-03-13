@@ -59,6 +59,18 @@ public class DomainRoleValidationFilter extends OncePerRequestFilter {
             "/api/v1/common"
     );
 
+    // 공개 API 경로 (GET 요청 시 역할 검증 제외) - SecurityConfig permitAll()과 동일하게 유지
+    private static final List<String> PUBLIC_GET_API_PATTERNS = Arrays.asList(
+            "/api/v1/notices/",        // /api/v1/notices/{noticeId}
+            "/api/v1/festivals"        // /api/v1/festivals, /api/v1/festivals/{id}, /api/v1/festivals/{id}/notices, /api/v1/festivals/{id}/congestion
+    );
+
+    // 공개 API 경로 (모든 메서드 허용)
+    private static final List<String> PUBLIC_API_PATHS = Arrays.asList(
+            "/api/v1/audience/nickname",
+            "/api/v1/wishlists/recent"
+    );
+
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
@@ -67,7 +79,7 @@ public class DomainRoleValidationFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
 
         // 검증 건너뛸 경로
-        if (shouldSkipValidation(path)) {
+        if (shouldSkipValidation(request, path)) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -133,7 +145,7 @@ public class DomainRoleValidationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    private boolean shouldSkipValidation(String path) {
+    private boolean shouldSkipValidation(HttpServletRequest request, String path) {
         // 기본 스킵 경로
         if (SKIP_PATHS.stream().anyMatch(path::startsWith)) {
             return true;
@@ -142,6 +154,18 @@ public class DomainRoleValidationFilter extends OncePerRequestFilter {
         // 공통 API 경로
         if (COMMON_API_PATHS.stream().anyMatch(path::startsWith)) {
             return true;
+        }
+
+        // 공개 API 경로 (모든 메서드 허용)
+        if (PUBLIC_API_PATHS.stream().anyMatch(path::startsWith)) {
+            return true;
+        }
+
+        // 공개 API 경로 (GET 요청만 허용) - 로그인 없이 접근 가능한 공지/축제 조회 API
+        if ("GET".equalsIgnoreCase(request.getMethod())) {
+            if (PUBLIC_GET_API_PATTERNS.stream().anyMatch(path::startsWith)) {
+                return true;
+            }
         }
 
         return false;
