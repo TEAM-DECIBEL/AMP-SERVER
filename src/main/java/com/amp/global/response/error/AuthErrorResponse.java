@@ -24,6 +24,9 @@ public class AuthErrorResponse {
     // 온보딩 필요 시 추가 정보
     private final String onboardingUrl;
 
+    // 가입코드 검증 필요 시 추가 정보
+    private final String verificationUrl;
+
     public static AuthErrorResponse of(ErrorCode errorCode) {
         return AuthErrorResponse.builder()
                 .status(errorCode.getHttpStatus().value())
@@ -73,6 +76,16 @@ public class AuthErrorResponse {
                 .msg(errorCode.getMsg())
                 .timestamp(Instant.now())
                 .onboardingUrl(onboardingUrl)
+                .build();
+    }
+
+    public static AuthErrorResponse codeVerificationRequired(ErrorCode errorCode, String verificationUrl) {
+        return AuthErrorResponse.builder()
+                .status(errorCode.getHttpStatus().value())
+                .code(errorCode.getCode())
+                .msg(errorCode.getMsg())
+                .timestamp(Instant.now())
+                .verificationUrl(verificationUrl)
                 .build();
     }
 }

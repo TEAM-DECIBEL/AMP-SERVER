@@ -31,4 +31,6 @@ public final class DomainConstants {
 
     // ========== 프론트엔드 경로 ==========
     public static final String ONBOARDING_PATH = "/onboarding";
+    public static final String VERIFY_CODE_PATH = "/verify-code";
+    public static final String REGISTRATION_ERROR_PATH = "/registration-error";
 }
