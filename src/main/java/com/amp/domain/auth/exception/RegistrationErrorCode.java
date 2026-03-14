@@ -12,8 +12,8 @@ public enum RegistrationErrorCode implements ErrorCode {
     // 400 Bad Request - 잘못된 입력값
     INVALID_REGISTRATION_CODE(HttpStatus.BAD_REQUEST, "REG", "001", "가입코드가 올바르지 않습니다."),
 
-    // 404 Not Found - 등록 정보 없음
-    EMAIL_NOT_REGISTERED(HttpStatus.NOT_FOUND, "REG", "002", "등록되지 않은 이메일입니다."),
+    // 400 Bad Request - 등록되지 않은 이메일
+    EMAIL_NOT_REGISTERED(HttpStatus.BAD_REQUEST, "REG", "002", "등록되지 않은 이메일입니다."),
 
     // 403 Forbidden - 검증 미완료로 접근 권한 없음
     CODE_VERIFICATION_REQUIRED(HttpStatus.FORBIDDEN, "REG", "004", "가입코드 검증이 필요합니다."),
