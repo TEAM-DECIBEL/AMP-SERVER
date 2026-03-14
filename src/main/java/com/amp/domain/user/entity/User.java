@@ -76,9 +76,10 @@ public class User {
         this.registrationStatus = RegistrationStatus.COMPLETED;
     }
 
-    // 주최자 온보딩 완료 (status만 업데이트, Organizer 엔티티는 별도 생성)
-    public void completeOrganizerOnboarding() {
-        this.registrationStatus = RegistrationStatus.COMPLETED;
+    /**
+     * 등록 상태 업데이트
+     */
+    public void updateRegistrationStatus(RegistrationStatus status) {
+        this.registrationStatus = status;
     }
-
 }
