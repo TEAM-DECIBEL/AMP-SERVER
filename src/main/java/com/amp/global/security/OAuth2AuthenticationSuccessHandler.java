@@ -183,9 +183,9 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
                 organizerRegistrationRepository.findByEmail(user.getEmail());
 
         if (registration.isEmpty()) {
-            // 미등록 이메일 → 메인 홈으로 리다이렉트
+            // 미등록 이메일 → 에러 페이지로 리다이렉트
             log.warn("Organizer email not registered: {}", user.getEmail());
-            return clientOrigin + "/";
+            return clientOrigin + "/login/error";
         }
 
         if (registration.get().isVerified()) {
