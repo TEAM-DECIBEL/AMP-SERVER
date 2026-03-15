@@ -42,7 +42,7 @@ public class User {
     private String providerId;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "VARCHAR(255)")
     @Builder.Default
     private RegistrationStatus registrationStatus = RegistrationStatus.PENDING;
 
