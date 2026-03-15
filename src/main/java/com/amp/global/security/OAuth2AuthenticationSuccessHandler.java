@@ -141,10 +141,10 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
             return handleCompletedUser(clientOrigin, user);
         }
 
-        // 가입코드 검증 대기 중인 사용자 → 메인 홈으로 리다이렉트
+        // 가입코드 검증 대기 중인 사용자 → 온보딩으로 리다이렉트
         if (user.getRegistrationStatus() == RegistrationStatus.CODE_VERIFICATION_PENDING) {
-            log.info("User needs code verification, redirecting to main: {}", user.getEmail());
-            return clientOrigin + "/";
+            log.info("User needs code verification, redirecting to onboarding: {}", user.getEmail());
+            return clientOrigin + ONBOARDING_PATH;
         }
 
         // 신규 Organizer: 가입코드 검증 필요 여부 확인
@@ -201,8 +201,8 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
                 .orElseThrow(() -> new IllegalStateException("User not found: " + user.getEmail()));
         freshUser.updateRegistrationStatus(RegistrationStatus.CODE_VERIFICATION_PENDING);
         userRepository.save(freshUser);
-        log.info("Organizer needs code verification, redirecting to main: {}", user.getEmail());
-        return clientOrigin + "/";
+        log.info("Organizer needs code verification, redirecting to onboarding: {}", user.getEmail());
+        return clientOrigin + ONBOARDING_PATH;
     }
 
     private String extractOriginFromState(String state) {
