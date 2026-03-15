@@ -196,8 +196,11 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         }
 
         // 검증 필요 → 메인 홈으로 리다이렉트
-        user.updateRegistrationStatus(RegistrationStatus.CODE_VERIFICATION_PENDING);
-        userRepository.save(user);
+        // updatePendingUserType에서 user_type=ORGANIZER로 저장 후 Hibernate 세션 타입 불일치 방지를 위해 재조회
+        User freshUser = userRepository.findByEmail(user.getEmail())
+                .orElseThrow(() -> new IllegalStateException("User not found: " + user.getEmail()));
+        freshUser.updateRegistrationStatus(RegistrationStatus.CODE_VERIFICATION_PENDING);
+        userRepository.save(freshUser);
         log.info("Organizer needs code verification, redirecting to main: {}", user.getEmail());
         return clientOrigin + "/";
     }
