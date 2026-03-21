@@ -92,7 +92,7 @@ public class NotificationService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
 
-        return new NotificationListResponse(notificationRepository.findByUserOrderByCreatedAtDesc(user)
+        return new NotificationListResponse(notificationRepository.findByUserWithValidNoticeOrderByCreatedAtDesc(user)
                 .stream()
                 .map(n -> new NotificationResponse(
                         n.getId(),
