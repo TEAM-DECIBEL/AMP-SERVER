@@ -20,6 +20,7 @@ import com.amp.domain.notice.exception.NoticeException;
 import com.amp.domain.notice.repository.BookmarkRepository;
 import com.amp.domain.notice.repository.NoticeImageRepository;
 import com.amp.domain.notice.repository.NoticeRepository;
+import com.amp.domain.notification.repository.NotificationRepository;
 import com.amp.domain.user.entity.Audience;
 import com.amp.domain.user.entity.Organizer;
 import com.amp.domain.user.exception.UserErrorCode;
@@ -59,6 +60,7 @@ public class NoticeService {
     private final NoticeRepository noticeRepository;
     private final NoticeImageRepository noticeImageRepository;
     private final BookmarkRepository bookmarkRepository;
+    private final NotificationRepository notificationRepository;
     private final OrganizerRepository organizerRepository;
     private final AudienceRepository audienceRepository;
     private final FestivalCategoryRepository festivalCategoryRepository;
@@ -230,6 +232,7 @@ public class NoticeService {
                 .map(img -> s3Service.extractKey(img.getImageUrl()))
                 .toList();
 
+        notificationRepository.deleteAllByNotice(notice);
         notice.delete();
 
         deleteS3AfterCommit(imageKeys);

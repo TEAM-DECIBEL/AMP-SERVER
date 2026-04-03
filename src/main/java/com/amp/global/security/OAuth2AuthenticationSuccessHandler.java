@@ -141,10 +141,10 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
             return handleCompletedUser(clientOrigin, user);
         }
 
-        // 가입코드 검증 대기 중인 사용자 → 메인 홈으로 리다이렉트
+        // 가입코드 검증 대기 중인 사용자 → 온보딩으로 리다이렉트
         if (user.getRegistrationStatus() == RegistrationStatus.CODE_VERIFICATION_PENDING) {
-            log.info("User needs code verification, redirecting to main: {}", user.getEmail());
-            return clientOrigin + "/";
+            log.info("User needs code verification, redirecting to onboarding: {}", user.getEmail());
+            return clientOrigin + ONBOARDING_PATH;
         }
 
         // 신규 Organizer: 가입코드 검증 필요 여부 확인
@@ -183,9 +183,9 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
                 organizerRegistrationRepository.findByEmail(user.getEmail());
 
         if (registration.isEmpty()) {
-            // 미등록 이메일 → 메인 홈으로 리다이렉트
+            // 미등록 이메일 → 에러 페이지로 리다이렉트
             log.warn("Organizer email not registered: {}", user.getEmail());
-            return clientOrigin + "/";
+            return clientOrigin + "/login/error";
         }
 
         if (registration.get().isVerified()) {
@@ -196,10 +196,13 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         }
 
         // 검증 필요 → 메인 홈으로 리다이렉트
-        user.updateRegistrationStatus(RegistrationStatus.CODE_VERIFICATION_PENDING);
-        userRepository.save(user);
-        log.info("Organizer needs code verification, redirecting to main: {}", user.getEmail());
-        return clientOrigin + "/";
+        // updatePendingUserType에서 user_type=ORGANIZER로 저장 후 Hibernate 세션 타입 불일치 방지를 위해 재조회
+        User freshUser = userRepository.findByEmail(user.getEmail())
+                .orElseThrow(() -> new IllegalStateException("User not found: " + user.getEmail()));
+        freshUser.updateRegistrationStatus(RegistrationStatus.CODE_VERIFICATION_PENDING);
+        userRepository.save(freshUser);
+        log.info("Organizer needs code verification, redirecting to onboarding: {}", user.getEmail());
+        return clientOrigin + ONBOARDING_PATH;
     }
 
     private String extractOriginFromState(String state) {
