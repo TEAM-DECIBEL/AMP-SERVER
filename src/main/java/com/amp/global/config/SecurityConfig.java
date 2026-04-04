@@ -97,6 +97,7 @@ public class SecurityConfig {
                                 "/api/auth/**",
                                 "/api/public/**",
                                 "/api/auth/logout",
+                                "/api/v1/auth/status",
                                 "/oauth2/**",
                                 "/login/**",
                                 "/error",

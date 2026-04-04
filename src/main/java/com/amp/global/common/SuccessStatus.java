@@ -13,6 +13,7 @@ public enum SuccessStatus implements SuccessCode {
 
     // AUTH
     LOGOUT_SUCCESS(HttpStatus.OK, "AUT", "001", "로그아웃이 완료되었습니다."),
+    AUTH_STATUS_RETRIEVED(HttpStatus.OK, "AUT", "002", "로그인 상태 조회가 완료되었습니다."),
 
     // FESTIVAL
     FESTIVAL_CREATE_SUCCESS(HttpStatus.CREATED, "FES", "001", "공연 등록이 완료되었습니다."),
