@@ -18,8 +18,8 @@ public class ScheduleWindowService {
     private final FestivalScheduleRepository festivalScheduleRepository;
 
     public boolean isWindowActive(Long festivalId) {
-        LocalDate today = LocalDate.now();
         LocalDateTime now = LocalDateTime.now();
+        LocalDate today = now.toLocalDate();
 
         Optional<FestivalSchedule> todaySchedule =
                 festivalScheduleRepository.findByFestivalIdAndFestivalDate(festivalId, today);
