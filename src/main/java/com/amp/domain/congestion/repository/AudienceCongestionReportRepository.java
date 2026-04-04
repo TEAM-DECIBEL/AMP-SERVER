@@ -19,4 +19,6 @@ public interface AudienceCongestionReportRepository extends JpaRepository<Audien
             @Param("stageId") Long stageId,
             @Param("oneHourAgo") LocalDateTime oneHourAgo
     );
+
+    void deleteByStageIdIn(List<Long> stageIds);
 }

@@ -3,6 +3,7 @@ package com.amp.domain.festival.service.organizer;
 import com.amp.domain.category.exception.CategoryErrorCode;
 import com.amp.domain.category.repository.FestivalCategoryRepository;
 import com.amp.domain.category.service.FestivalCategoryService;
+import com.amp.domain.congestion.entity.Stage;
 import com.amp.domain.festival.dto.request.FestivalCreateRequest;
 import com.amp.domain.festival.dto.request.FestivalUpdateRequest;
 import com.amp.domain.festival.dto.request.ScheduleRequest;
@@ -17,6 +18,7 @@ import com.amp.domain.festival.repository.FestivalScheduleRepository;
 import com.amp.domain.festival.scheduler.FestivalScheduleService;
 import com.amp.domain.congestion.dto.request.StageRequest;
 import com.amp.domain.congestion.repository.StageRepository;
+import com.amp.domain.congestion.service.ScheduleWindowService;
 import com.amp.domain.congestion.service.StageService;
 import com.amp.domain.user.entity.Organizer;
 import com.amp.domain.user.entity.User;
@@ -41,6 +43,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -54,6 +57,7 @@ public class FestivalService {
 
     private final FestivalScheduleService scheduleService;
     private final StageService stageService;
+    private final ScheduleWindowService scheduleWindowService;
     private final FestivalCategoryService categoryService;
     private final AuthService authService;
 
@@ -183,7 +187,15 @@ public class FestivalService {
 
         festival.updateInfo(request.title(), request.location());
 
+        List<Long> stageIds = festival.getStages().stream()
+                .map(Stage::getId)
+                .collect(Collectors.toList());
+
         scheduleService.syncSchedules(festival, schedules);
+
+        if (!scheduleWindowService.isWindowActive(festival.getId()) && !stageIds.isEmpty()) {
+            stageService.clearCongestionData(stageIds);
+        }
         stageService.syncStages(festival, stages);
         categoryService.syncCategories(festival, activeCategoryIds);
 
@@ -304,4 +316,5 @@ public class FestivalService {
             throw new CustomException(CategoryErrorCode.CATEGORY_REQUIRED);
         }
     }
+
 }
