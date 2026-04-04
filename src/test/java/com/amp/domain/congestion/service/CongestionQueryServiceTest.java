@@ -6,10 +6,8 @@ import com.amp.domain.congestion.entity.Stage;
 import com.amp.domain.congestion.entity.StageCongestion;
 import com.amp.domain.congestion.repository.StageCongestionRepository;
 import com.amp.domain.congestion.repository.StageRepository;
-import com.amp.domain.festival.entity.FestivalSchedule;
 import com.amp.domain.festival.exception.FestivalErrorCode;
 import com.amp.domain.festival.repository.FestivalRepository;
-import com.amp.domain.festival.repository.FestivalScheduleRepository;
 import com.amp.domain.user.entity.AuthProvider;
 import com.amp.domain.user.entity.RegistrationStatus;
 import com.amp.domain.user.entity.User;
@@ -29,11 +27,8 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -48,7 +43,7 @@ class CongestionQueryServiceTest {
 
     @Mock private AuthService authService;
     @Mock private StageRepository stageRepository;
-    @Mock private FestivalScheduleRepository festivalScheduleRepository;
+    @Mock private ScheduleWindowService scheduleWindowService;
     @Mock private StageCongestionRepository stageCongestionRepository;
     @Mock private FestivalRepository festivalRepository;
 
@@ -107,21 +102,12 @@ class CongestionQueryServiceTest {
         given(stageCongestionRepository.findLatestByStageIds(anyList())).willReturn(List.of(testCongestion));
     }
 
-    // 스케줄 시간이 00:00 인 경우
-    // 지난 날 16시부터
     private void givenScheduleWindowActive() {
-        FestivalSchedule schedule = FestivalSchedule.builder()
-                .festivalDate(LocalDate.now())
-                .festivalTime(LocalTime.MIDNIGHT)
-                .build();
-        given(festivalScheduleRepository.findByFestivalIdAndFestivalDate(eq(FESTIVAL_ID), any(LocalDate.class)))
-                .willReturn(Optional.of(schedule));
+        given(scheduleWindowService.isWindowActive(FESTIVAL_ID)).willReturn(true);
     }
 
-    // 오늘 내일 스케줄 없음
     private void givenScheduleWindowInactive() {
-        given(festivalScheduleRepository.findByFestivalIdAndFestivalDate(eq(FESTIVAL_ID), any(LocalDate.class)))
-                .willReturn(Optional.empty());
+        given(scheduleWindowService.isWindowActive(FESTIVAL_ID)).willReturn(false);
     }
 
     @Nested
