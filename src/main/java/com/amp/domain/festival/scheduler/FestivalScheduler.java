@@ -47,6 +47,7 @@ public class FestivalScheduler {
                 }
             } catch (Exception e) {
                 log.error("공연 [ID: {}] 상태 업데이트 실패", festival.getId(), e);
+                throw new IllegalStateException("혼잡도 데이터 정리 실패: " + festival.getId(), e);
             }
         });
     }
