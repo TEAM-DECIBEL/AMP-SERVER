@@ -43,8 +43,12 @@ public class CongestionQueryService {
         validateFestivalExists(festivalId);
 
         User user = authService.getCurrentUserOrNull();
-        boolean isInputAvailable = checkInputStatus(user, festivalId);
-        boolean isViewAvailable  = isInputAvailable || isOrganizer(user);
+        // 스케줄 여부만 확인
+        boolean isScheduleWindowActive = isInScheduleWindow(festivalId);
+
+        // 유저가 존재하고 주최사가 아닐 경우
+        boolean isInputAvailable = isScheduleWindowActive && !isOrganizer(user) && user != null;
+        boolean isViewAvailable  = isScheduleWindowActive;
 
         Page<Stage> stagePage = stageRepository.findByFestivalId(festivalId, pageable);
         Map<Long, StageCongestion> latestCongestionMap = fetchLatestCongestion(stagePage.getContent());
@@ -93,9 +97,7 @@ public class CongestionQueryService {
                 .build();
     }
 
-    private boolean checkInputStatus(User user, Long festivalId) {
-        if (user == null || user.getUserType() == UserType.ORGANIZER) return false;
-
+    private boolean isInScheduleWindow(Long festivalId) {
         LocalDate today = LocalDate.now();
         LocalDateTime now = LocalDateTime.now();
 
