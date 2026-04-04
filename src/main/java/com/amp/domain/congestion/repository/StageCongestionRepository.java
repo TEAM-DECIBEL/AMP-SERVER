@@ -2,6 +2,7 @@ package com.amp.domain.congestion.repository;
 
 import com.amp.domain.congestion.entity.StageCongestion;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -27,6 +28,8 @@ public interface StageCongestionRepository extends JpaRepository<StageCongestion
             "ORDER BY sc.measuredAt DESC")
     Optional<StageCongestion> findLatestByStageId(@Param("stageId") Long stageId);
 
-    void deleteByStageIdIn(List<Long> stageIds);
+    @Modifying
+    @Query("DELETE FROM StageCongestion sc WHERE sc.stage.id IN :stageIds")
+    void deleteByStageIdIn(@Param("stageIds") List<Long> stageIds);
 
 }

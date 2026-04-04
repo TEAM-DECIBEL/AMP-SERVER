@@ -1,9 +1,7 @@
 package com.amp.domain.congestion.service;
 
-import com.amp.domain.festival.entity.FestivalSchedule;
 import com.amp.domain.festival.exception.FestivalErrorCode;
 import com.amp.domain.festival.repository.FestivalRepository;
-import com.amp.domain.festival.repository.FestivalScheduleRepository;
 import com.amp.domain.congestion.dto.response.FestivalCongestionResponse;
 import com.amp.domain.congestion.dto.response.StageCongestionSummary;
 import com.amp.domain.congestion.entity.CongestionLevel;
@@ -21,11 +19,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,16 +30,20 @@ public class CongestionQueryService {
 
     private final AuthService authService;
     private final StageRepository stageRepository;
-    private final FestivalScheduleRepository festivalScheduleRepository;
     private final StageCongestionRepository stageCongestionRepository;
     private final FestivalRepository festivalRepository;
+    private final ScheduleWindowService scheduleWindowService;
 
     public FestivalCongestionResponse getFestivalCongestion(Long festivalId, Pageable pageable) {
         validateFestivalExists(festivalId);
 
         User user = authService.getCurrentUserOrNull();
-        boolean isInputAvailable = checkInputStatus(user, festivalId);
-        boolean isViewAvailable  = isInputAvailable || isOrganizer(user);
+        // 스케줄 여부만 확인
+        boolean isScheduleWindowActive = scheduleWindowService.isWindowActive(festivalId);
+
+        // 유저가 존재하고 주최사가 아닐 경우
+        boolean isInputAvailable = isScheduleWindowActive && !isOrganizer(user) && user != null;
+        boolean isViewAvailable  = isScheduleWindowActive;
 
         Page<Stage> stagePage = stageRepository.findByFestivalId(festivalId, pageable);
         Map<Long, StageCongestion> latestCongestionMap = fetchLatestCongestion(stagePage.getContent());
@@ -91,24 +90,6 @@ public class CongestionQueryService {
                 .location(stage.getLocation())
                 .congestionLevel(isNone ? CongestionLevel.NONE : congestion.getCongestionLevel())
                 .build();
-    }
-
-    private boolean checkInputStatus(User user, Long festivalId) {
-        if (user == null || user.getUserType() == UserType.ORGANIZER) return false;
-
-        LocalDate today = LocalDate.now();
-        LocalDateTime now = LocalDateTime.now();
-
-        // 오늘 스케줄 확인
-        Optional<FestivalSchedule> todaySchedule = festivalScheduleRepository.findByFestivalIdAndFestivalDate(festivalId, today);
-        if (todaySchedule.isPresent()) {
-            return !now.isBefore(today.atTime(todaySchedule.get().getFestivalTime()).minusHours(8));
-        }
-
-        // 내일 새벽 공연 확인
-        return festivalScheduleRepository.findByFestivalIdAndFestivalDate(festivalId, today.plusDays(1))
-                .map(s -> !now.isBefore(today.plusDays(1).atTime(s.getFestivalTime()).minusHours(8)))
-                .orElse(false);
     }
 
 }

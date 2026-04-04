@@ -2,6 +2,7 @@ package com.amp.domain.congestion.repository;
 
 import com.amp.domain.congestion.entity.AudienceCongestionReport;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -19,4 +20,8 @@ public interface AudienceCongestionReportRepository extends JpaRepository<Audien
             @Param("stageId") Long stageId,
             @Param("oneHourAgo") LocalDateTime oneHourAgo
     );
+
+    @Modifying
+    @Query("DELETE FROM AudienceCongestionReport r WHERE r.stage.id IN :stageIds")
+    void deleteByStageIdIn(@Param("stageIds") List<Long> stageIds);
 }

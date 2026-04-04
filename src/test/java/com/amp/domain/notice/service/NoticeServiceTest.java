@@ -18,6 +18,7 @@ import com.amp.domain.notice.repository.BookmarkRepository;
 import com.amp.domain.notice.repository.NoticeImageRepository;
 import com.amp.domain.notice.repository.NoticeRepository;
 import com.amp.domain.notice.service.organizer.NoticeService;
+import com.amp.domain.notification.repository.NotificationRepository;
 import com.amp.domain.user.entity.Organizer;
 import com.amp.domain.user.exception.UserErrorCode;
 import com.amp.domain.user.repository.AudienceRepository;
@@ -80,6 +81,8 @@ class NoticeServiceTest {
     private ApplicationEventPublisher eventPublisher;
     @Mock
     private AuthService authService;
+    @Mock
+    private NotificationRepository notificationRepository;
 
     @InjectMocks
     private NoticeService noticeService;
