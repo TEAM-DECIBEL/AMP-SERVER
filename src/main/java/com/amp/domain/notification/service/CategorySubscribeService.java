@@ -17,6 +17,7 @@ import com.amp.global.fcm.exception.FCMErrorCode;
 import com.amp.global.fcm.service.FCMService;
 import com.amp.global.security.service.AuthService;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -118,6 +119,7 @@ public class CategorySubscribeService {
         eventPublisher.publishEvent(new CategorySubscribeEvent(festivalCategory.getId(), fcmToken, false));
     }
 
+    @Async("categorySubscribeExecutor")
     public void registerToken(String fcmToken) {
         if (fcmToken == null || fcmToken.isBlank()) {
             throw new CustomException(FCMErrorCode.INVALID_FCM_TOKEN);
