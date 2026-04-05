@@ -21,7 +21,7 @@ public interface AudienceCongestionReportRepository extends JpaRepository<Audien
             @Param("oneHourAgo") LocalDateTime oneHourAgo
     );
 
-    @Modifying
+    @Modifying(clearAutomatically = true)
     @Query("DELETE FROM AudienceCongestionReport r WHERE r.stage.id IN :stageIds")
     void deleteByStageIdIn(@Param("stageIds") List<Long> stageIds);
 }
