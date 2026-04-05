@@ -17,7 +17,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     @Query("SELECT n FROM Notification n JOIN FETCH n.notice no JOIN FETCH no.festival WHERE n.user = :user ORDER BY n.createdAt DESC")
     List<Notification> findByUserWithValidNoticeOrderByCreatedAtDesc(@Param("user") User user);
 
-    @Modifying
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("DELETE FROM Notification n WHERE n.notice = :notice")
     void deleteAllByNotice(@Param("notice") Notice notice);
 

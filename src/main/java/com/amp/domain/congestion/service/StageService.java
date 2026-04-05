@@ -3,6 +3,7 @@ package com.amp.domain.congestion.service;
 import com.amp.domain.festival.entity.Festival;
 import com.amp.domain.congestion.dto.request.StageRequest;
 import com.amp.domain.congestion.entity.Stage;
+import com.amp.domain.congestion.repository.AudienceCongestionReportRepository;
 import com.amp.domain.congestion.repository.StageCongestionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ import java.util.stream.Collectors;
 public class StageService {
 
     private final StageCongestionRepository stageCongestionRepository;
+    private final AudienceCongestionReportRepository audienceReportRepository;
 
     public void syncStages(Festival festival, List<StageRequest> requests) {
         if (requests == null || requests.isEmpty()) {
@@ -56,5 +58,13 @@ public class StageService {
                         .build());
             }
         }
+    }
+
+    public void clearCongestionData(List<Long> stageIds) {
+        if (stageIds == null || stageIds.isEmpty()) {
+            return;
+        }
+        audienceReportRepository.deleteByStageIdIn(stageIds);
+        stageCongestionRepository.deleteByStageIdIn(stageIds);
     }
 }

@@ -48,8 +48,8 @@ class UserFestivalServiceTest {
 
         // then
         assertThat(result).isPresent();
-        assertThat(result.get().getFestivalId()).isEqualTo(1L);
-        assertThat(result.get().getDDay()).isEqualTo(-15L);
+        assertThat(result.get().festivalId()).isEqualTo(1L);
+        assertThat(result.get().dDay()).isEqualTo(-15L);
     }
 
     @Test
@@ -89,8 +89,8 @@ class UserFestivalServiceTest {
 
         // then
         assertThat(result).isPresent();
-        assertThat(result.get().getFestivalId()).isEqualTo(1L); // 첫 번째 요소인지 확인
-        assertThat(result.get().getTitle()).isEqualTo("Nearest Festival");
+        assertThat(result.get().festivalId()).isEqualTo(1L); // 첫 번째 요소인지 확인
+        assertThat(result.get().title()).isEqualTo("Nearest Festival");
     }
 
     // 테스트용 Festival 객체 생성 헬퍼 메서드

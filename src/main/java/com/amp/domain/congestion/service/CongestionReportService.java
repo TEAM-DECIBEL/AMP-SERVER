@@ -69,8 +69,7 @@ public class CongestionReportService {
         redisTemplate.opsForList().rightPush(stageReportKey, reportData);
         redisTemplate.expire(stageReportKey, 1, TimeUnit.HOURS);
 
-        log.info("혼잡도 입력 완료 (Redis 저장): userId={}, stageId={}, level={}",
-                user.getId(), stageId, level);
+        // log.info("혼잡도 입력 완료 (Redis 저장): userId={}, stageId={}, level={}", user.getId(), stageId, level);
     }
 
     void validateReportTime(Stage stage, LocalDateTime now) {
@@ -92,8 +91,7 @@ public class CongestionReportService {
         LocalDateTime enableInputTime = getEnableInputTime(todaySchedule, schedules, today);
 
         if (now.isBefore(enableInputTime)) {
-            log.warn("입력 불가 (너무 이름): stageId={}, now={}, enableFrom={}",
-                    stage.getId(), now, enableInputTime);
+            // log.warn("입력 불가 (너무 이름): stageId={}, now={}, enableFrom={}", stage.getId(), now, enableInputTime);
             throw new CustomException(StageErrorCode.TOO_EARLY_TO_REPORT);
         }
 
