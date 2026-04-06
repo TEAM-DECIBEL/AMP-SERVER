@@ -95,8 +95,9 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/",
                                 "/api/auth/**",
+                                "/api/v1/auth/**",
                                 "/api/public/**",
-                                "/api/auth/logout",
+                                "/api/v1/auth/status",
                                 "/oauth2/**",
                                 "/login/**",
                                 "/error",
